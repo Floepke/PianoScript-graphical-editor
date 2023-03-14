@@ -3,9 +3,9 @@
 # IMPORTS
 # --------------------
 from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, Listbox, Text
-from tkinter import filedialog, Frame, Button, Entry, Label, Spinbox, StringVar
+from tkinter import filedialog, Button, Label, Spinbox, StringVar
 from tkinter import simpledialog
-import time, ast, platform, subprocess, os, sys, errno, math, threading, random
+import ast, platform, subprocess, os, math, threading, random
 from mido import MidiFile
 from shutil import which
 import tkinter.ttk as ttk
