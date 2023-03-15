@@ -338,8 +338,5 @@ if __name__ == '__main__':
     thread_auto_render = AutoRender()
     thread_auto_render.start()
 
-
-
-
-
+# tkinter mainloop:
 root.mainloop()
