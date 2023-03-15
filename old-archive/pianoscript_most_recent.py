@@ -20,7 +20,7 @@ else:
 # colors
 color_basic_gui = '#444444'
 color_right_midinote = '#666666'
-color_left_midinote = color_right_midinote 
+color_left_midinote = color_right_midinote
 color_editor_canvas = '#999999'#d9d9d9#fdffd1
 color_highlight = '#03a1fc'#a6a832
 color_notation_editor = 'black'
