@@ -10,11 +10,11 @@
 # --------------------
 # IMPORTS
 # --------------------
-from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, Listbox, Text
-from tkinter import filedialog, Frame, Entry, Label, Spinbox, StringVar, PhotoImage
-from tkinter import simpledialog
-
-import time, ast, platform, subprocess, os, sys, errno, math, threading, random, json
+from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow
+from tkinter import filedialog, Frame, Entry, Label, Spinbox, StringVar
+from tkinter import simpledialog, Listbox, Text, PhotoImage
+import time, ast, platform, subprocess, os, sys, errno, math, threading
+import random, json
 from mido import MidiFile
 from shutil import which
 import tkinter.ttk as ttk
@@ -119,7 +119,7 @@ editor.place(relwidth=1, relheight=1)
 hbar = Scrollbar(editor, orient='horizontal', width=20, relief='flat', bg=color_basic_gui)
 hbar.pack(side='bottom', fill='x')
 hbar.config(command=editor.xview)
-editor.configure(xscrollcommand=hbar.set)   
+editor.configure(xscrollcommand=hbar.set)
 # printview --> printpanel
 pview = Canvas(printpanel, bg='white', relief='flat')
 pview.place(relwidth=1, relheight=1)
@@ -214,7 +214,7 @@ if platform.system() == 'Windows':
 # BIND
 # -----
 root.bind('<Escape>', lambda e: quit_editor(e, thread_auto_render))
-editor.bind('<Motion>', lambda event: mouse_handling(event, 'motion'))
+#editor.bind('<Motion>', lambda event: mouse_handling(event, 'motion'))
 editor.bind('<Button-1>', lambda event: mouse_handling(event, 'btn1click'))
 editor.bind('<ButtonRelease-1>', lambda event: mouse_handling(event, 'btn1release'))
 editor.bind('<Double-Button-1>', lambda event: mouse_handling(event, 'double-btn1'))
