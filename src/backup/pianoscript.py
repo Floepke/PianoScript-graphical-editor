@@ -3,9 +3,9 @@
 # IMPORTS
 # --------------------
 from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, Listbox, Text
-from tkinter import filedialog, Button, Label, Spinbox, StringVar
+from tkinter import filedialog, Frame, Button, Entry, Label, Spinbox, StringVar
 from tkinter import simpledialog
-import ast, platform, subprocess, os, math, threading, random
+import time, ast, platform, subprocess, os, sys, errno, math, threading, random
 from mido import MidiFile
 from shutil import which
 import tkinter.ttk as ttk
@@ -45,7 +45,7 @@ editor.place(relwidth=1, relheight=1)
 hbar = Scrollbar(editor, orient='horizontal', width=20, relief='flat', bg=color1)
 hbar.pack(side='bottom', fill='x')
 hbar.config(command=editor.xview)
-editor.configure(xscrollcommand=hbar.set)
+editor.configure(xscrollcommand=hbar.set)   
 # printview --> printpanel
 pview = Canvas(printpanel, bg='white', relief='flat')
 pview.place(relwidth=1, relheight=1)
@@ -73,7 +73,7 @@ times_label.pack(fill='x')
 times_spin = Spinbox(leftpanel, from_=1, to=100, bg='grey', font=('', 15, 'normal'))
 times_spin.pack(fill='x')
 separator3 = ttk.Separator(rightpanel, orient='horizontal').pack(fill='x')
-fill_label5 = Label(rightpanel, text='GRID MAP EDITOR', bg=color1, fg='white', anchor='w', font=("courier"))
+fill_label5 = Label(rightpanel, text='MEASURE MAP EDITOR', bg=color1, fg='white', anchor='w', font=("courier"))
 fill_label5.pack(fill='x')
 help_button1 = Button(rightpanel, text='?', font=("courier", 12, 'bold'))
 help_button1.pack(fill='x')
@@ -592,7 +592,6 @@ def mx2tick(mx, edit_grid, length_of_music, x_scale):
         This function converts the mouse position to
         (start) time in pianoticks.
     '''
-    # defining the tick
     start = XYMARGIN
     end = XYMARGIN + (length_of_music * x_scale)
     tick = baseround(interpolation(start, end, mx) * length_of_music, edit_grid)
@@ -733,14 +732,14 @@ def note_design_rolleditor(note):
     for bl in barline_ticks(FILE):
 
         # draw tie-dot if a note crosses a barline
-        if bl > note['time'] and bl < note['time'] + note['duration'] and diff(bl, note['time'] + note['duration']) > 1:
-            editor.create_oval(XYMARGIN + (bl * x_scale) + (5 * x_scale),
-                               y0 + (2.5 * y_scale) + center_pianoroll,
-                               XYMARGIN + (bl * x_scale) + (15 * x_scale),
-                               y1 - (2.5 * y_scale) + center_pianoroll,
-                               fill='black',
-                               tag=(note['id'], 'tiedot'),
-                               outline='')
+        # if bl > note['time'] and bl < note['time'] + note['duration'] and diff(bl, note['time'] + note['duration']) > 1:
+        #     editor.create_oval(XYMARGIN + (bl * x_scale) + (5 * x_scale),
+        #                        y0 + (2.5 * y_scale) + center_pianoroll,
+        #                        XYMARGIN + (bl * x_scale) + (15 * x_scale),
+        #                        y1 - (2.5 * y_scale) + center_pianoroll,
+        #                        fill='black',
+        #                        tag=(note['id'], 'tiedot'),
+        #                        outline='')
 
         if diff(bl, note['time']) < 1:
 
@@ -2178,9 +2177,8 @@ def process_margin_editor():
         if i['type'] == 'system_space':
             i['value'] = m
 
-    # update textbox
-    systemspace_text.delete('1.0','end')
-    systemspace_text.insert('1.0', m)
+    # update textbox from FILE
+    update_textboxes()
 
     # re-render
     do_engrave('')
@@ -2228,7 +2226,7 @@ def update_textboxes():
     # margin editor
     for marg in FILE[0][1:]:
 
-        if marg['type'] == 'margin':
+        if marg['type'] == 'mpline':
 
             systemspace_text.delete('1.0','end')
             systemspace_text.insert('1.0', marg['value'])
@@ -2540,7 +2538,12 @@ paper_color = 0
 view_page = 0
 
 
-def engrave(render_type=''):
+def engrave(auto_scaling=True, renderer='pianoscript'):
+    '''
+        auto_scaling == the drawing gets scaled to the width of the printview.
+        renderer == 'pianoscript' or 'klavarskribo'.
+    '''
+
     # check if there is a time_signature in the FILE.
     if not FILE[0][0]:
         print('ERROR: There is no time signature in the FILE!')
@@ -2741,7 +2744,7 @@ def engrave(render_type=''):
 
     read()
 
-    def draw():
+    def draw_pianoscript():
 
         curs_y = 0
 
@@ -2750,7 +2753,7 @@ def engrave(render_type=''):
 
         b_ticks = barline_ticks(FILE)
 
-        if not render_type == 'export':
+        if not auto_scaling == 'export':
             pview.create_line(0,
                               curs_y,
                               PAPER_WIDTH,
@@ -2770,7 +2773,7 @@ def engrave(render_type=''):
                                    fill='white',
                                    outline='')
 
-            if not render_type == 'export':
+            if not auto_scaling == 'export':
                 pview.create_line(0,
                                   PAPER_HEIGHT + curs_y,
                                   PAPER_WIDTH,
@@ -2873,7 +2876,7 @@ def engrave(render_type=''):
                                           curs_y,
                                           x,
                                           curs_y + staffheight,
-                                          width=1 * scale,
+                                          width=.5 * scale,
                                           capstyle='round',
                                           tag='grid',
                                           fill='black',
@@ -2924,7 +2927,7 @@ def engrave(render_type=''):
                                               y,
                                               x0,
                                               y + (25 * scale),
-                                              width=2 * scale,
+                                              width=3 * scale,
                                               tag='stem',
                                               fill='black')
                             for bl in b_ticks:
@@ -2981,7 +2984,7 @@ def engrave(render_type=''):
                                               y,
                                               x0,
                                               y - (25 * scale),
-                                              width=2 * scale,
+                                              width=3 * scale,
                                               tag='stem',
                                               fill='black')
                             for bl in b_ticks:
@@ -3026,7 +3029,7 @@ def engrave(render_type=''):
                                                       stem_y,
                                                       x0,
                                                       y,
-                                                      width=2 * scale,
+                                                      width=3 * scale,
                                                       capstyle='round',
                                                       tag='connect_stem',
                                                       fill='black')
@@ -3065,18 +3068,6 @@ def engrave(render_type=''):
                                           width=2 * scale,
                                           fill='black',
                                           tag='midi_note')
-                    # if evt['type'] == 'split':
-                    #     x0 = event_x_pos_engrave(evt['time'], new_line[l_counter], new_line[l_counter + 1])
-                    #     x1 = event_x_pos_engrave(evt['time'] + evt['duration'], new_line[l_counter],
-                    #                              new_line[l_counter + 1])
-                    #     y = note_y_pos(evt['note'], minnote, maxnote, curs_y, scale)
-                    #     pview.create_oval(x0 + (5 * scale),
-                    #                       y - (2.5 * scale),
-                    #                       x0 + (10 * scale),
-                    #                       y + (2.5 * scale),
-                    #                       fill='black',
-                    #                       outline='',
-                    #                       tag='tie_dot')
 
                     # time-signature-text
                     if evt['type'] == 'time_signature_text':
@@ -3141,10 +3132,9 @@ def engrave(render_type=''):
             # update curs_y
             curs_y = PAPER_HEIGHT * (idx_page + 1)
 
-        if not render_type == 'export':
+        if not auto_scaling == 'export':
             root.update()
-            s = pview.winfo_width()
-            s = s / PAPER_WIDTH
+            s = pview.winfo_width() / PAPER_WIDTH
             pview.scale("all", 0, 0, s, s)
 
         # drawing order
@@ -3174,7 +3164,7 @@ def engrave(render_type=''):
         pview.configure(scrollregion=pview.bbox("all"))
         pview.addtag_all('old')
 
-    draw()
+    draw_pianoscript()
 
     return len(msg)
 
@@ -3334,7 +3324,7 @@ setMenu.add_command(label='copyright', command=lambda: set_titles('copyright'))
 setMenu.add_separator()
 setMenu.add_command(label='global scale', command=set_global_scale)
 setMenu.add_command(label='page margins', command=set_page_margins)
-menubar.add_cascade(label="Set", underline=None, menu=setMenu)
+menubar.add_cascade(label="Set...", underline=None, menu=setMenu)
 
 modeMenu = Menu(menubar, tearoff=1, bg=color1, fg='white')
 modeMenu.add_radiobutton(label="note", variable=input_mode, value='note')
