@@ -303,7 +303,7 @@ def test_file():
 
 def new_file():
     global Score, file_changed,file_path
-    print('new_file')
+    print('new_file...')
 
     # check if user wants to save or cancel the task.
     if file_changed == True:
@@ -318,7 +318,6 @@ def new_file():
     file_changed = False
 
     # create new Score
-    print('creating new file...')
     with open('template.pianoscript', 'r') as f:
         Score = json.load(f)
 
@@ -384,7 +383,7 @@ def save():
 
     if file_path != 'New':
         f = open(file_path, 'w')
-        f.write(json.dumps(Score, separators=(',', ':'), indent=2))# publish
+        f.write(json.dumps(Score, separators=(',', ':')))
         f.close()
         file_changed = False
     else:
@@ -404,7 +403,7 @@ def save_as():
     if f:
         root.title('PianoScript - %s' % f.name)
         f = open(f.name, 'w')
-        f.write(json.dumps(Score, separators=(',', ':'), indent=2))# publish
+        f.write(json.dumps(Score, separators=(',', ':')))
         f.close()
         # update file_path
         file_path = f.name
