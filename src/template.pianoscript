@@ -60,12 +60,6 @@
         "margin-up-left":10,
         "margin-down-right":10,
         "id":"linebreak0"
-      },
-      {
-        "id":"linebreak4",
-        "time":4096,
-        "margin-up-left":10,
-        "margin-down-right":10
       }
     ]
   }

@@ -23,6 +23,13 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
+'''
+    PianoScript V1.0.0
+    Futures:
+        * midi import
+        * 
+'''
+
 # -----
 # TODO
 # -----
@@ -93,6 +100,12 @@ Use '0 12' to insert 12 measures to the end of the file.'''
 
 HELP4 = '''Please provide two numbers seperated by <space>: 'line-margin-up-left' and 'line-margin-down-right':'''
 
+# add quick line breaks
+HELP5 = '''If you enter '4': It will place line-breaks in groups of 4 measures trough the entire file.
+If you enter '4 3 5': It will place 4 measures on the first line, 3 at the second etc... and apply 5 for the 
+rest of the document.
+Please provide one or more integers that describe the line-breaks in terms of measures:'''
+
 
 # --------------------
 # IMPORTS
@@ -108,8 +121,6 @@ if platform.system() == 'Darwin':
     from tkmacosx import Button
 else:
     from tkinter import Button
-
-# my own messy imports haha :)
 from imports.midiexport import *
 from imports.drawstaff import *
 import imports.savefilestructure, imports.loadsettings
@@ -118,6 +129,7 @@ from imports.loadsettings import Settings
 from imports.tools import *
 from imports.pianorolleditor import *
 from imports.tooltip import *
+
 # --------------------
 # GUI
 # --------------------
@@ -965,7 +977,6 @@ def mouse_handling(event, event_type):
 
         if event_type == 'btn1click':
 
-
             # it's not alowed to create a linebreak >= latest pianotick; we ignore this case
             if ex >= total_pianoticks or ex <= 0:
                 return
@@ -998,24 +1009,50 @@ def mouse_handling(event, event_type):
         if event_type == 'btn1release':
 
             # it's not alowed to create a linebreak >= latest pianotick; we ignore this case
-            if ex >= total_pianoticks:
+            # it's not alowed to create a linebreak <= latest pianotick; we ignore this case
+            if ex >= total_pianoticks or ex <= 0:
+                if ex <= 0:
+                    # edit the margins from first linebreak
+                    while True:
+                        user_input = simpledialog.askstring('set margins for current line...', 
+                            HELP4, 
+                            initialvalue=str(Score['events']['line-break'][0]['margin-up-left']) + ' ' + str(Score['events']['line-break'][0]['margin-down-right']))
+                        if user_input:
+                            try:
+                                user_input = user_input.split()
+                                for idx, ui in enumerate(user_input):
+                                    user_input[idx] = float(ui)
+                                if len(user_input) < 2:
+                                    raise Exception
+                                break
+                            except:
+                                print('ERROR in set_margins; please provide two floats or integers seperated by space.')
+                        else: 
+                            hold_id = ''
+                            return
+                    Score['events']['line-break'][0]['margin-up-left'] = user_input[0]
+                    Score['events']['line-break'][0]['margin-down-right'] = user_input[1]
+                    hold_id = ''
+                    file_changed = True
+                    do_engrave()
+                hold_id = ''
                 return
             if hold_id:
                 # edit linebreak | and all following linebreaks:
                 old_lb_time = None
                 old_lb_idx = None
                 new_lb_time = ex
+                diff_oldnew_lb = None
                 for idx,lb in enumerate(Score['events']['line-break']):
                     if lb['id'] == hold_id:
                         old_lb_time = lb['time']
                         old_lb_idx = idx
                         diff_oldnew_lb = ex - old_lb_time
                         break
-                for lb in Score['events']['line-break']:
+                for lb in Score['events']['line-break'][old_lb_idx:]:
                     if lb['id'] == hold_id:
                         # edit current linebreak time in Score
                         lb['time'] = ex
-                        #Score['events']['line-break'] = sorted(Score['events']['line-break'], key=lambda time: time['time'])
                         if old_lb_time == lb['time']:
                             # edit the margins (after this scope break/return)
                             while True:
@@ -1032,7 +1069,9 @@ def mouse_handling(event, event_type):
                                         break
                                     except:
                                         print('ERROR in set_margins; please provide two floats or integers seperated by space.')
-                                else: return
+                                else: 
+                                    hold_id = ''
+                                    return
                             lb['margin-up-left'] = user_input[0]
                             lb['margin-down-right'] = user_input[1]
                             hold_id = ''
@@ -1085,8 +1124,15 @@ def mouse_handling(event, event_type):
                     color_notation_editor,
                     color_highlight)
                 Score['events']['line-break'].append(new_linebreak)
-                Score['events']['line-break'] = sorted(Score['events']['line-break'], key=lambda time: time['time'])
             
+            Score['events']['line-break'] = sorted(Score['events']['line-break'], key=lambda time: time['time'])
+
+            # if linebreak time >= last pianotick; delete it from Score and editor
+            for lb in Score['events']['line-break']:
+                if lb['time'] >= total_pianoticks or lb['time'] < 0:
+                    Score['events']['line-break'].remove(lb)
+                    editor.delete(lb['id'])
+
             do_engrave()
             return
 
@@ -2325,6 +2371,9 @@ def grid_selector(event='event'):
 
     for idx,i in enumerate(list_dur.curselection()):
         listbox_value = list_dur.get(i)
+    # if event != 'event':
+    #     listbox_value = event.keysym
+    #     list_dur.select_set(int(event.keysym)-1)# implementing shortcuts in progress
 
     lengthdict = {1: 1024, 2: 512, 4: 256, 8: 128, 16: 64, 32: 32, 64: 16, 128: 8}
     edit_grid = ((lengthdict[int(listbox_value)] / int(div_spin.get())) * int(tim_spin.get()))
@@ -2468,7 +2517,60 @@ def remove_measure():
 def remove_notes():
     
     ...
-            
+
+
+def add_quick_linebreaks():
+    
+    global Score, new_id
+
+    # get user input
+    while True:
+        user_input = simpledialog.askstring('add quick line breaks...', 
+            HELP5, 
+            initialvalue='4')
+        if user_input:
+            try:
+                user_input = user_input.split()
+                for idx, ui in enumerate(user_input):
+                    user_input[idx] = int(ui)
+                break
+            except:
+                print('ERROR in add_quick_linebreaks; please provide one or more integers seperated by <space>.')
+        else:
+            return
+
+    # rewrite entire line-break list using the user input and delete all linebreak drawings
+    for lb in Score['events']['line-break']:
+        editor.delete(lb['id'])
+    Score['events']['line-break'] = []
+    bl_times = barline_times(Score['properties']['grid'])
+    c = 1
+    for idx, bl in enumerate(bl_times[:-1]):
+        try: ui = user_input[idx]
+        except IndexError: ui = user_input[-1]
+        if c == ui:
+            new_linebreak = {
+                "id":'linebreak%i'%new_id,
+                "time":bl,
+                "margin-up-left":Settings['default-margin-up-left'],
+                "margin-down-right":Settings['default-margin-down-right']
+            }
+            new_id += 1
+            draw_linebreak_editor(new_linebreak,
+                editor,
+                hbar,
+                y_scale_percent,
+                x_scale_quarter_mm,
+                MM,
+                color_notation_editor,
+                color_highlight)
+            Score['events']['line-break'].append(new_linebreak)
+        c += 1
+        if c > ui: c = 1
+
+    do_engrave()
+
+
     
 
 
@@ -2525,6 +2627,7 @@ menubar.add_cascade(label="|Settings|", underline=None, menu=setMenu)
 toolsMenu = Menu(menubar, tearoff=1, bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
 toolsMenu.add_command(label='|redraw editor             |', command=lambda: draw_pianoroll())
 toolsMenu.add_command(label='|transpose                 |', command=lambda: transpose())
+toolsMenu.add_command(label='|add quick line breaks     |', command=lambda: add_quick_linebreaks())
 toolsMenu.add_command(label='|*insert measure           |', command=lambda: insert_measure())
 toolsMenu.add_command(label='|*remove measure           |', command=lambda: remove_measure())
 toolsMenu.add_command(label='|*remove notes from measure|', command=lambda: remove_notes())
@@ -2812,6 +2915,15 @@ root.protocol("WM_DELETE_WINDOW", quit_editor)
 editor.bind("<Shift-Button-1>", lambda event: mouse_handling(event, 'shiftbtn1click'))
 root.bind('<Control-z>', undo)
 root.bind('<Control-Z>', redo)
+root.bind('<Key-1>', grid_selector)
+root.bind('<Key-2>', grid_selector)
+root.bind('<Key-3>', grid_selector)
+root.bind('<Key-4>', grid_selector)
+root.bind('<Key-5>', grid_selector)
+root.bind('<Key-6>', grid_selector)
+root.bind('<Key-7>', grid_selector)
+root.bind('<Key-8>', grid_selector)
+
 
 
 

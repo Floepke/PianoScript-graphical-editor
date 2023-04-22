@@ -143,24 +143,6 @@ def t_sig_start_tick(t_sig_map, n):
             return out[n]
 
 
-def split_bl_times(gridlst, measures_each_system):
-    '''returns a list of the position of every new line/system of music.'''
-    linelist = [0]
-    cntr = 0
-    for barline in range(len(gridlst)):
-        try: cntr += measures_each_system[barline]
-        except IndexError:
-            cntr += measures_each_system[-1]
-        try: linelist.append(gridlst[cntr])
-        except IndexError:
-            linelist.append(gridlst[-1])
-            break
-    if linelist[-1] == linelist[-2]:
-        linelist.remove(linelist[-1])
-
-    return linelist
-
-
 def update_bcounter(DOC, pageno):
     
     bcount = 0
