@@ -21,68 +21,130 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-import tkinter as tk
-from tkinter import font
+from tkinter import Tk, Button, Label, Toplevel, Frame, Text
+if not __name__ == '__main__': 
+    from imports.tools import measure_length
 
-class GridEditor(tk.Toplevel):
-    def __init__(self):
-        super().__init__()
 
-        # Set background color and disable resize
-        self.configure(background="#002B36")
-        self.resizable(True, True)
+class GridEditor:
 
-        # Remove title bar
-        #self.overrideredirect(True)
+    '''This is the PianoScript custom Grid Editor dialog'''
 
-        # Get screen width and height
-        screen_width = self.winfo_screenwidth()
-        screen_height = self.winfo_screenheight()
+    def __init__(self, parent, Score):
 
-        # Set dialog size and position
-        dialog_width = screen_width // 2
-        dialog_height = screen_height // 2
-        dialog_x = (screen_width - dialog_width) // 2
-        dialog_y = (screen_height - dialog_height) // 2
-        self.geometry(f"{dialog_width}x{dialog_height}+{dialog_x}+{dialog_y}")
+        self.parent = parent
+        self.Score = Score
+        self.processed_score = None
+        self.last_pianotick = 0
 
-        # Create main frame for the dialog
-        main_frame = tk.Frame(self, bg="#002B36")
-        main_frame.pack(fill=tk.BOTH, expand=False, padx=20, pady=20)
+        # create window
+        self.window = Toplevel(self.parent, bg='#002B36')
+        self.window.title('PianoScript - Grid Editor')
+        self.sw = self.window.winfo_screenwidth()
+        self.sh = self.window.winfo_screenheight()
+        self.window.geometry("%sx%s+%s+%s" % (int(self.sw/4), int(self.sh/2), int(self.sw/4*1.5), int(self.sh/4)))
+        self.window.wm_attributes("-topmost", 1)
+        self.window.protocol("WM_DELETE_WINDOW", self._cancel)
 
-        font_style = font.Font(family="Courier", size=24)
+        # main frame
+        self.main_frame = Frame(self.window, bg='#eee8d5')
+        self.main_frame.pack(padx=10, pady=10, fill='both', expand=True)
 
-        # Create buttons frame
-        buttons_frame = tk.Frame(main_frame, bg="#002B36")
-        buttons_frame.pack(side='left')
+        # buttons frame
+        self.buttons_frame = Frame(self.main_frame, bg='#eee8d5')
+        self.buttons_frame.pack(fill='both', padx=10,pady=10)
 
-        # Create apply button
-        button_width = (dialog_width - 60) // 2  # Subtract button spacing and padding
-        apply_button = tk.Button(buttons_frame, text="Apply", width=button_width, font=font_style, command=self.apply)
-        apply_button.pack(side='bottom', padx=10, pady=10)
+        # apply button
+        self.apply_button = Button(self.buttons_frame, text='     Apply     ', font=('Courier', 14), command=self._apply)
+        self.apply_button.pack(side='left')
 
-        # Create cancel button
-        cancel_button = tk.Button(buttons_frame, text="Cancel", width=button_width, font=font_style, command=self.cancel)
-        cancel_button.pack(side='bottom', padx=10, pady=10)
+        # cancel button
+        self.cancel_button = Button(self.buttons_frame, text='     Cancel     ', font=('Courier', 14), command=self._cancel)
+        self.cancel_button.pack(side='right')
 
-        # Create text widget with border
-        text_frame = tk.Frame(main_frame)
-        text_frame.pack()
-        self.text_widget = tk.Text(main_frame, bg="#eee8d5", font=font_style, width=20)
-        self.text_widget.pack(expand=True, fill='both')
 
-        # Initialize result variable
-        self.result = None
+        # example label
+        self.example_frame = Frame(self.main_frame, bg='#eee8d5')
+        self.example_frame.pack(fill='both', padx=10)
+        self.example = Label(self.example_frame, text='1.time-signature(example: "4/4")\n2.amount of measures(Example: "22")\n3.grid-division(Example: "4")\n4.visible(set to "1" or "0")\nOn each line you can enter these \nfour values to form the grid.', font=('Courier', 14), bg='#eee8d5', justify='left')
+        self.example.pack(side='left')
 
-    def apply(self):
-        # Set result to text in text widget
-        self.result = self.text_widget.get("1.0", tk.END).strip()
-        self.destroy()
+        # text widget
+        self.text_frame = Frame(self.main_frame, bg='#eee8d5')
+        self.text_frame.pack(fill='both', expand=True)
+        self.text = Text(self.text_frame, font=('Courier', 14))
+        self.text.pack(padx=10,pady=10,fill='both',expand=True)
+        self.text.focus_set()
 
-    def cancel(self):
-        # Set result to None and destroy dialog
-        self.result = None
-        self.destroy()
+        self.insert_text(self.Score)
+        self.show()
+
+    def insert_text(self, Score):
+        
+        txt = ''
+        for ts,idx in zip(self.Score['events']['grid'],range(len(self.Score['events']['grid']))):
+
+            numerator = ts['numerator']
+            denominator = ts['denominator']
+            amount = ts['amount']
+            grid_div = ts['grid']
+            visible = ts['visible']
+            if visible: visible = 1
+
+            if not idx == len(self.Score['events']['grid'])-1:
+                txt += str(numerator) + '/' + str(denominator) + ' ' + str(amount) + ' ' + str(grid_div) + ' ' + str(visible) + '\n'
+            else:
+                txt += str(numerator) + '/' + str(denominator) + ' ' + str(amount) + ' ' + str(grid_div) + ' ' + str(visible)
+        self.text.insert('1.0', txt)
+
+    def _apply(self):
+        t = self.text.get('1.0', 'end').split('\n')
+        self.Score['events']['grid'] = []
+        for ts in t:
+            numerator = None
+            denominator = None
+            amount = None
+            grid = None
+            visible = None
+            if ts:
+                try:
+                    numerator = int(ts.split()[0].split('/')[0])
+                    denominator = int(ts.split()[0].split('/')[1])
+                    amount = int(ts.split()[1])
+                    grid = int(ts.split()[2])
+                    visible = int(ts.split()[3])
+                except:
+                    print(
+                        '''Please read the documentation about how to provide the grid mapping correctly.
+                        a correct gridmap:
+                        4/4 16 4 1''')
+                    return
+            else:
+                continue
+            # gridmap add to Score
+            self.Score['events']['grid'].append(
+                {'amount': amount, 'numerator': numerator, 'denominator': denominator,
+                 'grid': grid, 'visible': visible})
+        
+        # calculate last pianotick
+        for grid in self.Score['events']['grid']:
+            self.last_pianotick += (grid['amount'] * measure_length((grid['numerator'], grid['denominator'])))
+        
+        # remove linebreaks from Score that are >= then last_pianotick
+        for lb in reversed(self.Score['events']['line-break']):
+            if lb['time'] >= self.last_pianotick:
+                self.Score['events']['line-break'].remove(lb)
+
+        self.processed_score = self.Score
+        self.window.destroy()
+
+    def _cancel(self):
+        self.processed_score = self.Score
+        self.window.destroy()
+
+    def show(self):
+        # display the popup window and wait for it to be destroyed
+        self.parent.wait_window(self.window)
 
 
 

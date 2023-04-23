@@ -21,15 +21,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-from tkinter import Tk, Button, Label, Toplevel, Entry, Frame
+from tkinter import Tk, Button, Label, Toplevel, Entry, Frame, Text
+
+if not __name__ == '__main__': 
+    from imports.tools import measure_length
 
 class AskString:
     def __init__(self, parent, title, prompt, initialvalue=''):
         self.parent = parent
         self.title = title
         self.prompt = prompt
-        self.result = None  # initialize result to None
         self.initialvalue = initialvalue
+        self.result = None
 
         # create the popup window
         self.popup = Toplevel(self.parent)
@@ -71,7 +74,7 @@ class AskString:
         self.popup.configure(bg='#002B36')
         self.label.configure(bg='#eee8d5', fg='#002b66')
         self.frame.configure(bg='#eee8d5')
-        self.entry.configure(bg='#eee8d5', fg='#002b66')
+        self.entry.configure(fg='#002b66')
 
 
         self.show()
@@ -97,8 +100,8 @@ class AskFloat:
         self.parent = parent
         self.title = title
         self.prompt = prompt
-        self.result = None  # initialize result to None
         self.initialvalue = initialvalue
+        self.result = None
 
         # create the popup window
         self.popup = Toplevel(self.parent)
@@ -140,7 +143,7 @@ class AskFloat:
         self.popup.configure(bg='#002B36')
         self.label.configure(bg='#eee8d5', fg='#002b66')
         self.frame.configure(bg='#eee8d5')
-        self.entry.configure(bg='#eee8d5', fg='#002b66')
+        self.entry.configure(fg='#002b66')
 
         self.show()
 
@@ -175,8 +178,8 @@ class AskInt:
         self.parent = parent
         self.title = title
         self.prompt = prompt
-        self.result = None  # initialize result to None
         self.initialvalue = initialvalue
+        self.result = None
 
         # create the popup window
         self.popup = Toplevel(self.parent)
@@ -218,7 +221,7 @@ class AskInt:
         self.popup.configure(bg='#002B36')
         self.label.configure(bg='#eee8d5', fg='#002b66')
         self.frame.configure(bg='#eee8d5')
-        self.entry.configure(bg='#eee8d5', fg='#002b66')
+        self.entry.configure(fg='#002b66')
 
         self.show()
 
@@ -255,8 +258,8 @@ class AskYesNoCancel:
         self.parent = parent
         self.title = title
         self.prompt = prompt
-        self.result = None  # initialize result to None
         self.initialvalue = initialvalue
+        self.result = None
 
         # create the popup window
         self.popup = Toplevel(self.parent)
@@ -315,7 +318,6 @@ class AskYesNoCancel:
 
 
 
-
 # Example usage
 if __name__ == "__main__":
     root = Tk()
@@ -342,12 +344,12 @@ if __name__ == "__main__":
     # else:
     #     print("Dialog was cancelled")
 
-    # AskYesNoCancel
-    dialog = AskYesNoCancel(root, "Wish to save?", "Do you wish to save the current Score?")
-    result = dialog.result
-    if result:
-        print('yes')
-    elif result == False:
-        print('no')
-    else:
-        print("Dialog was cancelled")
+    # # AskYesNoCancel
+    # dialog = AskYesNoCancel(root, "Wish to save?", "Do you wish to save the current Score?")
+    # result = dialog.result
+    # if result:
+    #     print('yes')
+    # elif result == False:
+    #     print('no')
+    # else:
+    #     print("Dialog was cancelled")

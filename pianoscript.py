@@ -1,4 +1,4 @@
-'''Test123
+'''
 This file is part of the pianoscript project: http://www.pianoscript.org/
 
 Permission is hereby granted, free of charge, to any person obtaining 
@@ -70,20 +70,6 @@ BLACK = [2, 5, 7, 10, 12, 14, 17, 19, 22, 24, 26, 29, 31, 34, 36, 38, 41, 43, 46
          48, 50, 53, 55, 58, 60, 62, 65, 67, 70, 72, 74, 77, 79, 82, 84, 86]
 
 # grid map editor
-HELP1 = '''
-Grid map editor is used to define the grid of the music.
-You can enter the grid by passing a row of values 
-seperated by <space> on each line. The values are:
-time-signature, amount-of-measures, grid-division and 
-timesignature-visible-on-paper (1, 0, True or False)
-
-"4/4 16 4 1" creates 16 measures of 4/4 time-signature 
-with a grid-division of 4 and the time-signature change 
-is visible on the sheet.
-
-You can create as many messages (one each line) as 
-you want to form the grid.
-'''
 
 # transpose
 HELP2 = '''Please enter three integers seperated by space:
@@ -110,7 +96,7 @@ line-breaks in terms of measures:'''
 # --------------------
 from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, PhotoImage
 from tkinter import filedialog, Label, Spinbox, StringVar, Listbox, Text
-from tkinter import simpledialog,colorchooser, font
+from tkinter import colorchooser, font
 import platform, subprocess, os, threading, json, traceback
 from mido import MidiFile
 from shutil import which
@@ -145,32 +131,28 @@ color_highlight = '#268bd2'#a6a832
 color_notation_editor = '#002b66'
 # root
 root = Tk()
+root.configure(bg='#002b36')
 MM = root.winfo_fpixels('1m')
 root.title('PianoScript')
-ttk.Style(root).theme_use("alt")
 scrwidth = root.winfo_screenwidth()
 scrheight = root.winfo_screenheight()
 root.geometry("%sx%s+0+0" % (int(scrwidth), int(scrheight)))
 
-# PanedWindow
-orient = 'h'
+master_frame = Frame(root, bg='#002b36')
+master_frame.pack(padx=5,pady=5, expand=True, fill='both')
 # master
-panedmaster = PanedWindow(root, orient='h', sashwidth=0, relief='flat', bg=color_basic_gui)
-panedmaster.place(relwidth=1, relheight=1)
-leftpanel = PanedWindow(panedmaster, relief='flat', bg=color_basic_gui, width=65)
-panedmaster.add(leftpanel)
-midpanel = PanedWindow(panedmaster, relief='flat', bg=color_basic_gui, orient='h', sashwidth=10)
-panedmaster.add(midpanel)
-toolbarpanel = PanedWindow(midpanel, relief='flat', bg=color_basic_gui)
-midpanel.add(toolbarpanel)
+panedmaster = PanedWindow(master_frame, orient='h', sashwidth=7.5, relief='flat', bg=color_basic_gui)
+panedmaster.pack(expand=True, fill='both')
+# toolbarpanel
+toolbarpanel = Frame(panedmaster, relief='flat', bg=color_basic_gui, width=65)
+panedmaster.add(toolbarpanel)
 # editor panel
 root.update()
-editorpanel = PanedWindow(midpanel, relief='groove', orient='h', bg=color_basic_gui, width=scrwidth / 3 * 1.75)
-midpanel.add(editorpanel)
-
+editorpanel = Frame(panedmaster, relief='groove', bg=color_basic_gui, width=scrwidth / 3 * 1.75)
+panedmaster.add(editorpanel)
 # print panel
-printpanel = PanedWindow(midpanel, relief='groove', orient='h', bg=color_basic_gui)
-midpanel.add(printpanel)
+printpanel = Frame(panedmaster, relief='groove', bg=color_basic_gui)
+panedmaster.add(printpanel)
 # editor --> editorpanel
 editor = Canvas(editorpanel, bg=color_editor_canvas, relief='flat', cursor='cross')
 editor.place(relwidth=1, relheight=1)
@@ -182,9 +164,10 @@ editor.configure(xscrollcommand=hbar.set)
 pview = Canvas(printpanel, bg=color_editor_canvas, relief='flat')
 pview.place(relwidth=1, relheight=1)
 
-noteinput_label = Label(leftpanel, text='GRID:', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+# Toolbarpanel
+noteinput_label = Label(toolbarpanel, text='GRID:', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
 noteinput_label.pack(fill='x')
-list_dur = Listbox(leftpanel, height=8, bg='grey', selectbackground=color_highlight, fg='black')
+list_dur = Listbox(toolbarpanel, height=8, bg='grey', selectbackground=color_highlight, fg='black')
 list_dur.pack(fill='x')
 list_dur.insert(0, "1")
 list_dur.insert(1, "2")
@@ -195,70 +178,61 @@ list_dur.insert(5, "32")
 list_dur.insert(6, "64")
 list_dur.insert(7, "128")
 list_dur.select_set(3)
-divide_label = Label(leftpanel, text='÷', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
+divide_label = Label(toolbarpanel, text='÷', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
 divide_label.pack(fill='x')
-divide_spin = Spinbox(leftpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
+divide_spin = Spinbox(toolbarpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
 divide_spin.pack(fill='x')
 div_spin = StringVar(value=1)
 divide_spin.configure(textvariable=div_spin)
-times_label = Label(leftpanel, text='×', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
+times_label = Label(toolbarpanel, text='×', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
 times_label.pack(fill='x')
-times_spin = Spinbox(leftpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
+times_spin = Spinbox(toolbarpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
 times_spin.pack(fill='x')
 tim_spin = StringVar(value=1)
 times_spin.configure(textvariable=tim_spin)
-fill_label1 = Label(leftpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+fill_label1 = Label(toolbarpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
 fill_label1.pack(fill='x')
 
 # mode knobs:
-mode_label = Label(leftpanel, text='MODE:', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+mode_label = Label(toolbarpanel, text='MODE:', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
 mode_label.pack(fill='x')
 
-input_right_button = Button(leftpanel, text='right', activebackground=color_highlight, bg=color_highlight)
+input_right_button = Button(toolbarpanel, text='right', activebackground=color_highlight, bg=color_highlight)
 input_right_button.pack(fill='x')
 ir_photo = PhotoImage(file = r"icons/noteinput_R.png")
 input_right_button.configure(image=ir_photo)
 input_right_button_tooltip = Tooltip(input_right_button, text='Right hand note input/edit mode', wraplength=scrwidth)
 
-input_left_button = Button(leftpanel, bg='#f0f0f0', activebackground=color_highlight)
+input_left_button = Button(toolbarpanel, bg='#f0f0f0', activebackground=color_highlight)
 input_left_button.pack(fill='x')
 il_photo = PhotoImage(file = r"icons/noteinput_L.png")
 input_left_button.configure(image=il_photo)
 input_left_button_tooltip = Tooltip(input_left_button, text='Left hand note input/edit mode', wraplength=scrwidth)
-fill_label9 = Label(leftpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+fill_label9 = Label(toolbarpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
 fill_label9.pack(fill='x')
-linebreak_button = Button(leftpanel, text='linebreak', activebackground=color_highlight, bg='#f0f0f0')
+linebreak_button = Button(toolbarpanel, text='linebreak', activebackground=color_highlight, bg='#f0f0f0')
 linebreak_button.pack(fill='x')
 lb_photo = PhotoImage(file = r"icons/linebreak.png")
 linebreak_button.configure(image=lb_photo)
 linebreak_button_tooltip = Tooltip(linebreak_button, text='Line-break input/edit mode', wraplength=scrwidth)
 
-countline_button = Button(leftpanel, text='countline*', bg='#f0f0f0', activebackground=color_highlight)
+countline_button = Button(toolbarpanel, text='countline*', bg='#f0f0f0', activebackground=color_highlight)
 countline_button.pack(fill='x')
 cnt_photo = PhotoImage(file = r"icons/countline.png")
 countline_button.configure(image=cnt_photo)
 countline_button_tooltip = Tooltip(countline_button, text='Countline input/edit mode', wraplength=scrwidth)
 
-txt_button = Button(leftpanel, text='text*', bg='#f0f0f0', activebackground=color_highlight)
+txt_button = Button(toolbarpanel, text='text*', bg='#f0f0f0', activebackground=color_highlight)
 txt_button.pack(fill='x')
 txt_photo = PhotoImage(file = r"icons/text.png")
 txt_button.configure(image=txt_photo)
 txt_button_tooltip = Tooltip(txt_button, text='Text input/edit mode', wraplength=scrwidth)
 
-slur_button = Button(leftpanel, text='slur*', bg='#f0f0f0', activebackground=color_highlight)
+slur_button = Button(toolbarpanel, text='slur*', bg='#f0f0f0', activebackground=color_highlight)
 slur_button.pack(fill='x')
 slr_photo = PhotoImage(file = "icons/slur.png")
 slur_button.configure(image=slr_photo)
 slur_button_tooltip = Tooltip(slur_button, text='Slur input/edit mode', wraplength=scrwidth)
-
-# toolbarpanel --> grid
-grid_map_editor_label = Label(toolbarpanel, text='GRID MAP EDITOR (?)', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
-grid_map_editor_label.pack(fill='x')
-grid_map_editor_tooltip = Tooltip(grid_map_editor_label, text=HELP1, wraplength=scrwidth)
-gridedit_text = Text(toolbarpanel, bg='grey', height=6, font=("courier", 14))
-gridedit_text.pack(fill='x')
-applygrid_button = Button(toolbarpanel, text='Apply', anchor='w', font=("courier"))
-applygrid_button.pack(fill='x')
 
 # changes in ui for windows:
 if platform.system() == 'Windows':
@@ -564,7 +538,6 @@ def do_pianoroll(event='event'):
         font=('courier', 30, 'bold'),
         tag='loading',
         anchor='nw')
-    update_textbox()
 
     global last_pianotick, new_id, x_scale_quarter_mm, y_scale_percent
 
@@ -574,7 +547,7 @@ def do_pianoroll(event='event'):
     # calculate last_pianotick (staff length)
     last_pianotick = 0
     for grid in Score['events']['grid']:
-        ...
+
         last_pianotick += (grid['amount'] * measure_length((grid['numerator'], grid['denominator'])))
 
     # calculate dimensions for staff (in px)
@@ -1914,49 +1887,18 @@ def grid_selector(event='event'):
 
     root.focus()
 
-def process_grid_map_editor():
+def grideditor(event=''):
     '''
-        This function processes the grid map editor
-        syntax and places it in the Score.
+        This function runs the GridEditor class and 
+        assigns the returning value to the Score object.
     '''
-    global Score, last_pianotick
-    t = gridedit_text.get('1.0', 'end').split('\n')
-    Score['events']['grid'] = []
-    for ts in t:
-        numerator = None
-        denominator = None
-        amount = None
-        grid = None
-        visible = None
-        if ts:
-            try:
-                numerator = eval(ts.split()[0].split('/')[0])
-                denominator = eval(ts.split()[0].split('/')[1])
-                amount = eval(ts.split()[1])
-                grid = eval(ts.split()[2])
-                visible = eval(ts.split()[3])
-            except:
-                print(
-                    '''Please read the documentation about how to provide the grid mapping correctly.
-                    a correct gridmap:
-                    4/4 16 4 1''')
-                return
-        else:
-            continue
-        # gridmap add to Score
-        Score['events']['grid'].append(
-            {'amount': amount, 'numerator': numerator, 'denominator': denominator,
-             'grid': grid, 'visible': visible})
-    # remove linebreaks from Score that are >= then last_pianotick
-    last_pianotick = 0
-    for grid in Score['events']['grid']:
-        last_pianotick += (grid['amount'] * measure_length((grid['numerator'], grid['denominator'])))
-    for lb in reversed(Score['events']['line-break']):
-        if lb['time'] >= last_pianotick:
-            Score['events']['line-break'].remove(lb)
+    global Score, last_pianotick, file_changed
+    edit = GridEditor(root,Score)
+    Score = edit.processed_score
+    last_pianotick = edit.last_pianotick
     do_pianoroll()
     do_engrave()
-    update_textbox()
+    file_changed = True
 
 
 def update_textbox():
@@ -1978,15 +1920,16 @@ def update_textbox():
             txt += str(numerator) + '/' + str(denominator) + ' ' + str(amount) + ' ' + str(grid_div) + ' ' + str(visible) + '\n'
         else:
             txt += str(numerator) + '/' + str(denominator) + ' ' + str(amount) + ' ' + str(grid_div) + ' ' + str(visible)
-    gridedit_text.delete('1.0','end')
-    gridedit_text.insert('1.0', txt)
 
 def transpose():
     '''
         the user selects the range(from bar x to bar y) and
         gives a integer to transpose all notes in the selection.
     '''
-    user_input = simpledialog.askstring('Transpose', HELP2)
+    user_input = AskString(root,
+        'Transpose', 
+        HELP2,
+        '0 0 12').result
     start = 0
     end = 0
     tr = 0
@@ -2461,52 +2404,54 @@ def transpose_up(e=''):
 menubar = Menu(root, relief='flat', bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
 root.config(menu=menubar)
 fileMenu = Menu(menubar, tearoff=0, bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
-fileMenu.add_command(label='|new          [ctl+n]|', command=new_file)
-fileMenu.add_command(label='|open         [ctl+o]|', command=load_file)
-fileMenu.add_command(label='|save         [ctl+s]|', command=save)
-fileMenu.add_command(label='|save as...   [alt+s]|', command=save_as)
+fileMenu.add_command(label='|new [ctl+n]', command=new_file)
+fileMenu.add_command(label='|open [ctl+o]', command=load_file)
+fileMenu.add_command(label='|save [ctl+s]', command=save)
+fileMenu.add_command(label='|save as... [alt+s]', command=save_as)
 fileMenu.add_separator()
-fileMenu.add_command(label='|load midi    [ctl+m]|', command=midi_import)
+fileMenu.add_command(label='|load midi [ctl+m]', command=midi_import)
 fileMenu.add_separator()
-fileMenu.add_command(label="|export ps           |", command=transpose)
-fileMenu.add_command(label="|export pdf   [ctl+e]|", command=exportPDF)
-fileMenu.add_command(label="|export midi*        |", command=lambda: midiexport(root,Score))
+fileMenu.add_command(label="|export ps", command=transpose)
+fileMenu.add_command(label="|export pdf [ctl+e]", command=exportPDF)
+fileMenu.add_command(label="|export midi*", command=lambda: midiexport(root,Score))
 fileMenu.add_separator()
-fileMenu.add_command(label="|exit                |", underline=None, command=quit_editor)
-menubar.add_cascade(label="|Menu|", underline=None, menu=fileMenu)
+fileMenu.add_command(label="|grid editor...", underline=None, command=grideditor)
+fileMenu.add_separator()
+fileMenu.add_command(label="|exit", underline=None, command=quit_editor)
+menubar.add_cascade(label="|File", underline=None, menu=fileMenu)
 selectionMenu = Menu(menubar, tearoff=0, bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
-selectionMenu.add_command(label="|cut         [ctl+x]|", underline=None, command=cut_selection)
-selectionMenu.add_command(label="|copy        [ctl+c]|", underline=None, command=copy_selection)
-selectionMenu.add_command(label="|paste       [ctl+v]|", underline=None, command=paste_selection)
+selectionMenu.add_command(label="|cut [ctl+x]", underline=None, command=cut_selection)
+selectionMenu.add_command(label="|copy [ctl+c]", underline=None, command=copy_selection)
+selectionMenu.add_command(label="|paste [ctl+v]", underline=None, command=paste_selection)
 selectionMenu.add_separator()
-selectionMenu.add_command(label="|select all  [ctl+a]|", underline=None, command=select_all)
+selectionMenu.add_command(label="|select all [ctl+a]", underline=None, command=select_all)
 menubar.add_cascade(label="|Selection|", underline=None, menu=selectionMenu)
 setMenu = Menu(menubar, tearoff=1, bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
-setMenu.add_command(label='|title (string)               |', command=lambda: set_value('title'))
-setMenu.add_command(label='|composer (string)            |', command=lambda: set_value('composer'))
-setMenu.add_command(label='|copyright (string)           |', command=lambda: set_value('copyright'))
+setMenu.add_command(label='|title (string)', command=lambda: set_value('title'))
+setMenu.add_command(label='|composer (string)', command=lambda: set_value('composer'))
+setMenu.add_command(label='|copyright (string)', command=lambda: set_value('copyright'))
 setMenu.add_separator()
-setMenu.add_command(label='|draw scale (0.3-2.5)         |', command=lambda: set_value('draw-scale'))
-setMenu.add_command(label='|page width (mm)              |', command=lambda: set_value('page-width'))
-setMenu.add_command(label='|page height (mm)             |', command=lambda: set_value('page-height'))
-setMenu.add_command(label='|header height (mm)           |', command=lambda: set_value('header-height'))
-setMenu.add_command(label='|footer height (mm)           |', command=lambda: set_value('footer-height'))
-setMenu.add_command(label='|page margin left (mm)        |', command=lambda: set_value('page-margin-left'))
-setMenu.add_command(label='|page margin right (mm)       |', command=lambda: set_value('page-margin-right'))
-setMenu.add_command(label='|page margin up (mm)          |', command=lambda: set_value('page-margin-up'))
-setMenu.add_command(label='|page margin down (mm)        |', command=lambda: set_value('page-margin-down'))
-setMenu.add_command(label='|color right hand midinote    |', command=lambda: set_value('color-right-hand-midinote'))
-setMenu.add_command(label='|color left hand midinote     |', command=lambda: set_value('color-left-hand-midinote'))
+setMenu.add_command(label='|draw scale (0.3-2.5)', command=lambda: set_value('draw-scale'))
+setMenu.add_command(label='|page width (mm)', command=lambda: set_value('page-width'))
+setMenu.add_command(label='|page height (mm)', command=lambda: set_value('page-height'))
+setMenu.add_command(label='|header height (mm)', command=lambda: set_value('header-height'))
+setMenu.add_command(label='|footer height (mm)', command=lambda: set_value('footer-height'))
+setMenu.add_command(label='|page margin left (mm)', command=lambda: set_value('page-margin-left'))
+setMenu.add_command(label='|page margin right (mm)', command=lambda: set_value('page-margin-right'))
+setMenu.add_command(label='|page margin up (mm)', command=lambda: set_value('page-margin-up'))
+setMenu.add_command(label='|page margin down (mm)', command=lambda: set_value('page-margin-down'))
+setMenu.add_command(label='|color right hand midinote', command=lambda: set_value('color-right-hand-midinote'))
+setMenu.add_command(label='|color left hand midinote', command=lambda: set_value('color-left-hand-midinote'))
 setMenu.add_separator()
-setMenu.add_command(label='|editor x zoom (0-100 or more)|', command=lambda: set_value('editor-x-zoom'))
-setMenu.add_command(label='|editor y zoom (0-100)        |', command=lambda: set_value('editor-y-zoom'))
+setMenu.add_command(label='|editor x zoom (0-100 or more)', command=lambda: set_value('editor-x-zoom'))
+setMenu.add_command(label='|editor y zoom (0-100)', command=lambda: set_value('editor-y-zoom'))
 menubar.add_cascade(label="|Settings|", underline=None, menu=setMenu)
 toolsMenu = Menu(menubar, tearoff=1, bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
-toolsMenu.add_command(label='|redraw editor        [ctl+r]|', command=lambda: do_pianoroll())
+toolsMenu.add_command(label='|redraw editor [ctl+r]', command=lambda: do_pianoroll())
 #toolsMenu.add_command(label='|transpose                   |', command=lambda: transpose())
-toolsMenu.add_command(label='|add quick line breaks       |', command=lambda: add_quick_linebreaks())
-toolsMenu.add_command(label='|transpose                   |', command=lambda: transpose())
-menubar.add_cascade(label="|Tools|", underline=None, menu=toolsMenu)
+toolsMenu.add_command(label='|add quick line breaks', command=lambda: add_quick_linebreaks())
+toolsMenu.add_command(label='|transpose', command=lambda: transpose())
+menubar.add_cascade(label="|Tools", underline=None, menu=toolsMenu)
 
 
 
@@ -2524,7 +2469,7 @@ if platform.system() == 'Linux' or platform.system() == 'Windows':
     editor.bind('<ButtonRelease-2>', lambda event: mouse_handling(event, 'btn2release'))
     editor.bind('<Button-3>', lambda event: mouse_handling(event, 'btn3click'))
     editor.bind('<ButtonRelease-3>', lambda event: mouse_handling(event, 'btn3release'))
-    leftpanel.bind('<Button-3>', lambda e: do_popup(e, setMenu))
+    toolbarpanel.bind('<Button-3>', lambda e: do_popup(e, setMenu))
     pview.bind('<Button-1>', lambda e: cycle_trough_pages(e))
     pview.bind('<Button-3>', lambda e: cycle_trough_pages(e))
 if platform.system() == 'Darwin':
@@ -2533,7 +2478,7 @@ if platform.system() == 'Darwin':
     editor.bind('<ButtonRelease-3>', lambda event: mouse_handling(event, 'btn2release'))
     editor.bind('<Button-2>', lambda event: mouse_handling(event, 'btn3click'))
     editor.bind('<ButtonRelease-2>', lambda event: mouse_handling(event, 'btn3release'))
-    leftpanel.bind('<Button-2>', lambda e: do_popup(e, setMenu))
+    toolbarpanel.bind('<Button-2>', lambda e: do_popup(e, setMenu))
     # mac scroll
     editor.bind("<MouseWheel>", lambda event: editor.xview_scroll(-1 * event.delta, 'units'))
     pview.bind("<MouseWheel>", lambda event: pview.yview_scroll(-1 * event.delta, 'units'))
@@ -2558,8 +2503,7 @@ divide_spin.configure(command=lambda: grid_selector())
 divide_spin.bind('<Return>', lambda event: grid_selector())
 times_spin.configure(command=lambda: grid_selector())
 times_spin.bind('<Return>', lambda event: grid_selector())
-applygrid_button.configure(command=process_grid_map_editor)
-midpanel.bind('<ButtonRelease-1>', lambda event: do_engrave(event))
+panedmaster.bind('<ButtonRelease-1>', lambda event: do_engrave(event))
 root.bind('<space>', lambda e: space_shift(e))
 root.option_add('*Dialog.msg.font', 'Courier 20')
 editor.bind('<Leave>', lambda e: editor.delete('cursor'))
@@ -2587,22 +2531,9 @@ root.bind('<Alt-s>', save_as)
 root.bind('<Control-r>', do_pianoroll)
 root.bind('<Control-q>', add_quick_linebreaks)
 root.bind('<Up>', transpose_up)
-
-
-# fullscreen toggle
-fscreen = False
-def fullscreen(event):
-    global fscreen
-    if fscreen: 
-        root.attributes('-fullscreen', False)
-        fscreen = False
-    else: 
-        root.attributes('-fullscreen', True)
-        fscreen = True
-root.bind('<F11>', fullscreen)
+root.bind('<g>', grideditor)
 
 
 if __name__ == '__main__':
     new_file()
-    #test_file()
     root.mainloop()
