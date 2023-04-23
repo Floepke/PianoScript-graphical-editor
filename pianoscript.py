@@ -541,8 +541,8 @@ def do_pianoroll(event='event'):
 
     global last_pianotick, new_id, x_scale_quarter_mm, y_scale_percent
 
-    x_scale_quarter_mm = 40 ##Publish
-    y_scale_percent = 80 / 100 ##Publish
+    x_scale_quarter_mm = Score['properties']['editor-x-zoom'] ##Publish
+    y_scale_percent = Score['properties']['editor-y-zoom'] / 100 ##Publish
     
     # calculate last_pianotick (staff length)
     last_pianotick = 0
@@ -1861,14 +1861,25 @@ def set_value(t):
     
     # editor Settings
     elif t == 'editor-x-zoom':
-        user_input = simpledialog.askfloat(f'Set {t}...', f'Please provide the {t} from 0 to 100(or more) for the editor:', 
-            initialvalue=Settings[t])
-        if user_input: Settings[t] = user_input
-        else: Settings[t] = 35
+        user_input = AskFloat(root,
+            f'Set {t}...', f'Please provide the {t} from 0 to 100(or more) for the editor:', 
+            Score['properties'][t]).result
+        if user_input: 
+            Score['properties'][t] = user_input
+            do_pianoroll()
+        else: 
+            Score['properties'][t] = 35
+            do_pianoroll()
     elif t == 'editor-y-zoom':
-        user_input = simpledialog.askfloat(f'Set {t}...', f'Please provide the {t} (50 will make the staff height 50% of the editor view) for the editor:', initialvalue=Settings[t])
-        if user_input: Settings[t] = user_input
-        else: Settings[t] = 80
+        user_input = AskFloat(root,
+            f'Set {t}...', f'Please provide the {t} (50 will make the staff height 50% of the editor view) for the editor:', 
+            initialvalue=Score['properties'][t]).result
+        if user_input: 
+            Score['properties'][t] = user_input
+            do_pianoroll()
+        else: 
+            Score['properties'][t] = 80
+            do_pianoroll()
     
     do_engrave()
 

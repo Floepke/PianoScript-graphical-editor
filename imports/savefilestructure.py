@@ -69,7 +69,9 @@ Score = {
     "engraver":'pianoscript',
     "color-right-hand-midinote":'#999999',
     "color-left-hand-midinote":'#999999',
-    "printview-width(procents-froms-creen)":33
+    "printview-width(procents-froms-creen)":33,
+    "editor-x-zoom":35,
+    "editor-y-zoom":80
   },
   "events": {
     "grid": [
