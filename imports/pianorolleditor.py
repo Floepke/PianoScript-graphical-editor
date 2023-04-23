@@ -1,7 +1,5 @@
 '''
-Copyright 2023 Philip Bergwerf
-
-This program is part of the pianoscript project: http://www.pianoscript.org/
+This file is part of the pianoscript project: http://www.pianoscript.org/
 
 Permission is hereby granted, free of charge, to any person obtaining 
 a copy of this software and associated documentation files 
@@ -24,7 +22,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 from imports.tools import *
-from imports.savefilestructure import Settings
 import random
 
 def rcolor():

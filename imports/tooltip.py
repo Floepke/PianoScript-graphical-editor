@@ -161,7 +161,7 @@ class Tooltip:
                           borderwidth=0,
                           wraplength=self.wraplength,
                           foreground='#eee8d5',
-                          font=("courier", 24))
+                          font=("courier", 12))
 
         label.grid(padx=(pad[0], pad[2]),
                    pady=(pad[1], pad[3]),
