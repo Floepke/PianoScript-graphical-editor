@@ -268,7 +268,6 @@ def setting_screenwidth():
     
     return printpanel.winfo_width() / 3
 root.update()
-print(setting_screenwidth())
 
 
 
@@ -341,7 +340,7 @@ def new_file(e=''):
 
     # check if user wants to save or cancel the task.
     if file_changed == True:
-        ask = messagebox.askyesnocancel('Wish to save?', 'Do you wish to save the current Score?', default='yes')
+        ask = AskYesNoCancel(root, 'Wish to save?', 'Do you wish to save the current Score?').result
         if ask == True:# yes
             save()
         elif ask == False:# no
@@ -372,7 +371,7 @@ def load_file(e=''):
 
     # check if user wants to save or cancel the task.
     if file_changed == True:
-        ask = AskYesNo(root, 'Wish to save?', 'Do you wish to save the current Score?').result
+        ask = AskYesNoCancel(root, 'Wish to save?', 'Do you wish to save the current Score?').result
         if ask == True:
             save()
         elif ask == False:
@@ -450,7 +449,7 @@ def quit_editor(event='dummy'):
 
     # check if user wants to save or cancel the task.
     if file_changed == True:
-        ask = AskYesNo(root, 'Wish to save?', 'Do you wish to save the current Score?').result
+        ask = AskYesNoCancel(root, 'Wish to save?', 'Do you wish to save the current Score?').result
         if ask == True:
             save()
         elif ask == False:
@@ -1409,7 +1408,7 @@ def midi_import():
 
     # asking for save since we are creating a new file with the midifile in it.
     if file_changed == True:
-        ask = messagebox.askyesnocancel('Wish to save?', 'Do you wish to save the current Score?', default='yes')
+        ask = AskYesNoCancel(root, 'Wish to save?', 'Do you wish to save the current Score?').result
         if ask == True:# yes
             save()
         elif ask == False:# no
@@ -1809,8 +1808,7 @@ def set_value(t):
             f'Set {t}...', 
             f'Please provide the {t} for the document:', 
             initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            print(user_input.result)
+        if user_input.result is not None:
             Score['properties'][t] = user_input.result
             file_changed = True
     elif t == 'page-height':
@@ -1955,7 +1953,6 @@ def process_grid_map_editor():
         last_pianotick += (grid['amount'] * measure_length((grid['numerator'], grid['denominator'])))
     for lb in reversed(Score['events']['line-break']):
         if lb['time'] >= last_pianotick:
-            print('!')
             Score['events']['line-break'].remove(lb)
     do_pianoroll()
     do_engrave()
@@ -2031,7 +2028,6 @@ def insert_measure():
         
         # validate user_input
         try:
-            print(len(barline_times(Score['events']['grid'])))
             selection = int(user_input.split()[0])
             amount = int(user_input.split()[1])
             if selection >= len(barline_times(Score['events']['grid'])): raise Exception
@@ -2438,10 +2434,8 @@ def transpose_up(e=''):
     print('transpose_up')
     global new_id, selection_buffer
     mt = mouse_time
-    print(selection_buffer)
     for e in selection_buffer:
         if 'note' in e['id']:
-            print(e)
             e['pitch'] += 1
             draw_note_pianoroll(e,
                 False, 

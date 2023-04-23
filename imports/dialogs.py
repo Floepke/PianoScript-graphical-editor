@@ -250,7 +250,7 @@ class AskInt:
 
 
 
-class AskYesNo:
+class AskYesNoCancel:
     def __init__(self, parent, title, prompt, initialvalue=''):
         self.parent = parent
         self.title = title
@@ -342,8 +342,8 @@ if __name__ == "__main__":
     # else:
     #     print("Dialog was cancelled")
 
-    # AskYesNo
-    dialog = AskYesNo(root, "Wish to save?", "Do you wish to save the current Score?")
+    # AskYesNoCancel
+    dialog = AskYesNoCancel(root, "Wish to save?", "Do you wish to save the current Score?")
     result = dialog.result
     if result:
         print('yes')
