@@ -15,7 +15,7 @@ class BezierCurveApp:
         self.start_width = 10
         self.deltax = 0
         self.deltay = 0
-        self.width = 20
+        self.width = 10
         self.draw_curve()
         self.draw_control_points()
         self.canvas.bind("<Button-1>", self.on_mouse_click)
@@ -50,14 +50,27 @@ class BezierCurveApp:
         for t in range(steps):
             x, y = self.evaluate_cubic_bezier(t / steps, self.control_points)
             curve_points.append([x, y])
-        # curve_points2 = []
-        # for c,p in enumerate(reversed(curve_points)):
-        #     if c > steps/2:
-        #         c = steps - c
-        #     curve_points2.append([p[0],p[1]+(self.width * (c/100))])
-        # for add in curve_points2:
-        #     curve_points.append(add)
-        self.canvas.create_line(curve_points, fill=self.curve_color, width=4)
+
+        # experiment
+        ctl1 = self.control_points[0]
+        ctl2 = self.control_points[1]
+        ctl3 = self.control_points[2]
+        ctl4 = self.control_points[3]
+        ctl2 = self.xy2angle2xy(ctl2[0],ctl2[1],self.xyxy2angle(ctl1[0],ctl1[1],ctl4[0],ctl4[1]),self.width)
+        ctl3 = self.xy2angle2xy(ctl3[0],ctl3[1],self.xyxy2angle(ctl1[0],ctl1[1],ctl4[0],ctl4[1]),self.width)
+        thickness_x = self.width * math.degrees(math.atan2(abs(ctl1[0]-ctl4[0]), -abs(ctl1[1]-ctl4[1])))/200
+        thickness_y = self.width * math.degrees(math.atan2(abs(ctl1[1]-ctl4[1]), -abs(ctl1[0]-ctl4[0])))/200
+        for t in reversed(range(steps)):
+
+            self.control_points2 = [[ctl1[0],ctl1[1]],
+            [ctl2[0]+thickness_x,ctl2[1]+thickness_y],
+            [ctl3[0]+thickness_x,ctl3[1]+thickness_y],
+            [ctl4[0],ctl4[1]]
+            ]
+
+            x, y = self.evaluate_cubic_bezier(t / steps, self.control_points2)
+            curve_points.append([x, y])
+        self.canvas.create_polygon(curve_points, fill=self.curve_color, width=4)
         self.canvas.create_line(self.control_points, dash=(6,6), width=1)
     
     def draw_control_points(self):
@@ -74,9 +87,16 @@ class BezierCurveApp:
         y = (1 - t) ** 3 * p0[1] + 3 * t * (1 - t) ** 2 * p1[1] + 3 * t ** 2 * (1 - t) * p2[1] + t ** 3 * p3[1]
         return x, y
 
-    def second_layer_bezier(self, control_points):
-        p0, p1, p2, p3 = control_points
-        return [p0, [p1[0],p1[1]+self.width], [p2[0],p2[1]+self.width], p3]
+    def xyxy2angle(self,x1,y1,x2,y2):
+        return math.degrees(math.atan2(y2 - y1, x2 - x1))
+
+    def xy2angle2xy(self,x1,y1,angledegrees,width):
+        # Convert degrees to radians
+        angle = math.radians(angledegrees)
+        # Calculate the endpoint of the line using trigonometry
+        x_end = x1 + width * math.cos(angle)
+        y_end = y1 - width * math.sin(angle)
+        return x_end,y_end
 
 root = tk.Tk()
 app = BezierCurveApp(root)

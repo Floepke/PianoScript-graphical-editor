@@ -21,7 +21,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-from tkinter import Tk, Button, Label, Toplevel, Entry, Frame, Text
+from tkinter import Tk, Button, Label, Toplevel, Entry, Frame, Text, Scale, Listbox
 
 if not __name__ == '__main__': 
     from imports.tools import measure_length
@@ -317,10 +317,79 @@ class AskYesNoCancel:
         self.parent.wait_window(self.popup)
 
 
+class GreyscalePicker:
+    def __init__(self, parent, prompt, initialvalue=200):
+        self.parent = parent
+        self.title = 'Shade of grey picker'
+        self.prompt = prompt
+        self.initialvalue = initialvalue
+        self.color = '#' + hex(self.initialvalue)[2:].zfill(2) * 3
+
+        # create the popup window
+        self.popup = Toplevel(self.parent)
+        self.popup.title(self.title)
+        self.popup.wm_attributes("-topmost", 1)
+
+        # create frame
+        self.frame = Frame(self.popup, bg=self.color)
+        self.frame.pack(padx=10, pady=10, fill='both')
+
+        # create the Label widget
+        self.label = Label(self.frame, text=self.prompt, font=('Courier', 16), bg=self.color)
+        self.label.pack(padx=5,pady=5)
+        self.label.update()
+        self.label.configure(wraplength=self.label.winfo_width(), justify='left')
+
+        # create the "Ok" button
+        self.yes_button = Button(self.frame, text="OK", command=self._ok, font=('Courier', 16))
+        self.yes_button.pack(side='left',padx=5,pady=5)
+
+        # create the "Cancel" button
+        self.cancel_button = Button(self.frame, text="Cancel", command=self._cancel, font=('Courier', 16))
+        self.cancel_button.pack(side='left',padx=5,pady=5)
+
+        # grey slider
+        self.slider = Scale(self.frame, from_=0, to=255, orient='h', relief='flat', command=self._edit, bg=self.color)
+        self.slider.pack(side='left',padx=5,pady=5, fill='x', expand=True)
+
+        self.popup.bind('<Escape>', self._cancel)
+        self.popup.bind('<Return>', self._ok)
+
+        # sugar coating
+        self.popup.configure(bg='#002B36')
+        self.label.configure(fg='#002b66')
+
+        self.slider.set(self.initialvalue)
+
+        self.show()
+
+    def _ok(self, event=''):
+        self.popup.destroy()
+
+    def _cancel(self, event=''):
+        # set the result to None and destroy the popup window
+        self.color = None
+        self.popup.destroy()
+
+    def _edit(self, event=''):
+
+        hex_val = hex(self.slider.get())[2:].zfill(2)
+        self.color = "#" + hex_val*3
+        self.frame.configure(bg=self.color)
+        self.label.configure(bg=self.color)
+        self.slider.configure(bg=self.color)
+
+    def show(self):
+        # display the popup window and wait for it to be destroyed
+        self.parent.wait_window(self.popup)
+
+
+
 
 # Example usage
 if __name__ == "__main__":
     root = Tk()
+    
     # # AskString
     # dialog = AskString(root, "Enter a string", "Question for input:", 'initialtext')
     # result = dialog.result
@@ -328,6 +397,7 @@ if __name__ == "__main__":
     #     print(result)
     # else:
     #     print("Dialog was cancelled")
+    
     # # AskFloat
     # dialog = AskFloat(root, "Enter a float", "Question for input:", 7.77)
     # result = dialog.result
@@ -352,4 +422,12 @@ if __name__ == "__main__":
     # elif result == False:
     #     print('no')
     # else:
+    #     print("Dialog was cancelled")
+
+    # # GreyscalePicker
+    # dialog = GreyscalePicker(root, "Every printer prints a different shade of grey. \nSo you can set a custom greyscale color here \nthat looks readable on your printouts.")
+    # color = dialog.color
+    # if color:
+    #     print(color)
+    # elif color == None:
     #     print("Dialog was cancelled")

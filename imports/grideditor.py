@@ -45,6 +45,7 @@ class GridEditor:
         self.window.geometry("%sx%s+%s+%s" % (int(self.sw/4), int(self.sh/2), int(self.sw/4*1.5), int(self.sh/4)))
         self.window.wm_attributes("-topmost", 1)
         self.window.protocol("WM_DELETE_WINDOW", self._cancel)
+        self.window.bind('<Configure>', self._onresize)
 
         # main frame
         self.main_frame = Frame(self.window, bg='#eee8d5')
@@ -61,12 +62,13 @@ class GridEditor:
         # cancel button
         self.cancel_button = Button(self.buttons_frame, text='     Cancel     ', font=('Courier', 14), command=self._cancel)
         self.cancel_button.pack(side='right')
+        self.cancel_button.bind('<Escape>', self._cancel)
 
 
         # example label
         self.example_frame = Frame(self.main_frame, bg='#eee8d5')
         self.example_frame.pack(fill='both', padx=10)
-        self.example = Label(self.example_frame, text='1.time-signature(example: "4/4")\n2.amount of measures(Example: "22")\n3.grid-division(Example: "4")\n4.visible(set to "1" or "0")\nOn each line you can enter these \nfour values to form the grid.', font=('Courier', 14), bg='#eee8d5', justify='left')
+        self.example = Label(self.example_frame, wraplength=self.window.winfo_screenwidth(), text='1.time-signature(example: "4/4")\n2.amount of measures(Example: "22")\n3.grid-division(Example: "4")\n4.visible(set to "1" or "0")\nOn each line you can enter these \nfour values to form the grid.', font=('Courier', 14), bg='#eee8d5', justify='left')
         self.example.pack(side='left')
 
         # text widget
@@ -138,13 +140,18 @@ class GridEditor:
         self.processed_score = self.Score
         self.window.destroy()
 
-    def _cancel(self):
+    def _cancel(self, event=''):
         self.processed_score = self.Score
         self.window.destroy()
 
     def show(self):
         # display the popup window and wait for it to be destroyed
         self.parent.wait_window(self.window)
+
+    def _onresize(self, event=''):
+        
+        self.window.update()
+        self.example.configure(wraplength=self.window.winfo_screenwidth())
 
 
 

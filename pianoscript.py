@@ -21,19 +21,12 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-'''
-    PianoScript V1.0
-    Futures:
-        * midi import
-        * 
-'''
-
 # -----
 # TODO
 # -----
 '''
+    * select; move with arrow keys
     * grouped notes
-    * select cut copy paste
     * text
     * countline
     * midi export
@@ -96,7 +89,7 @@ line-breaks in terms of measures:'''
 # --------------------
 from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, PhotoImage
 from tkinter import filedialog, Label, Spinbox, StringVar, Listbox, Text
-from tkinter import colorchooser, font
+from tkinter import simpledialog,colorchooser, font
 import platform, subprocess, os, threading, json, traceback
 from mido import MidiFile
 from shutil import which
@@ -112,7 +105,7 @@ from imports.savefilestructure import *
 from imports.tools import *
 from imports.pianorolleditor import *
 from imports.tooltip import *
-from imports.engraver_klavarskribo import *
+from imports.engraver_pianoscript_vertical import *
 from imports.engraver_pianoscript import *
 from imports.grideditor import *
 from imports.dialogs import *
@@ -129,42 +122,24 @@ color_left_midinote = Score['properties']['color-left-hand-midinote']
 color_editor_canvas = '#eee8d5'#d9d9d9#fdffd1
 color_highlight = '#268bd2'#a6a832
 color_notation_editor = '#002b66'
+
 # root
 root = Tk()
-root.configure(bg='#002b36')
+root.configure(bg=color_basic_gui)
 MM = root.winfo_fpixels('1m')
 root.title('PianoScript')
+ttk.Style(root).theme_use("alt")
 scrwidth = root.winfo_screenwidth()
 scrheight = root.winfo_screenheight()
 root.geometry("%sx%s+0+0" % (int(scrwidth), int(scrheight)))
 
-master_frame = Frame(root, bg='#002b36')
-master_frame.pack(padx=5,pady=5, expand=True, fill='both')
-# master
-panedmaster = PanedWindow(master_frame, orient='h', sashwidth=7.5, relief='flat', bg=color_basic_gui)
-panedmaster.pack(expand=True, fill='both')
-# toolbarpanel
-toolbarpanel = Frame(panedmaster, relief='flat', bg=color_basic_gui, width=65)
-panedmaster.add(toolbarpanel)
-# editor panel
-root.update()
-editorpanel = Frame(panedmaster, relief='groove', bg=color_basic_gui, width=scrwidth / 3 * 1.75)
-panedmaster.add(editorpanel)
-# print panel
-printpanel = Frame(panedmaster, relief='groove', bg=color_basic_gui)
-panedmaster.add(printpanel)
-# editor --> editorpanel
-editor = Canvas(editorpanel, bg=color_editor_canvas, relief='flat', cursor='cross')
-editor.place(relwidth=1, relheight=1)
-hbar = Scrollbar(editor, orient='horizontal', width=20, relief='flat', bg=color_basic_gui)
-hbar.pack(side='bottom', fill='x')
-hbar.config(command=editor.xview)
-editor.configure(xscrollcommand=hbar.set)   
-# printview --> printpanel
-pview = Canvas(printpanel, bg=color_editor_canvas, relief='flat')
-pview.place(relwidth=1, relheight=1)
+# PanedWindow
+master_paned = PanedWindow(root, orient='h', sashwidth=10, relief='flat', bg=color_basic_gui)
+master_paned.pack(padx=5,pady=5,expand=True,fill='both')
 
-# Toolbarpanel
+# toolbar
+toolbarpanel = Frame(master_paned, bg=color_basic_gui)
+master_paned.add(toolbarpanel, width=50)
 noteinput_label = Label(toolbarpanel, text='GRID:', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
 noteinput_label.pack(fill='x')
 list_dur = Listbox(toolbarpanel, height=8, bg='grey', selectbackground=color_highlight, fg='black')
@@ -234,14 +209,28 @@ slr_photo = PhotoImage(file = "icons/slur.png")
 slur_button.configure(image=slr_photo)
 slur_button_tooltip = Tooltip(slur_button, text='Slur input/edit mode', wraplength=scrwidth)
 
+# editor
+root.update()
+editorpanel = Frame(master_paned, bg=color_basic_gui, width=scrwidth / 3 * 1.75)
+master_paned.add(editorpanel)
+editor = Canvas(editorpanel, bg=color_editor_canvas, relief='flat', cursor='cross')
+editor.place(relwidth=1, relheight=1)
+hbar = Scrollbar(editor, orient='horizontal', width=20, relief='flat', bg=color_basic_gui)
+hbar.pack(side='bottom', fill='x')
+hbar.config(command=editor.xview)
+editor.configure(xscrollcommand=hbar.set)
+
+# print view
+printpanel = Frame(master_paned, bg=color_basic_gui)
+master_paned.add(printpanel)
+pview = Canvas(printpanel, bg=color_editor_canvas, relief='flat')
+pview.place(relwidth=1, relheight=1)
+
+
+
 # changes in ui for windows:
 if platform.system() == 'Windows':
     mode_label.configure(font=("courier", 12))
-
-def setting_screenwidth():
-    
-    return printpanel.winfo_width() / 3
-root.update()
 
 
 
@@ -300,7 +289,7 @@ file_path = 'New'
 
 def test_file():
     print('test_file...')
-    with open('testfile.pianoscript', 'r') as f:
+    with open('/home/floepie/Desktop/test.pianoscript', 'r') as f:
         global Score
         Score = json.load(f)
         # run the piano-roll and print-view
@@ -541,8 +530,8 @@ def do_pianoroll(event='event'):
 
     global last_pianotick, new_id, x_scale_quarter_mm, y_scale_percent
 
-    x_scale_quarter_mm = Score['properties']['editor-x-zoom'] ##Publish
-    y_scale_percent = Score['properties']['editor-y-zoom'] / 100 ##Publish
+    x_scale_quarter_mm = Score['properties']['editor-x-zoom']
+    y_scale_percent = Score['properties']['editor-y-zoom'] / 100
     
     # calculate last_pianotick (staff length)
     last_pianotick = 0
@@ -1011,6 +1000,8 @@ def mouse_handling(event, event_type):
             color_notation_editor,
             color_highlight,
             True)
+
+        editor.tag_lower(cursor['id'])
 
         if shiftbutton1click:
             if not ex >= last_pianotick:
@@ -1530,8 +1521,22 @@ def exportPDF():
                     color_editor_canvas,
                     pview,root,
                     BLACK))
+                for rend in numofpages:
+                    pview.postscript(file=f"/tmp/tmp{rend}.ps", 
+                        x=10000,
+                        y=rend * (Score['properties']['page-height'] * MM), 
+                        width=Score['properties']['page-width'] * MM,
+                        height=Score['properties']['page-height'] * MM, 
+                        rotate=False,
+                        fontmap='-*-Courier-Bold-R-Normal--*-120-*')
+                    process = subprocess.Popen(
+                        ["ps2pdfwr", "-sPAPERSIZE=a4", "-dFIXEDMEDIA", "-dEPSFitPage", "/tmp/tmp%s.ps" % rend,
+                         "/tmp/tmp%s.pdf" % rend])
+                    process.wait()
+                    os.remove("/tmp/tmp%s.ps" % rend)
+                    pslist.append("/tmp/tmp%s.pdf" % rend)
             else:
-                numofpages = range(engrave_klavarskribo('export',
+                numofpages = range(engrave_pianoscript_vertical('export',
                     renderpageno,
                     Score,
                     MM,
@@ -1540,20 +1545,20 @@ def exportPDF():
                     color_editor_canvas,
                     pview,root,
                     BLACK))
-            for rend in numofpages:
-                pview.postscript(file=f"/tmp/tmp{rend}.ps", 
-                    x=10000, 
-                    y=rend * (Score['properties']['page-height'] * MM), 
-                    width=Score['properties']['page-width'] * MM,
-                    height=Score['properties']['page-height'] * MM, 
-                    rotate=False,
-                    fontmap='-*-Courier-Bold-R-Normal--*-120-*')
-                process = subprocess.Popen(
-                    ["ps2pdfwr", "-sPAPERSIZE=a4", "-dFIXEDMEDIA", "-dEPSFitPage", "/tmp/tmp%s.ps" % rend,
-                     "/tmp/tmp%s.pdf" % rend])
-                process.wait()
-                os.remove("/tmp/tmp%s.ps" % rend)
-                pslist.append("/tmp/tmp%s.pdf" % rend)
+                for rend in numofpages:
+                    pview.postscript(file=f"/tmp/tmp{rend}.ps", 
+                        x=rend * (Score['properties']['page-width'] * MM),
+                        y=10000, 
+                        width=Score['properties']['page-width'] * MM,
+                        height=Score['properties']['page-height'] * MM, 
+                        rotate=False,
+                        fontmap='-*-Courier-Bold-R-Normal--*-120-*')
+                    process = subprocess.Popen(
+                        ["ps2pdfwr", "-sPAPERSIZE=a4", "-dFIXEDMEDIA", "-dEPSFitPage", "/tmp/tmp%s.ps" % rend,
+                         "/tmp/tmp%s.pdf" % rend])
+                    process.wait()
+                    os.remove("/tmp/tmp%s.ps" % rend)
+                    pslist.append("/tmp/tmp%s.pdf" % rend)
             cmd = 'pdfunite '
             for i in range(len(pslist)):
                 cmd += pslist[i] + ' '
@@ -1562,7 +1567,7 @@ def exportPDF():
             process.wait()
 
     elif platform.system() == 'Windows':
-        f = filedialog.asksaveasfile(mode='w', parent=root, filetypes=[("pdf Score", "*.pdf")], initialfile=Score['properties']['title']['text'],
+        f = filedialog.asksaveasfile(mode='w', parent=root, filetypes=[("pdf Score", "*.pdf")], initialfile=Score['header']['title']['text'],
                                      initialdir='~/Desktop')
         if f:
             print(f.name)
@@ -1688,8 +1693,8 @@ class ThreadAutoRender(threading.Thread):
                     color_editor_canvas,
                     pview,root,
                     BLACK)
-            else:
-                engrave_klavarskribo('',
+            if Score['properties']['engraver'] == 'pianoscript vertical':
+                engrave_pianoscript_vertical('',
                     renderpageno,
                     Score,
                     MM,
@@ -1846,13 +1851,17 @@ def set_value(t):
             Score['properties'][t] = user_input.result
             file_changed = True
     elif t == 'color-right-hand-midinote':
-        user_input = colorchooser.askcolor(Score['properties'][t])[1]
+        user_input = GreyscalePicker(root, 
+            "Every printer prints a different shade of grey. \nSo you can set a custom greyscale color here \nthat looks readable on your printouts.", 
+            int(Score['properties'][t][5:], 16)).color
         if user_input: 
             Score['properties'][t] = user_input
             file_changed = True   
             do_pianoroll()
     elif t == 'color-left-hand-midinote':
-        user_input = colorchooser.askcolor(Score['properties'][t])[1]
+        user_input = GreyscalePicker(root, 
+            "Every printer prints a different shade of grey. \nSo you can set a custom greyscale color here \nthat looks readable on your printouts.", 
+            int(Score['properties'][t][5:], 16)).color
         if user_input: 
             Score['properties'][t] = user_input
             file_changed = True
@@ -1861,24 +1870,17 @@ def set_value(t):
     
     # editor Settings
     elif t == 'editor-x-zoom':
-        user_input = AskFloat(root,
-            f'Set {t}...', f'Please provide the {t} from 0 to 100(or more) for the editor:', 
-            Score['properties'][t]).result
-        if user_input: 
+        user_input = AskFloat(root,f'Set {t}...', f'Please provide the {t} from 0 to 100(or more) for the editor:', 
+            initialvalue=Score['properties'][t]).result
+        if user_input:
+            print(user_input)
             Score['properties'][t] = user_input
             do_pianoroll()
-        else: 
-            Score['properties'][t] = 35
-            do_pianoroll()
     elif t == 'editor-y-zoom':
-        user_input = AskFloat(root,
-            f'Set {t}...', f'Please provide the {t} (50 will make the staff height 50% of the editor view) for the editor:', 
+        user_input = AskFloat(root,f'Set {t}...', f'Please provide the {t} (50 will make the staff height 50% of the editor view) for the editor:', 
             initialvalue=Score['properties'][t]).result
         if user_input: 
             Score['properties'][t] = user_input
-            do_pianoroll()
-        else: 
-            Score['properties'][t] = 80
             do_pianoroll()
     
     do_engrave()
@@ -1903,13 +1905,46 @@ def grideditor(event=''):
         This function runs the GridEditor class and 
         assigns the returning value to the Score object.
     '''
-    global Score, last_pianotick, file_changed
+    global Score, last_pianotick
     edit = GridEditor(root,Score)
     Score = edit.processed_score
     last_pianotick = edit.last_pianotick
     do_pianoroll()
     do_engrave()
-    file_changed = True
+    # t = GridEditor(root, Score)
+    # Score['events']['grid'] = []
+    # for ts in t:
+    #     numerator = None
+    #     denominator = None
+    #     amount = None
+    #     grid = None
+    #     visible = None
+    #     if ts:
+    #         try:
+    #             numerator = int(ts.split()[0].split('/')[0])
+    #             denominator = int(ts.split()[0].split('/')[1])
+    #             amount = int(ts.split()[1])
+    #             grid = int(ts.split()[2])
+    #             visible = int(ts.split()[3])
+    #         except:
+    #             print(
+    #                 '''Please read the documentation about how to provide the grid mapping correctly.
+    #                 a correct gridmap:
+    #                 4/4 16 4 1''')
+    #             return
+    #     else:
+    #         continue
+    #     # gridmap add to Score
+    #     Score['events']['grid'].append(
+    #         {'amount': amount, 'numerator': numerator, 'denominator': denominator,
+    #          'grid': grid, 'visible': visible})
+    # # remove linebreaks from Score that are >= then last_pianotick
+    # last_pianotick = 0
+    # for grid in Score['events']['grid']:
+    #     last_pianotick += (grid['amount'] * measure_length((grid['numerator'], grid['denominator'])))
+    # for lb in reversed(Score['events']['line-break']):
+    #     if lb['time'] >= last_pianotick:
+    #         Score['events']['line-break'].remove(lb)
 
 
 def update_textbox():
@@ -1937,10 +1972,7 @@ def transpose():
         the user selects the range(from bar x to bar y) and
         gives a integer to transpose all notes in the selection.
     '''
-    user_input = AskString(root,
-        'Transpose', 
-        HELP2,
-        '0 0 12').result
+    user_input = AskString(root,'Transpose', HELP2).result
     start = 0
     end = 0
     tr = 0
@@ -2405,65 +2437,111 @@ def transpose_up(e=''):
                 False,
                 True)
             update_drawing_order_editor(editor)
-    do_engrave()            
+    do_engrave()
 
+
+def quantize(Score):
+    
+    user_input = AskYesNoCancelQuantize(root, 'Quantize...','Choose what you want to quantize. \nThe notes are quantized to the current selected grid \nso you may change the grid before choosing one \nof the options.').result
+    if user_input:
+        user_input = 'start'
+    if user_input == False:
+        user_input = 'duration'
+
+    # quantizing notestart
+    if user_input == 'start':
+
+        for n in Score['events']['note']:
+
+            start = n['time']
+            end = n['time'] + n['duration']
+            n['time'] = round(start / edit_grid) * edit_grid
+            n['duration'] = end - n['time']
+
+    # quantizing duration
+    if user_input == 'duration':
+
+        for n in Score['events']['note']:
+
+            start = n['time']
+            end = n['time'] + n['duration']
+            end = round(end / edit_grid) * edit_grid
+            n['duration'] = end - n['time']
+
+    do_engrave()
+    do_pianoroll()
 
 
 # --------------------------------------------------------
 # MENU
 # --------------------------------------------------------
-menubar = Menu(root, relief='flat', bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
+menubar = Menu(root, relief='flat', bg=color_basic_gui, fg=color_editor_canvas)
 root.config(menu=menubar)
-fileMenu = Menu(menubar, tearoff=0, bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
-fileMenu.add_command(label='|new [ctl+n]', command=new_file)
-fileMenu.add_command(label='|open [ctl+o]', command=load_file)
-fileMenu.add_command(label='|save [ctl+s]', command=save)
-fileMenu.add_command(label='|save as... [alt+s]', command=save_as)
+fileMenu = Menu(menubar, tearoff=0)
+fileMenu.add_command(label='New [ctl+n]', command=new_file)
+fileMenu.add_command(label='Open [ctl+o]', command=load_file)
+fileMenu.add_command(label='Save [ctl+s]', command=save)
+fileMenu.add_command(label='Save as... [alt+s]', command=save_as)
 fileMenu.add_separator()
-fileMenu.add_command(label='|load midi [ctl+m]', command=midi_import)
+fileMenu.add_command(label='Load midi [ctl+m]', command=midi_import)
 fileMenu.add_separator()
-fileMenu.add_command(label="|export ps", command=transpose)
-fileMenu.add_command(label="|export pdf [ctl+e]", command=exportPDF)
-fileMenu.add_command(label="|export midi*", command=lambda: midiexport(root,Score))
+fileMenu.add_command(label="Export ps", command=transpose)
+fileMenu.add_command(label="Export pdf [ctl+e]", command=exportPDF)
+fileMenu.add_command(label="Export midi*", command=lambda: midiexport(root,Score))
 fileMenu.add_separator()
-fileMenu.add_command(label="|grid editor...", underline=None, command=grideditor)
+fileMenu.add_command(label="Grid editor...", underline=None, command=grideditor)
 fileMenu.add_separator()
-fileMenu.add_command(label="|exit", underline=None, command=quit_editor)
-menubar.add_cascade(label="|File", underline=None, menu=fileMenu)
-selectionMenu = Menu(menubar, tearoff=0, bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
-selectionMenu.add_command(label="|cut [ctl+x]", underline=None, command=cut_selection)
-selectionMenu.add_command(label="|copy [ctl+c]", underline=None, command=copy_selection)
-selectionMenu.add_command(label="|paste [ctl+v]", underline=None, command=paste_selection)
+fileMenu.add_command(label="Exit", underline=None, command=quit_editor)
+menubar.add_cascade(label="File", underline=None, menu=fileMenu)
+selectionMenu = Menu(menubar, tearoff=0)
+selectionMenu.add_command(label="Cut [ctl+x]", underline=None, command=cut_selection)
+selectionMenu.add_command(label="Copy [ctl+c]", underline=None, command=copy_selection)
+selectionMenu.add_command(label="Paste [ctl+v]", underline=None, command=paste_selection)
 selectionMenu.add_separator()
-selectionMenu.add_command(label="|select all [ctl+a]", underline=None, command=select_all)
-menubar.add_cascade(label="|Selection|", underline=None, menu=selectionMenu)
-setMenu = Menu(menubar, tearoff=1, bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
-setMenu.add_command(label='|title (string)', command=lambda: set_value('title'))
-setMenu.add_command(label='|composer (string)', command=lambda: set_value('composer'))
-setMenu.add_command(label='|copyright (string)', command=lambda: set_value('copyright'))
+selectionMenu.add_command(label="Select all [ctl+a]", underline=None, command=select_all)
+menubar.add_cascade(label="Selection", underline=None, menu=selectionMenu)
+setMenu = Menu(menubar, tearoff=1)
+setMenu.add_command(label='Title (string)', command=lambda: set_value('title'))
+setMenu.add_command(label='Composer (string)', command=lambda: set_value('composer'))
+setMenu.add_command(label='Copyright (string)', command=lambda: set_value('copyright'))
 setMenu.add_separator()
-setMenu.add_command(label='|draw scale (0.3-2.5)', command=lambda: set_value('draw-scale'))
-setMenu.add_command(label='|page width (mm)', command=lambda: set_value('page-width'))
-setMenu.add_command(label='|page height (mm)', command=lambda: set_value('page-height'))
-setMenu.add_command(label='|header height (mm)', command=lambda: set_value('header-height'))
-setMenu.add_command(label='|footer height (mm)', command=lambda: set_value('footer-height'))
-setMenu.add_command(label='|page margin left (mm)', command=lambda: set_value('page-margin-left'))
-setMenu.add_command(label='|page margin right (mm)', command=lambda: set_value('page-margin-right'))
-setMenu.add_command(label='|page margin up (mm)', command=lambda: set_value('page-margin-up'))
-setMenu.add_command(label='|page margin down (mm)', command=lambda: set_value('page-margin-down'))
-setMenu.add_command(label='|color right hand midinote', command=lambda: set_value('color-right-hand-midinote'))
-setMenu.add_command(label='|color left hand midinote', command=lambda: set_value('color-left-hand-midinote'))
+setMenu.add_command(label='Draw scale (0.3-2.5)', command=lambda: set_value('draw-scale'))
+setMenu.add_command(label='Page width (mm)', command=lambda: set_value('page-width'))
+setMenu.add_command(label='Page height (mm)', command=lambda: set_value('page-height'))
+setMenu.add_command(label='Header height (mm)', command=lambda: set_value('header-height'))
+setMenu.add_command(label='Footer height (mm)', command=lambda: set_value('footer-height'))
+setMenu.add_command(label='Page margin left (mm)', command=lambda: set_value('page-margin-left'))
+setMenu.add_command(label='Page margin right (mm)', command=lambda: set_value('page-margin-right'))
+setMenu.add_command(label='Page margin up (mm)', command=lambda: set_value('page-margin-up'))
+setMenu.add_command(label='Page margin down (mm)', command=lambda: set_value('page-margin-down'))
+setMenu.add_command(label='Color right hand midinote', command=lambda: set_value('color-right-hand-midinote'))
+setMenu.add_command(label='Color left hand midinote', command=lambda: set_value('color-left-hand-midinote'))
 setMenu.add_separator()
-setMenu.add_command(label='|editor x zoom (0-100 or more)', command=lambda: set_value('editor-x-zoom'))
-setMenu.add_command(label='|editor y zoom (0-100)', command=lambda: set_value('editor-y-zoom'))
-menubar.add_cascade(label="|Settings|", underline=None, menu=setMenu)
-toolsMenu = Menu(menubar, tearoff=1, bg=color_basic_gui, fg=color_editor_canvas, font=('courier', 14))
-toolsMenu.add_command(label='|redraw editor [ctl+r]', command=lambda: do_pianoroll())
-#toolsMenu.add_command(label='|transpose                   |', command=lambda: transpose())
-toolsMenu.add_command(label='|add quick line breaks', command=lambda: add_quick_linebreaks())
-toolsMenu.add_command(label='|transpose', command=lambda: transpose())
-menubar.add_cascade(label="|Tools", underline=None, menu=toolsMenu)
-
+setMenu.add_command(label='Editor x zoom (0-100 or more)', command=lambda: set_value('editor-x-zoom'))
+setMenu.add_command(label='Editor y zoom (0-100)', command=lambda: set_value('editor-y-zoom'))
+menubar.add_cascade(label="Settings", underline=None, menu=setMenu)
+toolsMenu = Menu(menubar, tearoff=1)
+toolsMenu.add_command(label='Redraw editor', command=lambda: do_pianoroll())
+toolsMenu.add_command(label='Quantize', command=lambda: quantize(Score))
+toolsMenu.add_command(label='Add quick line breaks', command=lambda: add_quick_linebreaks())
+toolsMenu.add_command(label='Transpose', command=lambda: transpose())
+menubar.add_cascade(label="Tools", underline=None, menu=toolsMenu)
+engraver_menu = Menu(menubar, tearoff=0)
+selected_engraver = tk.StringVar()
+def engrave_horizontal():
+    selected_engraver.set("pianoscript")
+    global Score
+    Score['properties']['engraver'] = 'pianoscript'
+    do_engrave()
+def engrave_vertical():
+    selected_engraver.set("pianoscript vertical")
+    global Score
+    Score['properties']['engraver'] = 'pianoscript vertical'
+    do_engrave()
+engraver_menu.add_radiobutton(label="pianoscript", command=engrave_horizontal, variable=selected_engraver)
+engraver_menu.add_radiobutton(label="pianoscript vertical", command=engrave_vertical, variable=selected_engraver)
+menubar.add_cascade(label="Engraver", menu=engraver_menu)
+selected_engraver.set("pianoscript")
 
 
 
@@ -2514,7 +2592,7 @@ divide_spin.configure(command=lambda: grid_selector())
 divide_spin.bind('<Return>', lambda event: grid_selector())
 times_spin.configure(command=lambda: grid_selector())
 times_spin.bind('<Return>', lambda event: grid_selector())
-panedmaster.bind('<ButtonRelease-1>', lambda event: do_engrave(event))
+master_paned.bind('<ButtonRelease-1>', lambda event: do_engrave(event))
 root.bind('<space>', lambda e: space_shift(e))
 root.option_add('*Dialog.msg.font', 'Courier 20')
 editor.bind('<Leave>', lambda e: editor.delete('cursor'))
@@ -2538,13 +2616,30 @@ root.bind('<Control-a>', select_all)
 root.bind('<Control-n>', new_file)
 root.bind('<Control-o>', load_file)
 root.bind('<Control-s>', save)
-root.bind('<Alt-s>', save_as)
+root.bind('<Control-S>', save_as)
 root.bind('<Control-r>', do_pianoroll)
 root.bind('<Control-q>', add_quick_linebreaks)
 root.bind('<Up>', transpose_up)
-root.bind('<g>', grideditor)
+root.bind('<Key-g>', grideditor)
+root.bind('<Key-q>', lambda e: quantize(Score))
+
+
+
+# fullscreen toggle
+fscreen = False
+def fullscreen(event):
+    global fscreen
+    if fscreen: 
+        root.attributes('-fullscreen', False)
+        fscreen = False
+    else: 
+        root.attributes('-fullscreen', True)
+        fscreen = True
+root.bind('<F11>', fullscreen)
 
 
 if __name__ == '__main__':
     new_file()
+    #test_file()
     root.mainloop()
+

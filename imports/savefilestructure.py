@@ -67,8 +67,8 @@ Score = {
     "footer-height":10,
     "minipiano":True,
     "engraver":'pianoscript',
-    "color-right-hand-midinote":'#999999',
-    "color-left-hand-midinote":'#999999',
+    "color-right-hand-midinote":'#c8c8c8',
+    "color-left-hand-midinote":'#c8c8c8',
     "printview-width(procents-froms-creen)":33,
     "editor-x-zoom":35,
     "editor-y-zoom":80

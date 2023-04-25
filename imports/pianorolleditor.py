@@ -436,7 +436,7 @@ def draw_linebreak_editor(linebreak,
             dash=(10,6),
             tag=linebreak['id'],
             fill=color_notation_editor)
-    editor.tag_lower(linebreak['id'])
+    editor.tag_raise(linebreak['id'])
 
     
 def draw_select_rectangle(selection, editor, hbar, y_scale_percent, x_scale_quarter_mm, MM):
@@ -486,17 +486,18 @@ def slur_editor(editor, slur, idd, draw_scale, thickness=7.5, steps=100, drawcon
     for t in range(steps):
         x, y = evaluate_cubic_bezier(t / steps, slur)
         slur_points.append([x, y])
-    # for t in reversed(range(steps)):
-    #     x, y = evaluate_cubic_bezier(t / steps, 
-    #         [ctl1,(ctl2[0]+thickness,ctl2[1]+thickness),(ctl3[0]+thickness,ctl3[1]+thickness),ctl4])
-    #     slur_points.append([x, y])
+    thickness_x = thickness * (ctl4[0] / ctl1[1])
+    thickness_y = thickness * (ctl4[1] / ctl1[0])
+    for t in reversed(range(steps)):
+        x, y = evaluate_cubic_bezier(t / steps, 
+            [ctl1,(ctl2[0]+thickness_x,ctl2[1]+thickness_y),(ctl3[0]+thickness_x,ctl3[1]+thickness_y),ctl4])
+        slur_points.append([x, y])
     
     # draw slur
-    editor.create_line(slur_points, 
+    editor.create_polygon(slur_points, 
         fill='black', 
         tag=idd,
-        width=4*draw_scale,
-        capstyle='round')
+        width=4*draw_scale)
     
     # draw control points
     if drawcontrols:

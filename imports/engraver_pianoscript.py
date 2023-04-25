@@ -725,7 +725,7 @@ def engrave_pianoscript(render_type,
                                           y_cursor,
                                           x,
                                           y_cursor + sh,
-                                          width=4 * draw_scale,
+                                          width=6 * draw_scale,
                                           capstyle='round',
                                           tag='grid',
                                           fill=color_black)
@@ -830,7 +830,7 @@ def engrave_pianoscript(render_type,
                                                       y1,
                                                       tag='white_notestart',
                                                       fill=color_white,
-                                                      outline='black',
+                                                      outline=color_black,
                                                       width=2 * draw_scale)
                                     # left dot white
                                     pview.create_oval(x0 + (((10 / 2) - 1) * draw_scale),
@@ -922,11 +922,11 @@ def engrave_pianoscript(render_type,
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         pview.create_text(x + (2.5 * draw_scale),
-                                          y_cursor + sh + (20 * draw_scale),
+                                          y_cursor + sh + (40 * draw_scale),
                                           text=obj['text'],
                                           tag='tsigtext',
-                                          anchor='w',
-                                          font=('courier', round(12 * draw_scale), 'underline'),
+                                          anchor='sw',
+                                          font=('courier', 10),
                                           fill=color_black)
 
                     # text
