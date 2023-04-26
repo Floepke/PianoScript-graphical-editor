@@ -347,6 +347,7 @@ def engrave_pianoscript(render_type,
     p_marg_d = Score['properties']['page-margin-down'] * MM
     draw_scale = Score['properties']['draw-scale']
     line_break = Score['events']['line-break']
+    count_line = Score['events']['count-line']
     header_height = Score['properties']['header-height'] * MM
     footer_height = Score['properties']['footer-height'] * MM
     grid = Score['events']['grid']
@@ -420,6 +421,10 @@ def engrave_pianoscript(render_type,
         for pedal_evt in pedal:
             e = pedal_evt
             e['type'] = 'pedal'
+            DOC.append(e)
+        for countline_evt in count_line:
+            e = countline_evt
+            e['type'] = 'countline'
             DOC.append(e)
 
         # now we sort the events on time-key
@@ -770,40 +775,55 @@ def engrave_pianoscript(render_type,
                         # left hand
                         if obj['hand'] == 'l':
 
-                            # midinote
-                            pview.create_polygon(x0,
-                                                 y,
-                                                 x0 + (5 * draw_scale),
-                                                 y - (5 * draw_scale),
-                                                 x1 - (5 * draw_scale),
-                                                 y - (5 * draw_scale),
-                                                 x1,
-                                                 y,
-                                                 x1 - (5 * draw_scale),
-                                                 y + (5 * draw_scale),
-                                                 x0 + (5 * draw_scale),
-                                                 y + (5 * draw_scale),
-                                                 fill=Score['properties']['color-left-hand-midinote'],
-                                                 tag='midi_note',
-                                                 width=20 * draw_scale)
+                            # # midinote (old design)
+                            # pview.create_polygon(x0,
+                            #                      y,
+                            #                      x0 + (5 * draw_scale),
+                            #                      y - (5 * draw_scale),
+                            #                      x1 - (5 * draw_scale),
+                            #                      y - (5 * draw_scale),
+                            #                      x1,
+                            #                      y,
+                            #                      x1 - (5 * draw_scale),
+                            #                      y + (5 * draw_scale),
+                            #                      x0 + (5 * draw_scale),
+                            #                      y + (5 * draw_scale),
+                            #                      fill=Score['properties']['color-left-hand-midinote'],
+                            #                      tag='midi_note',
+                            #                      width=20 * draw_scale)
+                            # midinote (new triangle design)
+                            pview.create_polygon(x0,y,
+                                x1,y0,
+                                x1,y1,            
+                                fill=Score['properties']['color-left-hand-midinote'],
+                                tag='midi_note',
+                                width=20 * draw_scale)
+
+                            if obj['type'] == 'split':
+                                pview.create_oval(x0+(2.5*draw_scale),y0+(2.5*draw_scale),
+                                    x0+(7.5*draw_scale),y1-(2.5*draw_scale),
+                                    fill=color_black,
+                                    outline='')
+
                             if obj['type'] == 'note':
-                                # left stem and white space if on barline
-                                pview.create_line(x0,
-                                                  y,
-                                                  x0,
-                                                  y + (25 * draw_scale),
-                                                  width=2 * draw_scale,
-                                                  tag='stem',
-                                                  fill=color_black)
-                                for bl in bl_times:
-                                    if diff(obj['time'], bl) < 1:
-                                        pview.create_line(x0,
-                                                          y - (10 * draw_scale),
-                                                          x0,
-                                                          y + (30 * draw_scale),
-                                                          width=2 * draw_scale,
-                                                          tag='white_space',
-                                                          fill=color_white)
+                                if obj['stem-visible']:
+                                    # left stem and white space if on barline
+                                    pview.create_line(x0,
+                                                      y,
+                                                      x0,
+                                                      y + (25 * draw_scale),
+                                                      width=2 * draw_scale,
+                                                      tag='stem',
+                                                      fill=color_black)
+                                    for bl in bl_times:
+                                        if diff(obj['time'], bl) < 1:
+                                            pview.create_line(x0,
+                                                              y - (10 * draw_scale),
+                                                              x0,
+                                                              y + (30 * draw_scale),
+                                                              width=2 * draw_scale,
+                                                              tag='white_space',
+                                                              fill=color_white)
                                 # notehead
                                 if obj['pitch'] in BLACK:
 
@@ -843,40 +863,55 @@ def engrave_pianoscript(render_type,
 
                         # right hand
                         else:
-                            # midinote
-                            pview.create_polygon(x0,
-                                                 y,
-                                                 x0 + (5 * draw_scale),
-                                                 y - (5 * draw_scale),
-                                                 x1 - (5 * draw_scale),
-                                                 y - (5 * draw_scale),
-                                                 x1,
-                                                 y,
-                                                 x1 - (5 * draw_scale),
-                                                 y + (5 * draw_scale),
-                                                 x0 + (5 * draw_scale),
-                                                 y + (5 * draw_scale),
-                                                 fill=Score['properties']['color-right-hand-midinote'],
-                                                 tag='midi_note',
-                                                 width=20 * draw_scale)
-                            if obj['type'] == 'note':    
-                                # right stem and white space if on barline
-                                pview.create_line(x0,
-                                                  y,
-                                                  x0,
-                                                  y - (25 * draw_scale),
-                                                  width=2 * draw_scale,
-                                                  tag='stem',
-                                                  fill=color_black)
-                                for bl in bl_times:
-                                    if diff(obj['time'], bl) < 1:
-                                        pview.create_line(x0,
-                                                          y - (30 * draw_scale),
-                                                          x0,
-                                                          y + (10 * draw_scale),
-                                                          width=2 * draw_scale,
-                                                          tag='white_space',
-                                                          fill=color_white)
+                            # # midinote (old design)
+                            # pview.create_polygon(x0,
+                            #                      y,
+                            #                      x0 + (5 * draw_scale),
+                            #                      y - (5 * draw_scale),
+                            #                      x1 - (5 * draw_scale),
+                            #                      y - (5 * draw_scale),
+                            #                      x1,
+                            #                      y,
+                            #                      x1 - (5 * draw_scale),
+                            #                      y + (5 * draw_scale),
+                            #                      x0 + (5 * draw_scale),
+                            #                      y + (5 * draw_scale),
+                            #                      fill=Score['properties']['color-right-hand-midinote'],
+                            #                      tag='midi_note',
+                            #                      width=20 * draw_scale)
+                            # midinote (new triangle design)
+                            pview.create_polygon(x0,y,
+                                x1,y0,
+                                x1,y1,            
+                                fill=Score['properties']['color-left-hand-midinote'],
+                                tag='midi_note',
+                                width=20 * draw_scale)
+
+                            if obj['type'] == 'split':
+                                pview.create_oval(x0+(2.5*draw_scale),y0+(2.5*draw_scale),
+                                    x0+(7.5*draw_scale),y1-(2.5*draw_scale),
+                                    fill=color_black,
+                                    outline='')
+
+                            if obj['type'] == 'note':
+                                if obj['stem-visible']:
+                                    # right stem and white space if on barline
+                                    pview.create_line(x0,
+                                                      y,
+                                                      x0,
+                                                      y - (25 * draw_scale),
+                                                      width=2 * draw_scale,
+                                                      tag='stem',
+                                                      fill=color_black)
+                                    for bl in bl_times:
+                                        if diff(obj['time'], bl) < 1:
+                                            pview.create_line(x0,
+                                                              y - (30 * draw_scale),
+                                                              x0,
+                                                              y + (10 * draw_scale),
+                                                              width=2 * draw_scale,
+                                                              tag='white_space',
+                                                              fill=color_white)
                                 # notehead
                                 if obj['pitch'] in BLACK:
                                     pview.create_oval(x0,
@@ -926,7 +961,7 @@ def engrave_pianoscript(render_type,
                                           text=obj['text'],
                                           tag='tsigtext',
                                           anchor='sw',
-                                          font=('courier', 10),
+                                          font=('courier', 10, 'underline'),
                                           fill=color_black)
 
                     # text
@@ -936,30 +971,49 @@ def engrave_pianoscript(render_type,
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         y = note_y_pos(obj['pitch'], mn, mx, y_cursor, draw_scale)
-                        t = pview.create_text(x,
-                                              y,
-                                              text=obj['text'],
-                                              tag='text',
-                                              anchor='w',
-                                              font=('', round(12 * draw_scale), 'normal'),
-                                              fill='black')
-                        round_rectangle(pview, pview.bbox(t)[0],
-                                        pview.bbox(t)[1],
-                                        pview.bbox(t)[2],
-                                        pview.bbox(t)[3],
-                                        fill='white',
-                                        outline='',
-                                        width=.5,
-                                        tag='textbg')
+                        if obj['vert'] == 0:
+                            t = pview.create_text(x,
+                                                  y,
+                                                  text=obj['text'],
+                                                  tag='text',
+                                                  anchor='w',
+                                                  font=('Courier', 10, 'normal'),
+                                                  fill=color_black)
+                            round_rectangle(pview, pview.bbox(t)[0]-(1*draw_scale),
+                                            pview.bbox(t)[1]-(1*draw_scale),
+                                            pview.bbox(t)[2]+(5*draw_scale),
+                                            pview.bbox(t)[3]-(1*draw_scale),
+                                            fill=color_white,
+                                            outline='',
+                                            width=.5,
+                                            tag='textbg')
+                        else:
+                            t = pview.create_text(x,
+                                                  y,
+                                                  text=obj['text'],
+                                                  tag='text',
+                                                  anchor='n',
+                                                  font=('Courier', 10, 'normal'),
+                                                  fill=color_black,
+                                                  angle=90)
+                            round_rectangle(pview, pview.bbox(t)[0]-(1*draw_scale),
+                                            pview.bbox(t)[1]-(1*draw_scale),
+                                            pview.bbox(t)[2]-(1*draw_scale),
+                                            pview.bbox(t)[3]+(5*draw_scale),
+                                            fill=color_white,
+                                            outline='',
+                                            width=.5,
+                                            tag='textbg')
 
                     # count_line
-                    if obj['type'] == 'count_line':
+                    if obj['type'] == 'countline':
+                        print('!')
                         if not idx_l:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
-                        y1 = note_y_pos(obj['note1'], mn, mx, y_cursor, draw_scale)
-                        y2 = note_y_pos(obj['note2'], mn, mx, y_cursor, draw_scale)
+                        y1 = note_y_pos(obj['pitch1'], mn, mx, y_cursor, draw_scale)
+                        y2 = note_y_pos(obj['pitch2'], mn, mx, y_cursor, draw_scale)
 
                         pview.create_line(x,
                                           y1,

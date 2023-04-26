@@ -6,8 +6,8 @@ class BezierCurveApp:
         self.master = master
         self.master.title("Cubic Bezier Curve Editor")
         self.canvas = tk.Canvas(self.master, width=400, height=400)
-        self.canvas.pack(expand=True)
-        self.control_points = [[100, 100], [150, 200], [250, 200], [300, 100]]
+        self.canvas.pack(expand=True, fill='both')
+        self.control_points = [[200, 100], [250, 200], [350, 200], [400, 100]]
         self.control_points2 = [[100, 100], [150, 210], [250, 210], [300, 100]]
         self.curve_color = "black"
         self.control_point_color = "black"
@@ -56,19 +56,20 @@ class BezierCurveApp:
         ctl2 = self.control_points[1]
         ctl3 = self.control_points[2]
         ctl4 = self.control_points[3]
-        ctl2 = self.xy2angle2xy(ctl2[0],ctl2[1],self.xyxy2angle(ctl1[0],ctl1[1],ctl4[0],ctl4[1]),self.width)
-        ctl3 = self.xy2angle2xy(ctl3[0],ctl3[1],self.xyxy2angle(ctl1[0],ctl1[1],ctl4[0],ctl4[1]),self.width)
-        thickness_x = self.width * math.degrees(math.atan2(abs(ctl1[0]-ctl4[0]), -abs(ctl1[1]-ctl4[1])))/200
-        thickness_y = self.width * math.degrees(math.atan2(abs(ctl1[1]-ctl4[1]), -abs(ctl1[0]-ctl4[0])))/200
+        slope = (ctl4[1] - ctl1[1]) * (ctl4[0] - ctl1[0])
+        print(slope)
+        ctl2 = [abs(ctl1[1]-ctl4[1])*abs(ctl1[0]-ctl4[0]), -abs(ctl1[1]-ctl4[1])]
+        ctl3 = [abs(ctl1[1]-ctl4[1]), -abs(ctl1[0]-ctl4[0])]
+        # ctl3 = self.xy2angle2xy(ctl3[0],ctl3[1],self.xyxy2angle(ctl1[1],ctl1[0],ctl4[1],ctl4[0]),self.width)
         for t in reversed(range(steps)):
 
             self.control_points2 = [[ctl1[0],ctl1[1]],
-            [ctl2[0]+thickness_x,ctl2[1]+thickness_y],
-            [ctl3[0]+thickness_x,ctl3[1]+thickness_y],
+            [ctl2[0],ctl2[1]],
+            [ctl3[0],ctl3[1]],
             [ctl4[0],ctl4[1]]
             ]
 
-            x, y = self.evaluate_cubic_bezier(t / steps, self.control_points2)
+            x, y = self.evaluate_cubic_bezier(t / steps, self.control_points)
             curve_points.append([x, y])
         self.canvas.create_polygon(curve_points, fill=self.curve_color, width=4)
         self.canvas.create_line(self.control_points, dash=(6,6), width=1)
@@ -98,7 +99,9 @@ class BezierCurveApp:
         y_end = y1 - width * math.sin(angle)
         return x_end,y_end
 
+    def interpolation(self, x, y, z):
+        return (z - x) / (y - x)
+
 root = tk.Tk()
-app = BezierCurveApp(root)
 app = BezierCurveApp(root)
 root.mainloop()

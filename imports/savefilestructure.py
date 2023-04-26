@@ -95,7 +95,8 @@ Score = {
         "margin-up-left":10,
         "margin-down-right":10
       }
-    ]
+    ],
+    "count-line":[]
   }
 }
 try:

@@ -289,7 +289,7 @@ file_path = 'New'
 
 def test_file():
     print('test_file...')
-    with open('/home/floepie/Desktop/test.pianoscript', 'r') as f:
+    with open('/home/floepie/pCloudDrive/pianoscript/PianoScriptV1/2023/kaars.pianoscript', 'r') as f:
         global Score
         Score = json.load(f)
         # run the piano-roll and print-view
@@ -477,6 +477,7 @@ copycut_buffer = []
 mouse_time = 0
 ms_xy = [0,0]
 new_slur = 0
+cl_handle = ''
 
 # mouse edit
 btn1_click = False
@@ -702,6 +703,28 @@ def do_pianoroll(event='event'):
             color_highlight)
         new_id += 1
 
+    # draw countline events
+    for cl in Score['events']['count-line']:
+        cl['id'] = 'countline%i'%new_id
+        draw_countline_editor(cl,
+            editor,
+            hbar,
+            y_scale_percent,
+            x_scale_quarter_mm,
+            MM,
+            color_notation_editor)
+        new_id += 1
+
+    # draw text events
+    # draw countline events
+    for txt in Score['events']['text']:
+        txt['id'] = 'text%i'%new_id
+        draw_text_editor(txt,
+            editor, hbar, y_scale_percent, 
+            x_scale_quarter_mm, MM)
+        new_id += 1
+        
+
     update_drawing_order_editor(editor)
 
     editor.delete('loading')
@@ -743,7 +766,7 @@ def mouse_handling(event, event_type):
         'btn2release', 'btn3click', 'btn3release' or 'motion'.
     '''
     global hold_id, hand, new_id, cursor_note, cursor_time, edit_cursor, file_changed, new_slur
-    global selection, shiftbutton1click, selection_tags, mouse_time, active_selection, ms_xy
+    global selection, shiftbutton1click, selection_tags, mouse_time, active_selection, ms_xy, cl_handle
 
     editor.tag_lower('cursor')
 
@@ -767,7 +790,13 @@ def mouse_handling(event, event_type):
         '''
 
         # we add a note when not clicking on an existing note with left-mouse-button:
-        if event_type == 'btn1click':
+        if event_type == 'btn1click' or event_type == 'ctl-click-btn1':
+
+            # if control was hold while clicking the stem is set to invisible
+            if event_type == 'ctl-click-btn1':
+                stem_visible = False
+            else:
+                stem_visible = True
 
             file_changed = True
 
@@ -795,7 +824,7 @@ def mouse_handling(event, event_type):
                     "hand": hand,
                     "x-offset": 0,
                     "y-offset": 0,
-                    "stem-visible": True
+                    "stem-visible": stem_visible
                 }
                 draw_note_pianoroll(new_note, 
                     False, 
@@ -816,10 +845,11 @@ def mouse_handling(event, event_type):
                 hold_id = new_note['id']
                 new_id += 1
             else:
-                # update hand to current selected mode
+                # update hand  and stem-visible
                 for evt in Score['events']['note']:
                     if evt['id'] == hold_id:
                         evt['hand'] = hand
+                        evt['stem-visible'] = stem_visible
                         editor.delete(hold_id)
                         draw_note_pianoroll(evt, 
                             False, 
@@ -851,10 +881,10 @@ def mouse_handling(event, event_type):
                     # write change to Score
                     for evt in Score['events']['note']:
                         if evt['id'] == hold_id:
-                            mx = x2tick_editor(mx, editor, hbar, y_scale_percent, x_scale_quarter_mm, last_pianotick, edit_grid, MM)
-                            if mx > evt['time']:
-                                evt['duration'] = mx - evt['time']
-                            if mx < evt['time']:
+                            m_x = x2tick_editor(mx, editor, hbar, y_scale_percent, x_scale_quarter_mm, last_pianotick, edit_grid, MM, False, ':p')
+                            if m_x > evt['time']:
+                                evt['duration'] = m_x - evt['time']
+                            if m_x < evt['time']:
                                 evt['pitch'] = y2pitch_editor(my, editor, hbar, y_scale_percent)
                             draw_note_pianoroll(evt, 
                                 False, 
@@ -1268,15 +1298,185 @@ def mouse_handling(event, event_type):
             in 'text-adding-mode'.
         '''
 
-        ...
+        if event_type == 'btn1click':
 
+            tags = editor.gettags('current')
+            edit = False
+            try:
+                if 'text' in tags[0]:
+                    edit = True
+            except IndexError: ...
+
+            if edit:
+                # editing position
+                hold_id = tags[0]
+
+            else:
+                # adding new text
+                user_input = AskTextEditor(root,'New text...',
+                        'Please provide the text you want to add:',
+                        'Text...')
+                if user_input.result == None: return
+                new = {
+                    "id":'text%i'%new_id,
+                    "time":ex,
+                    "pitch":ey,
+                    "text":user_input.result,
+                    "vert":user_input.vert
+                }
+                new_id += 1
+
+                draw_text_editor(new,editor,hbar,y_scale_percent,
+                    x_scale_quarter_mm,MM)
+                do_engrave()
+
+                # add to Score
+                Score['events']['text'].append(new)
+
+        if event_type == 'motion':
+
+            if 'text' in hold_id:
+
+                for t in Score['events']['text']:
+                    if t['id'] == hold_id:
+                        t['time'] = ex
+                        t['pitch'] = ey
+                        draw_text_editor(t,editor,hbar,y_scale_percent,
+                            x_scale_quarter_mm,MM)
+
+        if event_type == 'btn1release':
+
+            if 'text' in hold_id:
+                # moving the text while moving the mouse
+                for t in Score['events']['text']:
+                    if t['id'] == hold_id:
+                        t['time'] = ex
+                        t['pitch'] = ey
+                        draw_text_editor(t,editor,hbar,y_scale_percent,
+                            x_scale_quarter_mm,MM)
+
+                hold_id = ''
+                do_engrave()        
+
+
+        if event_type == 'btn3click':
+
+            # remove text at right mouse click
+            tags = editor.gettags('current')
+            if 'text' in tags[0]:
+                editor.delete(tags[0])
+            else: return
+            for t in Score['events']['text']:
+                if t['id'] == tags[0]:
+                    Score['events']['text'].remove(t)
+                    do_engrave()
+
+        if event_type == 'ctl-click-btn1':
+
+            tags = editor.gettags('current')
+            if tags:
+                if 'text' in tags[0]:
+                    for t in Score['events']['text']:
+                        if t['id'] == tags[0]:
+                            print(t)
+                            # Edit existing text
+                            user_input = AskTextEditor(root,'New text...',
+                                    'Please provide the text you want to add:',
+                                    t['text'],t['vert'])
+                            if user_input.result == None: return
+                            t['text'] = user_input.result
+                            t['vert'] = user_input.vert
+                            # redraw in editor
+                            draw_text_editor(t,
+                                editor, hbar, y_scale_percent, 
+                                x_scale_quarter_mm, MM)
+                            do_engrave()
+
+    
     if input_mode == 'countline':
         '''
             This part defines what to do if we are
             in 'countline-adding-mode'.
         '''
 
-        ...
+        if event_type == 'btn1click':
+
+            # there are two options; editing or adding
+
+            tags = editor.gettags('current')
+            print(tags)
+            edit = False
+            try:
+                if 'countline' in tags[0]:
+                    edit = True
+            except IndexError: ...
+
+            if edit:
+                # editing
+                cl_handle = tags[1]
+                hold_id = tags[0]
+
+            else:
+                # adding
+                new = {
+                    "id":'countline%i'%new_id,
+                    "time":ex,
+                    "pitch1":ey,
+                    "pitch2":ey
+                }
+                new_id += 1
+
+                draw_countline_editor(new,editor,hbar,y_scale_percent,
+                    x_scale_quarter_mm,MM)
+
+                hold_id = new['id']
+
+                # add to Score
+                Score['events']['count-line'].append(new)
+
+
+        if event_type == 'motion':
+
+            if 'countline' in hold_id:
+
+                for cl in Score['events']['count-line']:
+                    if cl['id'] == hold_id:
+                        if cl_handle == 'handle1':
+                            cl['pitch1'] = ey
+                        else:
+                            cl['pitch2'] = ey
+                        draw_countline_editor(cl,editor,hbar,y_scale_percent,
+                            x_scale_quarter_mm,MM)
+
+        if event_type == 'btn1release':
+
+            if 'countline' in hold_id:
+
+                for cl in Score['events']['count-line']:
+                    if cl['id'] == hold_id:
+                        if cl_handle == 'handle1':
+                            cl['pitch1'] = ey
+                        else:
+                            cl['pitch2'] = ey
+                        draw_countline_editor(cl,editor,hbar,y_scale_percent,
+                            x_scale_quarter_mm,MM)
+                
+                hold_id = ''
+                do_engrave()
+
+        if event_type == 'btn3click':
+
+            # remove countline at right mouse click
+            tags = editor.gettags('current')
+            if 'countline' in tags[0]:
+                editor.delete(tags[0])
+            else: return
+            for cl in Score['events']['count-line']:
+                if cl['id'] == tags[0]:
+                    Score['events']['count-line'].remove(cl)
+                    do_engrave()
+
+
 
     if input_mode == 'slur':
 
@@ -1624,20 +1824,46 @@ def exportPostscript():
     f = filedialog.asksaveasfile(mode='w', 
         parent=root, 
         filetypes=[("postscript file", "*.ps")], 
-        initialfile=Score['properties']['title']['text'],
+        initialfile=Score['header']['title']['text'],
         initialdir='~/Desktop')
 
     if f:
-        for export in range(engrave('export')):
-            print('printing page ', export)
-            pview.postscript(file=f"{f.name}{export}.ps", 
-                colormode='gray', 
-                x=10000, 
-                y=export * (Score['properties']['page-width'] * MM),
-                width=Score['properties']['page-width'] * MM, 
-                height=Score['properties']['page-width'] * MM, 
-                rotate=False,
-                fontmap='-*-Courier-Bold-R-Normal--*-120-*')
+        if Score['properties']['engraver'] == 'pianoscript':
+            numofpages = range(engrave_pianoscript('export',
+                renderpageno,
+                Score,
+                MM,
+                last_pianotick,
+                color_notation_editor,
+                color_editor_canvas,
+                pview,root,
+                BLACK))
+            for rend in numofpages:
+                pview.postscript(file=f"{f.name[:-3]}{rend}.ps", 
+                    x=10000,
+                    y=rend * (Score['properties']['page-height'] * MM), 
+                    width=Score['properties']['page-width'] * MM,
+                    height=Score['properties']['page-height'] * MM, 
+                    rotate=False,
+                    fontmap='-*-Courier-Bold-R-Normal--*-120-*')
+        else:
+            numofpages = range(engrave_pianoscript_vertical('export',
+                renderpageno,
+                Score,
+                MM,
+                last_pianotick,
+                color_notation_editor,
+                color_editor_canvas,
+                pview,root,
+                BLACK))
+            for rend in numofpages:
+                pview.postscript(file=f"/tmp/tmp{rend}.ps", 
+                    x=rend * (Score['properties']['page-width'] * MM),
+                    y=10000, 
+                    width=Score['properties']['page-width'] * MM,
+                    height=Score['properties']['page-height'] * MM, 
+                    rotate=False,
+                    fontmap='-*-Courier-Bold-R-Normal--*-120-*')
 
 
 
@@ -1856,7 +2082,7 @@ def set_value(t):
             int(Score['properties'][t][5:], 16)).color
         if user_input: 
             Score['properties'][t] = user_input
-            file_changed = True   
+            file_changed = True
             do_pianoroll()
     elif t == 'color-left-hand-midinote':
         user_input = GreyscalePicker(root, 
@@ -2132,8 +2358,8 @@ def mode_select(mode,i_mode):
     input_right_button,
     input_left_button,
     linebreak_button,
-    txt_button,
     countline_button,
+    txt_button,
     slur_button
     ]
 
@@ -2193,8 +2419,8 @@ def mode_select(mode,i_mode):
 input_right_button.configure(command=lambda: [mode_select(0,'right'), mode_label.focus_force()])
 input_left_button.configure(command=lambda: [mode_select(1,'left'), mode_label.focus_force()])
 linebreak_button.configure(command=lambda: [mode_select(2,'linebreak'), mode_label.focus_force()])
-txt_button.configure(command=lambda: [mode_select(3,'countline'), mode_label.focus_force()])
-countline_button.configure(command=lambda: [mode_select(4,'text'), mode_label.focus_force()])
+countline_button.configure(command=lambda: [mode_select(3,'countline'), mode_label.focus_force()])
+txt_button.configure(command=lambda: [mode_select(4,'text'), mode_label.focus_force()])
 slur_button.configure(command=lambda: [mode_select(5,'slur'), mode_label.focus_force()])
 
 def space_shift(event):
@@ -2485,7 +2711,7 @@ fileMenu.add_command(label='Save as... [alt+s]', command=save_as)
 fileMenu.add_separator()
 fileMenu.add_command(label='Load midi [ctl+m]', command=midi_import)
 fileMenu.add_separator()
-fileMenu.add_command(label="Export ps", command=transpose)
+fileMenu.add_command(label="Export ps", command=exportPostscript)
 fileMenu.add_command(label="Export pdf [ctl+e]", command=exportPDF)
 fileMenu.add_command(label="Export midi*", command=lambda: midiexport(root,Score))
 fileMenu.add_separator()
@@ -2553,6 +2779,7 @@ editor.bind('<Motion>', lambda event: mouse_handling(event, 'motion'))
 editor.bind('<Button-1>', lambda event: mouse_handling(event, 'btn1click'))
 editor.bind('<ButtonRelease-1>', lambda event: mouse_handling(event, 'btn1release'))
 if platform.system() == 'Linux' or platform.system() == 'Windows':
+    editor.bind('<Control-Button-1>', lambda event: mouse_handling(event, 'ctl-click-btn1'))
     editor.bind('<Double-Button-1>', lambda event: mouse_handling(event, 'double-btn1'))
     editor.bind('<Button-2>', lambda event: mouse_handling(event, 'btn2click'))
     editor.bind('<ButtonRelease-2>', lambda event: mouse_handling(event, 'btn2release'))

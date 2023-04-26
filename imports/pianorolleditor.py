@@ -29,7 +29,7 @@ def rcolor():
     rc ='#%02X%02X%02X' % (random_color(),random_color(),random_color())
     return rc
 
-def x2tick_editor(mx, editor, hbar, y_scale_percent, x_scale_quarter_mm, total_pianoticks, edit_grid, MM, literal=False):
+def x2tick_editor(mx, editor, hbar, y_scale_percent, x_scale_quarter_mm, total_pianoticks, edit_grid, MM, literal=False, snapmode='normal'):
     '''
         This function converts the mouse position to
         (start) time in pianoticks.
@@ -44,7 +44,10 @@ def x2tick_editor(mx, editor, hbar, y_scale_percent, x_scale_quarter_mm, total_p
     if literal:
         out = interpolation(start, end, mx) * total_pianoticks
     else:
-        out = baseround(interpolation(start, end, mx) * total_pianoticks, edit_grid)
+        if snapmode != 'normal':
+            out = round(((interpolation(start, end, mx) * total_pianoticks) - (edit_grid / 2)) / edit_grid) * edit_grid
+        else:
+            out = baseround(interpolation(start, end, mx) * total_pianoticks, edit_grid)
     if out < 0:
         return 0
     else:
@@ -180,6 +183,8 @@ def draw_note_pianoroll(note,
     if cursor:
         state = 'disabled'
         note_color = '#268bd2'
+    if not note['stem-visible']:
+        note_color = 'grey'
     color_right_midinote = Score['properties']['color-right-hand-midinote']
     color_left_midinote = Score['properties']['color-left-hand-midinote']
     if select:
@@ -210,57 +215,59 @@ def draw_note_pianoroll(note,
             state=state)
     # stem
     if note['hand'] == 'r':
-        editor.create_line(x,
-            y,
-            x,
-            y-(20*y_factor),
-            width=2,
-            fill=note_color,
-            tag=(note['id'], 'stem'),
-            state=state)
-        # barline white space
-        bl_times = barline_times(Score['events']['grid'])
-        if note['time'] in bl_times:
+        if note['stem-visible']:
             editor.create_line(x,
+                y,
+                x,
                 y-(20*y_factor),
-                x,
-                y-(25*y_factor),
                 width=2,
-                tag=(note['id'], 'whitespace'),
-                fill=color_editor_canvas)
-            editor.create_line(x,
-                y,
-                x,
-                y+(7.5*y_factor),
-                width=2,
-                tag=(note['id'], 'whitespace'),
-                fill=color_editor_canvas)
+                fill=note_color,
+                tag=(note['id'], 'stem'),
+                state=state)
+            # barline white space
+            bl_times = barline_times(Score['events']['grid'])
+            if note['time'] in bl_times:
+                editor.create_line(x,
+                    y-(20*y_factor),
+                    x,
+                    y-(25*y_factor),
+                    width=2,
+                    tag=(note['id'], 'whitespace'),
+                    fill=color_editor_canvas)
+                editor.create_line(x,
+                    y,
+                    x,
+                    y+(7.5*y_factor),
+                    width=2,
+                    tag=(note['id'], 'whitespace'),
+                    fill=color_editor_canvas)
     else:
-        editor.create_line(x,
-            y,
-            x,
-            y+(20*y_factor),
-            width=2,
-            fill=note_color,
-            tag=(note['id'], 'stem'),
-            state=state)
-        # barline white space
-        bl_times = barline_times(Score['events']['grid'])
-        if note['time'] in bl_times:
-            editor.create_line(x,
-                y+(20*y_factor),
-                x,
-                y+(25*y_factor),
-                width=2,
-                tag=(note['id'], 'whitespace'),
-                fill=color_editor_canvas)
+        if note['stem-visible']:
             editor.create_line(x,
                 y,
                 x,
-                y-(7.5*y_factor),
+                y+(20*y_factor),
                 width=2,
-                tag=(note['id'], 'whitespace'),
-                fill=color_editor_canvas)
+                fill=note_color,
+                tag=(note['id'], 'stem'),
+                state=state)
+            # barline white space
+            bl_times = barline_times(Score['events']['grid'])
+            if note['time'] in bl_times:
+                editor.create_line(x,
+                    y+(20*y_factor),
+                    x,
+                    y+(25*y_factor),
+                    width=2,
+                    tag=(note['id'], 'whitespace'),
+                    fill=color_editor_canvas)
+                editor.create_line(x,
+                    y,
+                    x,
+                    y-(7.5*y_factor),
+                    width=2,
+                    tag=(note['id'], 'whitespace'),
+                    fill=color_editor_canvas)
         # left dot
         if note['pitch'] in BLACK:
             r = 1.5
@@ -287,36 +294,14 @@ def draw_note_pianoroll(note,
         if note['hand'] == 'r':
             y0 = y - (5*y_factor)
             y1 = y + (5*y_factor)
-            editor.create_polygon(x,
-                y,
-                x + (5 * y_factor),
-                y0,
-                x1 - (5 * y_factor),
-                y0,
-                x1,
-                y,
-                x1 - (5 * y_factor),
-                y1,
-                x + (5 * y_factor),
-                y1,
+            editor.create_polygon(x,y,x1,y0,x1,y1,
                 fill=color_right_midinote,
                 tag=(note['id'], 'midinote'))
         else:
             y0 = y - (5*y_factor)
             y1 = y + (5*y_factor)
-            editor.create_polygon(x,
-                y,
-                x + (5 * y_factor),
-                y0,
-                x1 - (5 * y_factor),
-                y0,
-                x1,
-                y,
-                x1 - (5 * y_factor),
-                y1,
-                x + (5 * y_factor),
-                y1,
-                fill=color_left_midinote,
+            editor.create_polygon(x,y,x1,y0,x1,y1,
+                fill=color_right_midinote,
                 tag=(note['id'], 'midinote'))
         # notestop
         editor.create_line(x1,
@@ -326,8 +311,9 @@ def draw_note_pianoroll(note,
             width=2,
             fill=note_color,
             tag=(note['id'], 'notestop'))
-    update_connectstem(note,editor,hbar,y_scale_percent,x_scale_quarter_mm,MM,Score,color_notation_editor, False,'r')
-    update_connectstem(note,editor,hbar,y_scale_percent,x_scale_quarter_mm,MM,Score,color_notation_editor, False,'l')
+    if note['stem-visible']:
+        update_connectstem(note,editor,hbar,y_scale_percent,x_scale_quarter_mm,MM,Score,color_notation_editor, False,'r')
+        update_connectstem(note,editor,hbar,y_scale_percent,x_scale_quarter_mm,MM,Score,color_notation_editor, False,'l')
     
 
     if edit:
@@ -385,6 +371,8 @@ def update_drawing_order_editor(canvas):
     canvas.tag_raise('new')
     canvas.tag_raise('connectstem')
     canvas.tag_raise('cursor')
+    canvas.tag_raise('countline')
+    canvas.tag_raise('texttext')
 
 
 def draw_linebreak_editor(linebreak,
@@ -531,3 +519,58 @@ def slur_editor(editor, slur, idd, draw_scale, thickness=7.5, steps=100, drawcon
             fill='yellow',
             outline='')
 
+
+def draw_countline_editor(countline, 
+    editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
+    
+    editor.delete(countline['id'])
+
+    t = time2x_editor(countline['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    p1 = pitch2y_editor(countline['pitch1'], editor, hbar, y_scale_percent)
+    p2 = pitch2y_editor(countline['pitch2'], editor, hbar, y_scale_percent)
+    editor.create_line(t,p1,t,p2,
+        fill=color_notation_editor,
+        width=1,
+        dash=(2,2),
+        tag=(countline['id'], 'countline'))
+    editor.create_rectangle(t-5,p1-5,t+5,p1+5,
+        fill='green',
+        outline='',
+        tag=(countline['id'], 'handle1', 'countline'))
+    editor.create_rectangle(t-5,p2-5,t+5,p2+5,
+        fill='green',
+        outline='',
+        tag=(countline['id'], 'handle2', 'countline'))
+
+
+def draw_text_editor(text,
+    editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
+    
+    editor.delete(text['id'])
+
+    t = time2x_editor(text['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    p = pitch2y_editor(text['pitch'], editor, hbar, y_scale_percent)
+    if text['vert'] == 1:
+        angle = 90
+        anchor = 'n'
+    else:
+        angle = 0
+        anchor = 'w'
+
+    mytext = editor.create_text(t,p,
+        text=text['text'],
+        anchor=anchor,
+        tag=(text['id'], 'texttext'),
+        angle=angle)
+    bb = editor.bbox(mytext)
+    w = bb[2]-bb[0]
+    h = bb[3]-bb[1]
+    editor.create_rectangle(t,p-(h/2),
+        t+w,p+(h/2),
+        fill='#eee8d5',
+        outline='#268bd2',
+        tag=(text['id'],'textbg'))
+    editor.tag_raise('textbg')
+    editor.tag_raise('texttext')
