@@ -328,6 +328,7 @@ class QuantizeDialog:
         self.popup = Toplevel(self.parent)
         self.popup.title(self.title)
         self.popup.wm_attributes("-topmost", 1)
+        self.popup.resizable(0,0)
 
         # create frame
         self.frame = Frame(self.popup)

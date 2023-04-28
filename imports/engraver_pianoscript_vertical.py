@@ -547,6 +547,7 @@ def engrave_pianoscript_vertical(render_type,
                 page = []
                 page.append(line)
                 page_spacing.append(remaining_space)
+                remaining_space = printarea_width - x_cursor
             # if this is the last line:
             if c+1 == len(doc):
                 DOC.append(page)
@@ -1031,10 +1032,10 @@ def engrave_pianoscript_vertical(render_type,
                                           yy + (2.5 * draw_scale),
                                           text=obj['text'],
                                           tag='tsigtext',
-                                          anchor='ne',
+                                          anchor='nw',
                                           font=('courier', 10),
                                           fill=color_black,
-                                          angle=90)
+                                          angle=-90)
 
                     # text
                     if obj['type'] == 'text':
@@ -1050,7 +1051,7 @@ def engrave_pianoscript_vertical(render_type,
                                                   yy,
                                                   text=obj['text'],
                                                   tag='text',
-                                                  anchor='w',
+                                                  anchor='nw',
                                                   font=('Courier', 10, 'normal'),
                                                   fill=color_black)
                             round_rectangle(pview, pview.bbox(t)[0]-(1*draw_scale),

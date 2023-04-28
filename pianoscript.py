@@ -119,7 +119,7 @@ from imports.dialogs import *
 color_basic_gui = '#002B36'
 color_right_midinote = Score['properties']['color-right-hand-midinote']
 color_left_midinote = Score['properties']['color-left-hand-midinote']
-color_editor_canvas = '#eee8d5'#d9d9d9#fdffd1
+color_editor_canvas = '#eee8d5'#d9d9d9 #fdffd1
 color_highlight = '#268bd2'#a6a832
 color_notation_editor = '#002b66'
 
@@ -133,16 +133,79 @@ scrwidth = root.winfo_screenwidth()
 scrheight = root.winfo_screenheight()
 root.geometry("%sx%s+0+0" % (int(scrwidth), int(scrheight)))
 
-# PanedWindow
-master_paned = PanedWindow(root, orient='h', sashwidth=10, relief='flat', bg=color_basic_gui)
-master_paned.pack(padx=5,pady=5,expand=True,fill='both')
+# rootframe
+rootframe = Frame(root, bg='#333333')
+rootframe.pack(fill='both',expand=True)
 
-# toolbar
-toolbarpanel = Frame(master_paned, bg=color_basic_gui)
-master_paned.add(toolbarpanel, width=45)
-noteinput_label = Label(toolbarpanel, text='GRID', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+# toolbar:
+toolbarpanel = Frame(rootframe, bg='#666666', relief='ridge')
+toolbarpanel.pack(fill='x', expand=False, side='top',padx=5,pady=5)
+toolbarpanel_tooltip = Tooltip(toolbarpanel, text='For all elements: Left mouse button = add, Right mouse button = remove', wraplength=scrwidth)
+
+input_right_button = Button(toolbarpanel, text='right', activebackground=color_highlight, bg=color_highlight)
+input_right_button.pack(side='left')
+ir_photo = PhotoImage(file = r"icons/noteinput_R.png")
+input_right_button.configure(image=ir_photo)
+input_right_button_tooltip = Tooltip(input_right_button, text='Right hand note', wraplength=scrwidth)
+
+input_left_button = Button(toolbarpanel, bg='#f0f0f0', activebackground=color_highlight)
+input_left_button.pack(side='left')
+il_photo = PhotoImage(file = r"icons/noteinput_L.png")
+input_left_button.configure(image=il_photo)
+input_left_button_tooltip = Tooltip(input_left_button, text='Left hand note', wraplength=scrwidth)
+
+linebreak_button = Button(toolbarpanel, text='linebreak', activebackground=color_highlight, bg='#f0f0f0')
+linebreak_button.pack(side='left')
+lb_photo = PhotoImage(file = r"icons/linebreak.png")
+linebreak_button.configure(image=lb_photo)
+linebreak_button_tooltip = Tooltip(linebreak_button, text='Line-break; \nYou can edit margins for each line by clicking\non a line-break.', wraplength=scrwidth)
+
+countline_button = Button(toolbarpanel, text='countline*', bg='#f0f0f0', activebackground=color_highlight)
+countline_button.pack(side='left')
+cnt_photo = PhotoImage(file = r"icons/countline.png")
+countline_button.configure(image=cnt_photo)
+countline_button_tooltip = Tooltip(countline_button, text='Countline', wraplength=scrwidth)
+
+txt_button = Button(toolbarpanel, text='text*', bg='#f0f0f0', activebackground=color_highlight)
+txt_button.pack(side='left')
+txt_photo = PhotoImage(file = r"icons/text.png")
+txt_button.configure(image=txt_photo)
+txt_button_tooltip = Tooltip(txt_button, text='Text; Edit text by\nctrl+click on a existing text.', wraplength=scrwidth)
+
+slur_button = Button(toolbarpanel, text='slur*', bg='#f0f0f0', activebackground=color_highlight)
+slur_button.pack(side='left')
+slr_photo = PhotoImage(file = "icons/slur.png")
+slur_button.configure(image=slr_photo)
+slur_button_tooltip = Tooltip(slur_button, text='Slur', wraplength=scrwidth)
+
+staffsizer_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
+staffsizer_button.pack(side='left')
+stf_photo = PhotoImage(file = "icons/staffspacer.png")
+staffsizer_button.configure(image=stf_photo)
+staffspacer_tooltip = Tooltip(staffsizer_button, text='Staff sizer', wraplength=scrwidth)
+
+repeats_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
+repeats_button.pack(side='left')
+rpts_photo = PhotoImage(file = "icons/repeats.png")
+repeats_button.configure(image=rpts_photo)
+repeats_tooltip = Tooltip(repeats_button, text='Repeat symbols; click to add start repeat, ctrl+click to add end repeat', wraplength=scrwidth)
+
+beam_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
+beam_button.pack(side='left')
+beam_photo = PhotoImage(file = "icons/beam.png")
+beam_button.configure(image=beam_photo)
+beam_tooltip = Tooltip(beam_button, text='Beam tool', wraplength=scrwidth)
+
+# PanedWindow
+master_paned = PanedWindow(rootframe, orient='h', sashwidth=7.5, relief='flat', bg='#333333')
+master_paned.pack(padx=2.5,pady=2.5,expand=True,fill='both')    
+
+# grid selector
+gridpanel = Frame(master_paned, bg=color_basic_gui)
+master_paned.add(gridpanel, width=45)
+noteinput_label = Label(gridpanel, text='GRID', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
 noteinput_label.pack(fill='x')
-list_dur = Listbox(toolbarpanel, height=8, bg='grey', selectbackground=color_highlight, fg='black')
+list_dur = Listbox(gridpanel, height=8, bg='grey', selectbackground=color_highlight, fg='black')
 list_dur.pack(fill='x')
 list_dur.insert(0, "1")
 list_dur.insert(1, "2")
@@ -153,73 +216,20 @@ list_dur.insert(5, "32")
 list_dur.insert(6, "64")
 list_dur.insert(7, "128")
 list_dur.select_set(3)
-divide_label = Label(toolbarpanel, text='÷', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
+divide_label = Label(gridpanel, text='÷', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
 divide_label.pack(fill='x')
-divide_spin = Spinbox(toolbarpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
+divide_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
 divide_spin.pack(fill='x')
 div_spin = StringVar(value=1)
 divide_spin.configure(textvariable=div_spin)
-times_label = Label(toolbarpanel, text='×', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
+times_label = Label(gridpanel, text='×', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
 times_label.pack(fill='x')
-times_spin = Spinbox(toolbarpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
+times_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
 times_spin.pack(fill='x')
 tim_spin = StringVar(value=1)
 times_spin.configure(textvariable=tim_spin)
-fill_label1 = Label(toolbarpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+fill_label1 = Label(gridpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
 fill_label1.pack(fill='x')
-
-# mode knobs:
-mode_label = Label(toolbarpanel, text='MODE', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
-mode_label.pack(fill='x')
-
-input_right_button = Button(toolbarpanel, text='right', activebackground=color_highlight, bg=color_highlight)
-input_right_button.pack(fill='x')
-ir_photo = PhotoImage(file = r"icons/noteinput_R.png")
-input_right_button.configure(image=ir_photo)
-input_right_button_tooltip = Tooltip(input_right_button, text='Right hand note', wraplength=scrwidth)
-
-input_left_button = Button(toolbarpanel, bg='#f0f0f0', activebackground=color_highlight)
-input_left_button.pack(fill='x')
-il_photo = PhotoImage(file = r"icons/noteinput_L.png")
-input_left_button.configure(image=il_photo)
-input_left_button_tooltip = Tooltip(input_left_button, text='Left hand note', wraplength=scrwidth)
-fill_label9 = Label(toolbarpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
-fill_label9.pack(fill='x')
-linebreak_button = Button(toolbarpanel, text='linebreak', activebackground=color_highlight, bg='#f0f0f0')
-linebreak_button.pack(fill='x')
-lb_photo = PhotoImage(file = r"icons/linebreak.png")
-linebreak_button.configure(image=lb_photo)
-linebreak_button_tooltip = Tooltip(linebreak_button, text='Line-break; \nYou can edit margins for each line by clicking\non a line-break.', wraplength=scrwidth)
-
-countline_button = Button(toolbarpanel, text='countline*', bg='#f0f0f0', activebackground=color_highlight)
-countline_button.pack(fill='x')
-cnt_photo = PhotoImage(file = r"icons/countline.png")
-countline_button.configure(image=cnt_photo)
-countline_button_tooltip = Tooltip(countline_button, text='Countline', wraplength=scrwidth)
-
-txt_button = Button(toolbarpanel, text='text*', bg='#f0f0f0', activebackground=color_highlight)
-txt_button.pack(fill='x')
-txt_photo = PhotoImage(file = r"icons/text.png")
-txt_button.configure(image=txt_photo)
-txt_button_tooltip = Tooltip(txt_button, text='Text; Edit text by\nctrl+click on a existing text.', wraplength=scrwidth)
-
-slur_button = Button(toolbarpanel, text='slur*', bg='#f0f0f0', activebackground=color_highlight)
-slur_button.pack(fill='x')
-slr_photo = PhotoImage(file = "icons/slur.png")
-slur_button.configure(image=slr_photo)
-slur_button_tooltip = Tooltip(slur_button, text='Slur', wraplength=scrwidth)
-
-staffsizer_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
-staffsizer_button.pack(fill='x')
-stf_photo = PhotoImage(file = "icons/staffspacer.png")
-staffsizer_button.configure(image=stf_photo)
-staffspacer_tooltip = Tooltip(staffsizer_button, text='Staff sizer', wraplength=scrwidth)
-
-repeats_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
-repeats_button.pack(fill='x')
-rpts_photo = PhotoImage(file = "icons/repeats.png")
-repeats_button.configure(image=rpts_photo)
-repeats_tooltip = Tooltip(repeats_button, text='Repeat symbols; click to add start repeat, ctrl+click to add end repeat', wraplength=scrwidth)
 
 # editor
 root.update()
@@ -301,7 +311,7 @@ file_path = 'New'
 
 def test_file():
     print('test_file...')
-    with open('/home/floepie/pCloudDrive/pianoscript/PianoScriptV1/2023/kaars.pianoscript', 'r') as f:
+    with open('/home/floepie/Desktop/test.pianoscript', 'r') as f:
         global Score
         Score = json.load(f)
         # run the piano-roll and print-view
@@ -2489,7 +2499,8 @@ def mode_select(mode,i_mode):
     txt_button,
     slur_button,
     staffsizer_button,
-    repeats_button
+    repeats_button,
+    beam_button
     ]
 
     for i,conf in enumerate(modes):
@@ -2545,14 +2556,15 @@ def mode_select(mode,i_mode):
 
     input_mode = i_mode
 
-input_right_button.configure(command=lambda: [mode_select(0,'right'), mode_label.focus_force()])
-input_left_button.configure(command=lambda: [mode_select(1,'left'), mode_label.focus_force()])
-linebreak_button.configure(command=lambda: [mode_select(2,'linebreak'), mode_label.focus_force()])
-countline_button.configure(command=lambda: [mode_select(3,'countline'), mode_label.focus_force()])
-txt_button.configure(command=lambda: [mode_select(4,'text'), mode_label.focus_force()])
-slur_button.configure(command=lambda: [mode_select(5,'slur'), mode_label.focus_force()])
-staffsizer_button.configure(command=lambda: [mode_select(6,'staffsizer'), mode_label.focus_force()])
-repeats_button.configure(command=lambda: [mode_select(7,'repeats'), mode_label.focus_force()])
+input_right_button.configure(command=lambda: [mode_select(0,'right'), noteinput_label.focus_force()])
+input_left_button.configure(command=lambda: [mode_select(1,'left'), noteinput_label.focus_force()])
+linebreak_button.configure(command=lambda: [mode_select(2,'linebreak'), noteinput_label.focus_force()])
+countline_button.configure(command=lambda: [mode_select(3,'countline'), noteinput_label.focus_force()])
+txt_button.configure(command=lambda: [mode_select(4,'text'), noteinput_label.focus_force()])
+slur_button.configure(command=lambda: [mode_select(5,'slur'), noteinput_label.focus_force()])
+staffsizer_button.configure(command=lambda: [mode_select(6,'staffsizer'), noteinput_label.focus_force()])
+repeats_button.configure(command=lambda: [mode_select(7,'repeats'), noteinput_label.focus_force()])
+beam_button.configure(command=lambda: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
 
 def space_shift(event):
     '''

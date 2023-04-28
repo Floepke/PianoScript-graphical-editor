@@ -550,7 +550,7 @@ def draw_text_editor(text,
     p = pitch2y_editor(text['pitch'], editor, hbar, y_scale_percent)
     if text['vert'] == 1:
         angle = 90
-        anchor = 'n'
+        anchor = 'nw'
     else:
         angle = 0
         anchor = 'w'
@@ -563,11 +563,18 @@ def draw_text_editor(text,
     bb = editor.bbox(mytext)
     w = bb[2]-bb[0]
     h = bb[3]-bb[1]
-    editor.create_rectangle(t,p-(h/2),
-        t+w,p+(h/2),
-        fill='#eee8d5',
-        outline='#268bd2',
-        tag=(text['id'],'textbg'))
+    if text['vert'] == 1:
+        editor.create_rectangle(t,p,
+            t+w,p-h,
+            fill='#eee8d5',
+            outline='#268bd2',
+            tag=(text['id'],'textbg'))
+    else:
+        editor.create_rectangle(t,p-(h/2),
+            t+w,p+(h/2),
+            fill='#eee8d5',
+            outline='#268bd2',
+            tag=(text['id'],'textbg'))
     editor.tag_raise('textbg')
     editor.tag_raise('texttext')
 
@@ -578,8 +585,10 @@ def draw_staffsizer_editor(sizer,
     editor.delete(sizer['id'])
     t = time2x_editor(sizer['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
     p = pitch2y_editor(sizer['pitch'], editor, hbar, y_scale_percent)
-    r = 7.5
-    editor.create_oval(t-r,p-r,t+r,p+r,fill='red',tag=(sizer['id'],'staffsizer'))
+    if sizer['pitch'] < 40:
+        editor.create_polygon(t-10,p-10,t+10,p-10,t,p+10,outline='',fill='red',tag=sizer['id'])
+    else:
+        editor.create_polygon(t-10,p+10,t+10,p+10,t,p-10,outline='',fill='red',tag=sizer['id'])
 
 def draw_startrepeat_editor(repeat, 
     editor, hbar, y_scale_percent, 
@@ -624,3 +633,24 @@ def draw_endrepeat_editor(repeat,
         width=4,
         tag=repeat['id'],
         fill='purple')
+
+
+def draw_beam_editor(beam,Score,
+    editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
+        
+    editor.delete(beam['id'])
+    
+    # gather all notes from Score that are part of the beam depending on their start time. 
+    beamlist = []
+    for evt in Score['events']['note']:
+        
+        if evt['time'] >= beam['time'] and evt['time'] <= beam['time']+beam['duration']:
+            beamlist.append(e)
+        elif evt['time'] > beam['time']+beam['duration']:
+            break
+    
+    # calculating and drawing the beam 
+    for note in beamlist:
+        
+        ...

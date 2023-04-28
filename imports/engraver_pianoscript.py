@@ -516,6 +516,7 @@ def engrave_pianoscript(render_type,
                 page = []
                 page.append(line)
                 page_spacing.append(remaining_space)
+                remaining_space = printarea_height - header_height - footer_height - y_cursor
             # if this is the last line:
             if c+1 == len(doc):
                 DOC.append(page)
@@ -1011,14 +1012,14 @@ def engrave_pianoscript(render_type,
                                                   y,
                                                   text=obj['text'],
                                                   tag='text',
-                                                  anchor='n',
+                                                  anchor='nw',
                                                   font=('Courier', 10, 'normal'),
                                                   fill=color_black,
                                                   angle=90)
                             round_rectangle(pview, pview.bbox(t)[0]-(1*draw_scale),
-                                            pview.bbox(t)[1]-(1*draw_scale),
+                                            pview.bbox(t)[1]-(5*draw_scale),
                                             pview.bbox(t)[2]-(1*draw_scale),
-                                            pview.bbox(t)[3]+(5*draw_scale),
+                                            pview.bbox(t)[3]+(1*draw_scale),
                                             fill=color_white,
                                             outline='',
                                             width=.5,

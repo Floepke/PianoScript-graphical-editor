@@ -85,7 +85,7 @@ Score = {
     ],
     "note": [],
     "text": [],
-    "bpm": [],
+    "beam": [],
     "slur": [],
     "pedal": [],
     "line-break":[
