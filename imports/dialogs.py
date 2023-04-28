@@ -21,7 +21,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-from tkinter import Tk, Button, Label, Toplevel, Entry, Frame, Text, Scale, Listbox
+from tkinter import Tk, Button, Label, Toplevel, Entry, Frame, Text, Scale, Listbox, Checkbutton, IntVar
 
 if not __name__ == '__main__': 
     from imports.tools import measure_length
@@ -62,7 +62,7 @@ class AskString:
 
         # create the "Cancel" button
         self.cancel_button = Button(self.frame, text="Cancel", command=self._cancel, font=('Courier', 16))
-        self.cancel_button.pack(side='right',padx=5,pady=5)
+        self.cancel_button.pack(side='left',padx=5,pady=5)
 
         # set the focus on the Entry widget
         self.entry.focus_set()
@@ -317,6 +317,69 @@ class AskYesNoCancel:
         self.parent.wait_window(self.popup)
 
 
+class AskYesNoCancelQuantize:
+    def __init__(self, parent, title, prompt):
+        self.parent = parent
+        self.title = title
+        self.prompt = prompt
+        self.result = None
+
+        # create the popup window
+        self.popup = Toplevel(self.parent)
+        self.popup.title(self.title)
+        self.popup.wm_attributes("-topmost", 1)
+
+        # create frame
+        self.frame = Frame(self.popup)
+        self.frame.pack(padx=10, pady=10, fill='both')
+
+        # create the Label widget
+        self.label = Label(self.frame, text=self.prompt, font=('Courier', 16))
+        self.label.pack(padx=5,pady=5)
+        self.label.update()
+        self.label.configure(wraplength=self.label.winfo_width(), justify='left')
+
+        # create the "Yes" button
+        self.yes_button = Button(self.frame, text="Note start", command=self._yes, font=('Courier', 16))
+        self.yes_button.pack(side='left',padx=5,pady=5)
+
+        # create the "No" button
+        self.no_button = Button(self.frame, text="Note duration", command=self._no, font=('Courier', 16))
+        self.no_button.pack(side='left',padx=5,pady=5)
+
+        # create the "Cancel" button
+        self.cancel_button = Button(self.frame, text="Cancel", command=self._cancel, font=('Courier', 16))
+        self.cancel_button.pack(side='left',padx=5,pady=5)
+
+        self.popup.bind('<Escape>', self._cancel)
+        self.popup.bind('<Return>', self._yes)
+
+        # sugar coating
+        self.popup.configure(bg='#002B36')
+        self.label.configure(bg='#eee8d5', fg='#002b66')
+        self.frame.configure(bg='#eee8d5')
+
+        self.show()
+
+    def _yes(self, event=''):
+        self.result = True
+        self.popup.destroy()
+
+    def _no(self, event=''):
+        # set the result to None and destroy the popup window
+        self.result = False
+        self.popup.destroy()
+
+    def _cancel(self, event=''):
+        # set the result to None and destroy the popup window
+        self.result = None
+        self.popup.destroy()
+
+    def show(self):
+        # display the popup window and wait for it to be destroyed
+        self.parent.wait_window(self.popup)
+
+
 class GreyscalePicker:
     def __init__(self, parent, prompt, initialvalue=200):
         self.parent = parent
@@ -384,6 +447,83 @@ class GreyscalePicker:
         self.parent.wait_window(self.popup)
 
 
+class AskTextEditor:
+    def __init__(self, parent, title, prompt, initialtext='', initialcheck=0):
+        self.parent = parent
+        self.title = title
+        self.prompt = prompt
+        self.initialtext = initialtext
+        self.initialcheck = initialcheck
+        self.result = None
+
+        # create the popup window
+        self.popup = Toplevel(self.parent)
+        self.popup.title(self.title)
+        self.popup.wm_attributes("-topmost", 1)
+
+        # create frame
+        self.frame = Frame(self.popup)
+        self.frame.pack(padx=10, pady=10, fill='both')
+
+        # create the Label widget
+        self.label = Label(self.frame, text=self.prompt, font=('Courier', 16))
+        self.label.pack(padx=5,pady=5)
+        self.label.update()
+        self.label.configure(wraplength=self.label.winfo_width(), justify='left')
+
+        # create the Entry widget
+        self.entry = Entry(self.frame, font=('Courier', 16))
+        self.entry.pack(fill='x',padx=5,pady=5)
+        self.entry.insert(0, self.initialtext)
+        self.entry.select_range(0, 'end')
+        self.entry.icursor('end')
+
+        # create the "OK" button
+        self.ok_button = Button(self.frame, text="OK", command=self._ok, font=('Courier', 16))
+        self.ok_button.pack(side='left',padx=5,pady=5)
+
+        # create the "Cancel" button
+        self.cancel_button = Button(self.frame, text="Cancel", command=self._cancel, font=('Courier', 16))
+        self.cancel_button.pack(side='left',padx=5,pady=5)
+
+        # create checkbutton
+        self.vert = IntVar()
+        self.vert.set(self.initialcheck)
+        self.checkbutton = Checkbutton(self.frame, text='place text vertical(in relation to staff)', font=('Courier', 16), variable=self.vert)
+        self.checkbutton.pack(side='left',padx=5,pady=5)
+
+        # set the focus on the Entry widget
+        self.entry.focus_set()
+
+        self.popup.bind('<Escape>', self._cancel)
+        self.popup.bind('<Return>', self._ok)
+
+        # sugar coating
+        self.popup.configure(bg='#002B36')
+        self.label.configure(bg='#eee8d5', fg='#002b66')
+        self.frame.configure(bg='#eee8d5')
+        self.entry.configure(fg='#002b66')
+        self.checkbutton.configure(bg='#eee8d5',fg='#002b66')
+
+
+        self.show()
+
+    def _ok(self, event=''):
+        # save the entered value and destroy the popup window
+        self.result = self.entry.get()
+        self.vert = self.vert.get()
+        self.popup.destroy()
+
+    def _cancel(self, event=''):
+        # set the result to None and destroy the popup window
+        self.result = None
+        self.popup.destroy()
+
+    def show(self):
+        # display the popup window and wait for it to be destroyed
+        self.parent.wait_window(self.popup)
+
+
 
 
 # Example usage
@@ -431,4 +571,4 @@ if __name__ == "__main__":
     #     print(color)
     # elif color == None:
     #     print("Dialog was cancelled")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+
