@@ -419,7 +419,7 @@ def draw_linebreak_editor(linebreak,
             width=2,
             dash=(10,6),
             tag=linebreak['id'],
-            fill=color_notation_editor)
+            fill='green')
     editor.tag_raise(linebreak['id'])
 
     
@@ -592,12 +592,12 @@ def draw_startrepeat_editor(repeat,
     staff_height = editor_height - staff_xy_margin - staff_xy_margin  
     
     editor.create_line(t,staff_xy_margin,
-        t,40,
+        t,staff_xy_margin/2,
         width=2,
         tag=repeat['id'],
         fill='purple')
-    editor.create_line(t,40,
-        t+40,40,
+    editor.create_line(t,staff_xy_margin/2,
+        t+40,staff_xy_margin/2,
         arrow='last',
         width=4,
         tag=repeat['id'],
@@ -614,12 +614,12 @@ def draw_endrepeat_editor(repeat,
     staff_height = editor_height - staff_xy_margin - staff_xy_margin  
     
     editor.create_line(t,staff_xy_margin,
-        t,40,
+        t,staff_xy_margin/2,
         width=2,
         tag=repeat['id'],
         fill='purple')
-    editor.create_line(t,40,
-        t-40,40,
+    editor.create_line(t,staff_xy_margin/2,
+        t-40,staff_xy_margin/2,
         arrow='last',
         width=4,
         tag=repeat['id'],

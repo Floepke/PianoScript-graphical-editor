@@ -317,7 +317,7 @@ class AskYesNoCancel:
         self.parent.wait_window(self.popup)
 
 
-class AskYesNoCancelQuantize:
+class QuantizeDialog:
     def __init__(self, parent, title, prompt):
         self.parent = parent
         self.title = title

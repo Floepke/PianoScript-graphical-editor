@@ -2799,7 +2799,7 @@ def transpose_up(e=''):
 
 def quantize(Score):
     
-    user_input = AskYesNoCancelQuantize(root, 'Quantize...','Choose what you want to quantize. \nThe notes are quantized to the current selected grid \nso you may change the grid before choosing one \nof the options.').result
+    user_input = QuantizeDialog(root, 'Quantize...','Choose what you want to quantize. \nThe notes are quantized to the current selected grid \nso you may change the grid before choosing one \nof the options.').result
     if user_input:
         user_input = 'start'
     if user_input == False:
