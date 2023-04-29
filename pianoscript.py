@@ -88,7 +88,7 @@ line-breaks in terms of measures:'''
 # IMPORTS
 # --------------------
 from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, PhotoImage
-from tkinter import filedialog, Label, Spinbox, StringVar, Listbox, Text
+from tkinter import filedialog, Label, Spinbox, StringVar, Listbox, Text, ttk
 from tkinter import simpledialog,colorchooser, font
 import platform, subprocess, os, threading, json, traceback
 from mido import MidiFile
@@ -140,7 +140,6 @@ rootframe.pack(fill='both',expand=True)
 # toolbar:
 toolbarpanel = Frame(rootframe, bg='#666666', relief='ridge')
 toolbarpanel.pack(fill='x', expand=False, side='top',padx=5,pady=5)
-toolbarpanel_tooltip = Tooltip(toolbarpanel, text='For all elements: Left mouse button = add, Right mouse button = remove', wraplength=scrwidth)
 
 input_right_button = Button(toolbarpanel, text='right', activebackground=color_highlight, bg=color_highlight)
 input_right_button.pack(side='left')
@@ -195,6 +194,20 @@ beam_button.pack(side='left')
 beam_photo = PhotoImage(file = "icons/beam.png")
 beam_button.configure(image=beam_photo)
 beam_tooltip = Tooltip(beam_button, text='Beam tool', wraplength=scrwidth)
+
+# Engraver selector
+engraver_button = Button(toolbarpanel, text='V')
+engraver_button.pack(side='right',fill='y')
+engraver_tooltip = Tooltip(engraver_button, text='horizontal/vertical engraver switch', wraplength=scrwidth)
+
+# nxt prev page buttons
+nextpage_button = Button(toolbarpanel, text='>')
+nextpage_button.pack(side='right',fill='y')
+nextpage_tooltip = Tooltip(nextpage_button, text='next page', wraplength=scrwidth)
+prevpage_button = Button(toolbarpanel, text='<')
+prevpage_button.pack(side='right',fill='y')
+prevpage_tooltip = Tooltip(prevpage_button, text='previous page', wraplength=scrwidth)
+
 
 # PanedWindow
 master_paned = PanedWindow(rootframe, orient='h', sashwidth=7.5, relief='flat', bg='#333333')
@@ -348,6 +361,12 @@ def new_file(e=''):
     do_pianoroll()
     do_engrave()
 
+    # set button switch horz. vert.
+    if Score['properties']['engraver'] == 'pianoscript':
+        engraver_button.configure(text='V')
+    else:
+        engraver_button.configure(text='H')
+
 
 def load_file(e=''):
     print('load_file...')
@@ -392,6 +411,11 @@ def load_file(e=''):
         do_pianoroll()
         do_engrave()
         root.title('PianoScript - %s' % f.name)
+        # set button switch horz. vert.
+        if Score['properties']['engraver'] == 'pianoscript':
+            engraver_button.configure(text='V')
+        else:
+            engraver_button.configure(text='H')
     
     return
 
@@ -1831,7 +1855,7 @@ def midi_import():
 # ------------------
 # export
 # ------------------
-def exportPDF():
+def exportPDF(event=''):
     def is_tool(name):
         """Check whether `name` is on PATH and marked as executable."""
         return which(name) is not None
@@ -2581,6 +2605,12 @@ def space_shift(event):
 
 
 
+# ----------------
+# Engraver switch
+# ----------------
+
+
+
 
 
 
@@ -2672,31 +2702,34 @@ def empty_ctrl_z():
 
 def cycle_trough_pages(event):
     global renderpageno
-    
     if platform.system() in ['Windows', 'Linux']:
 
         if event.num == 3:
-            print('next page')
             renderpageno += 1
         if event.num == 2:
-            print('all pages')
             renderpageno = 0
-
     elif platform.system() == 'Darwin':
 
         if event.num == 2:
-            print('next page')
             renderpageno += 1
         if event.num == 3:
-            print('all pages')
             renderpageno = 0
-
-
     if event.num == 1:
-        print('previous page')
         renderpageno -= 1
 
     do_engrave()
+
+def cycle_trough_pages_button(event=''):
+    
+    global renderpageno
+
+    if event == ':)':
+        renderpageno += 1
+    else:
+        renderpageno -= 1
+    do_engrave()
+nextpage_button.configure(command=lambda: cycle_trough_pages_button(':)'))
+prevpage_button.configure(command=cycle_trough_pages_button)
 
 
 
@@ -2895,22 +2928,32 @@ toolsMenu.add_command(label='Quantize', command=lambda: quantize(Score))
 toolsMenu.add_command(label='Add quick line breaks', command=lambda: add_quick_linebreaks())
 toolsMenu.add_command(label='Transpose', command=lambda: transpose())
 menubar.add_cascade(label="Tools", underline=None, menu=toolsMenu)
-engraver_menu = Menu(menubar, tearoff=0)
-selected_engraver = tk.StringVar()
-def engrave_horizontal():
-    selected_engraver.set("pianoscript")
+
+
+
+
+
+
+
+## engraver switch
+def engraver_switch(event=''):
     global Score
-    Score['properties']['engraver'] = 'pianoscript'
+
+    if Score['properties']['engraver'] == 'pianoscript':
+        Score['properties']['engraver'] = 'pianoscript vertical'
+        engraver_button.configure(text='H')
+    else:
+        Score['properties']['engraver'] = 'pianoscript'
+        engraver_button.configure(text='V')
     do_engrave()
-def engrave_vertical():
-    selected_engraver.set("pianoscript vertical")
-    global Score
-    Score['properties']['engraver'] = 'pianoscript vertical'
-    do_engrave()
-engraver_menu.add_radiobutton(label="pianoscript", command=engrave_horizontal, variable=selected_engraver)
-engraver_menu.add_radiobutton(label="pianoscript vertical", command=engrave_vertical, variable=selected_engraver)
-menubar.add_cascade(label="Engraver", menu=engraver_menu)
-selected_engraver.set("pianoscript")
+
+engraver_button.configure(command=engraver_switch)
+
+
+
+
+
+
 
 
 
@@ -2989,6 +3032,7 @@ root.bind('<Control-s>', save)
 root.bind('<Control-S>', save_as)
 root.bind('<Control-r>', do_pianoroll)
 root.bind('<Control-q>', add_quick_linebreaks)
+root.bind('<Control-e>', exportPDF)
 root.bind('<Up>', transpose_up)
 root.bind('<Key-g>', grideditor)
 root.bind('<Key-q>', lambda e: quantize(Score))

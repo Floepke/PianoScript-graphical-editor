@@ -716,7 +716,7 @@ def engrave_pianoscript(render_type,
                                           capstyle='round',
                                           tag='grid',
                                           fill=color_black)
-                        pview.create_text(x,
+                        pview.create_text(x+(3*draw_scale),
                                           y_cursor,
                                           text=b_counter,
                                           tag='grid',
