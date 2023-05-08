@@ -88,8 +88,8 @@ line-breaks in terms of measures:'''
 # IMPORTS
 # --------------------
 from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, PhotoImage
-from tkinter import filedialog, Label, Spinbox, StringVar, Listbox, Text, ttk
-from tkinter import simpledialog,colorchooser, font
+from tkinter import filedialog, Label, Spinbox, StringVar, Listbox, ttk
+from tkinter import simpledialog
 import platform, subprocess, os, threading, json, traceback
 from mido import MidiFile
 from shutil import which
@@ -263,12 +263,6 @@ pview.place(relwidth=1, relheight=1)
 
 
 
-# changes in ui for windows:
-if platform.system() == 'Windows':
-    mode_label.configure(font=("courier", 12))
-
-
-
   
 
 
@@ -324,7 +318,7 @@ file_path = 'New'
 
 def test_file():
     print('test_file...')
-    with open('/home/floepie/Desktop/test.pianoscript', 'r') as f:
+    with open('/home/nauerna/Desktop/test.pianoscript', 'r') as f:
         global Score
         Score = json.load(f)
         # run the piano-roll and print-view
@@ -333,7 +327,7 @@ def test_file():
         root.title('PianoScript - %s' % f.name)
 
 def new_file(e=''):
-    global Score, file_changed,file_path
+    global Score, file_changed,file_path, renderpageno
     print('new_file')
 
     # check if user wants to save or cancel the task.
@@ -347,6 +341,7 @@ def new_file(e=''):
             return
 
     file_changed = False
+    renderpageno = 0
 
     # create new Score
     print('creating new file...')
@@ -371,7 +366,7 @@ def new_file(e=''):
 def load_file(e=''):
     print('load_file...')
 
-    global Score, file_changed, file_path
+    global Score, file_changed, file_path, renderpageno
 
     # check if user wants to save or cancel the task.
     if file_changed == True:
@@ -385,8 +380,8 @@ def load_file(e=''):
     else:
         ...
 
-    #global file_changed
     file_changed = False
+    renderpageno = 0
 
     # open Score
     f = filedialog.askopenfile(parent=root, 
@@ -502,7 +497,7 @@ def quit_editor(event='dummy'):
 # render mechanics
 needs_to_render = True
 program_is_running = True
-renderpageno = 1
+renderpageno = 0
 
 # piano-roll editor
 x_scale_quarter_mm = 35 # 256 pianoticks == (...)mm on the screen
@@ -518,8 +513,8 @@ selection = None
 active_selection = False
 shiftbutton1click = False
 selection_tags = []
-selection_buffer = []
 copycut_buffer = []
+selection_buffer = []
 mouse_time = 0
 ms_xy = [0,0]
 new_slur = 0
@@ -792,6 +787,14 @@ def do_pianoroll(event='event'):
             editor, hbar, y_scale_percent, 
             x_scale_quarter_mm, MM)
         new_id += 1
+
+    # draw beam events
+    for bm in Score['events']['beam']:
+        bm['id'] = 'beam%i'%new_id
+        draw_beam_editor(bm,
+            editor, hbar, y_scale_percent, 
+            x_scale_quarter_mm, MM)
+        new_id += 1
         
 
     update_drawing_order_editor(editor)
@@ -834,7 +837,7 @@ def mouse_handling(event, event_type):
         event_type == 'btn1click', 'btn1release', 'btn2click', 
         'btn2release', 'btn3click', 'btn3release' or 'motion'.
     '''
-    global hold_id, hand, new_id, cursor_note, cursor_time, edit_cursor, file_changed, new_slur
+    global hold_id, hand, new_id, cursor_note, cursor_time, edit_cursor, file_changed, new_slur, selection_buffer
     global selection, shiftbutton1click, selection_tags, mouse_time, active_selection, ms_xy, cl_handle
 
     editor.tag_lower('cursor')
@@ -1069,6 +1072,9 @@ def mouse_handling(event, event_type):
                         False)
                     update_drawing_order_editor(editor)
 
+        # empty selection_buffer
+        selection_buffer = []
+
         # updating selection
         #if not ex >= last_pianotick:
         shiftbutton1click = True
@@ -1090,15 +1096,25 @@ def mouse_handling(event, event_type):
             "id":'timeselector',
             "time":ex
         }
-        draw_linebreak_editor(cursor,
+        if input_mode == 'beamtool':
+
+            # draw a arrow on the cursor to give the user feedback
+            # on which hand we add the beam if we click in case of
+            # beamtool.
+            if ey > 40:
+                beam = 'up'
+            else:
+                beam = 'down'
+        else:
+            beam = None
+        draw_cursor_editor(cursor,
             editor,
             hbar,
             y_scale_percent,
             x_scale_quarter_mm,
             MM,
-            color_notation_editor,
             color_highlight,
-            True)
+            beam)
 
         editor.tag_lower(cursor['id'])
 
@@ -1114,8 +1130,7 @@ def mouse_handling(event, event_type):
                     "x2":mx,
                     "y2":my
                 }
-                draw_select_rectangle(selection, editor, hbar, 
-                    y_scale_percent, x_scale_quarter_mm, MM)
+                draw_select_rectangle(selection, editor)
 
         mouse_time = ex
 
@@ -1167,6 +1182,7 @@ def mouse_handling(event, event_type):
                             False,
                             True)
                         update_drawing_order_editor(editor)
+                        selection_buffer.append(n)
                         break
                 active_selection = True
 
@@ -1186,31 +1202,10 @@ def mouse_handling(event, event_type):
                 if lb['time'] == ex:
                     hold_id = lb['id']
 
-
-        if event_type == 'motion':
-
-            # display the current mouse-linebreak-position:
-
-            editor.delete('cursor')
-            cursor = {
-                "id":'cursor',
-                "time":ex
-            }
-            draw_linebreak_editor(cursor,
-                editor,
-                hbar,
-                y_scale_percent,
-                x_scale_quarter_mm,
-                MM,
-                color_notation_editor,
-                color_highlight,
-                True)
-
-
         if event_type == 'btn1release':
 
             # it's not alowed to create a linebreak >= latest pianotick; we ignore this case
-            # it's not alowed to create a linebreak <= latest pianotick; we ignore this case
+            # it's not alowed to create a linebreak <= 0; we ignore this case
             if ex >= last_pianotick or ex <= 0:
                 if ex <= 0:
                     # edit the margins (after this scope break/return)
@@ -1239,6 +1234,7 @@ def mouse_handling(event, event_type):
                     do_engrave()
                 hold_id = ''
                 return
+            
             if hold_id:
                 # edit linebreak and all following linebreaks:
                 old_lb_time = None
@@ -1701,6 +1697,143 @@ def mouse_handling(event, event_type):
 
 
 
+    if input_mode == 'beamtool':
+
+        if event_type == 'btn1click':
+
+            # Detecting if we are clicking a beam start
+            tags = editor.gettags(editor.find_withtag('current'))
+            editing = False
+            if tags:    
+                if 'beam' in tags[0]:
+                    editing = True
+                    hold_id = tags[0]
+
+            if not editing:
+
+                # create a new beam in Score:
+                if ey > 40:
+                    h = 'r'
+                else:
+                    h = 'l'
+                new = {
+                    "id": 'beam%i'%new_id,
+                    "time": ex,
+                    "duration": 0,
+                    "hand":h
+                }
+                new_id += 1
+                draw_beam_editor(new,
+                    editor, hbar, y_scale_percent, 
+                    x_scale_quarter_mm, MM)
+                # write new_note to Score
+                Score['events']['beam'].append(new)
+                # sort the events on the time key
+                Score['events']['beam'] = sorted(Score['events']['beam'], key=lambda time: time['time'])
+                hold_id = new['id']
+
+        if event_type == 'ctl-click-btn1':
+
+            # if we ctrl+click we add a default beam pattern entered by a simple dialog.
+            # you can enter one or multiple pianotick lengths(quarter note = 256 pianoticks).
+            
+            # get and test user input:
+            while True:
+                user_input = AskString(root,
+                        'Set default beam grouping...',
+                        'You can set the beam grouping in "pianoticks". A quarter note is 256 pianoticks.\nPlease enter one or more beamrouping lengths in pianoticks, seperated by <space>.\nExample in a 7/8 time-signature: "384 512" will put the default beam grouping to 3 and 4 eight notes.\nthis beam grouping is applied from the point in time you clicked to the rest of the document.')
+                if user_input.result is not None:
+                    try:
+                        user_input = user_input.result.split()
+                        for idx, ui in enumerate(user_input):
+                            user_input[idx] = float(ui)
+                            if float(ui) <= 0:
+                                raise Exception 
+                        break
+                    except:
+                        print('ERROR in set_beam_grouping; please provide one or more floats or integers seperated by <space>.')
+                else: 
+                    hold_id = ''
+                    file_changed = True
+                    return
+            
+            # apply valid user input:
+            if ey > 40:
+                h = 'r'
+            else:
+                h = 'l'
+            pt_cursor = ex
+            # delete old beams after event click(ex)
+            for bm in Score['events']['beam']:
+                if bm['time'] >= ex and bm['hand'] == h:
+                    Score['events']['beam'].remove(bm)
+            while True:
+                if pt_cursor >= last_pianotick:
+                    break
+                for pt in user_input:
+                    # insert beam
+                    new = {
+                        "id": 'beam%i'%new_id,
+                        "time": pt_cursor,
+                        "duration": pt,
+                        "hand":h
+                    }
+                    new_id += 1
+                    # write to Score
+                    Score['events']['beam'].append(new)
+                    # draw on editor
+                    draw_beam_editor(new,
+                    editor, hbar, y_scale_percent, 
+                    x_scale_quarter_mm, MM)
+                    pt_cursor += pt
+            Score['events']['beam'] = sorted(Score['events']['beam'], key=lambda time: time['time'])
+            do_engrave()
+            return
+
+        if event_type == 'motion':
+
+            if hold_id:
+                for bm in Score['events']['beam']:
+                    if bm['id'] == hold_id:
+                        # write changed beam to Score:
+                        bm['duration'] = ex - bm['time']
+                        if bm['duration'] < edit_grid:
+                            bm['duration'] = edit_grid
+                        # redraw beam on editor: 
+                        draw_beam_editor(bm,
+                            editor, hbar, y_scale_percent, 
+                            x_scale_quarter_mm, MM)
+
+        if event_type == 'btn1release':
+
+            hold_id = ''
+            do_engrave()
+
+        if event_type == 'btn3click':
+
+
+            for bm in Score['events']['beam']:
+                if ey > 40:
+                    if abs(ex - bm['time']) <= 1 and bm['hand'] == 'r':
+                        # remove end beam from file
+                        Score['events']['beam'].remove(bm)
+                        # remove end beam from editor
+                        editor.delete(bm['id'])
+                        do_engrave()
+                        file_changed = True
+                else:
+                    if abs(ex - bm['time']) <= 1 and bm['hand'] == 'l':
+                        # remove end beam from file
+                        Score['events']['beam'].remove(bm)
+                        # remove end beam from editor
+                        editor.delete(bm['id'])
+                        do_engrave()
+                        file_changed = True
+                    
+
+
+    
+
 
 
 
@@ -1931,37 +2064,79 @@ def exportPDF(event=''):
         f = filedialog.asksaveasfile(mode='w', parent=root, filetypes=[("pdf Score", "*.pdf")], initialfile=Score['header']['title']['text'],
                                      initialdir='~/Desktop')
         if f:
-            print(f.name)
-            counter = 0
             pslist = []
-            for export in range(engrave('export')):
-                counter += 1
-                print('printing page ', counter)
-                pview.postscript(file=f"{f.name}{counter}.ps", 
-                    colormode='gray', 
-                    x=10000, 
-                    y=export * (Score['properties']['page-height'] * MM),
-                    width=(Score['properties']['page-width'] * MM), 
-                    height=(Score['properties']['page-height'] * MM), 
-                    rotate=False,
-                    fontmap='-*-Courier-Bold-R-Normal--*-120-*')
-                pslist.append(str('"' + str(f.name) + str(counter) + '.ps' + '"'))
-            try:
-                do_pianoroll = subprocess.Popen(
-                    f'''"{windowsgsexe}" -dQUIET -dBATCH -dNOPAUSE -dFIXEDMEDIA -sPAPERSIZE=a4 -dEPSFitPage -sDEVICE=pdfwrite -sOutputFile="{f.name}.pdf" {' '.join(pslist)}''',
-                    shell=True)
-                do_pianoroll.wait()
-                do_pianoroll.terminate()
-                for i in pslist:
-                    os.remove(i.strip('"'))
-                f.close()
-                os.remove(f.name)
-            except:
-                messagebox.showinfo(title="Can't export PDF!",
-                                    message='''Be sure you have selected a valid path in the default.pnoscript Score. 
-                                    You have to set the path+gswin64c.exe. 
-                                    example: ~windowsgsexe{C:/Program Files/gs/gs9.54.0/bin/gswin64c.exe}''')
-
+            if Score['properties']['engraver'] == 'pianoscript':
+                print(f.name)
+                counter = 0
+                numofpages = range(engrave_pianoscript('export',
+                        renderpageno,
+                        Score,
+                        MM,
+                        last_pianotick,
+                        color_notation_editor,
+                        color_editor_canvas,
+                        pview,root,
+                        BLACK))
+                for export in numofpages:
+                    counter += 1
+                    print('printing page ', counter)
+                    pview.postscript(file=f"{f.name}{counter}.ps", 
+                        colormode='gray', 
+                        x=10000, 
+                        y=export * (Score['properties']['page-height'] * MM),
+                        width=(Score['properties']['page-width'] * MM), 
+                        height=(Score['properties']['page-height'] * MM), 
+                        rotate=False,
+                        fontmap='-*-Courier-Bold-R-Normal--*-120-*')
+                    pslist.append(str('"' + str(f.name) + str(counter) + '.ps' + '"'))
+                try:
+                    do_pianoroll = subprocess.Popen(
+                        f'''"C:/Program Files/gs/gs10.01.1/bin/gswin64c.exe" -dQUIET -dBATCH -dNOPAUSE -dFIXEDMEDIA -sPAPERSIZE=a4 -dEPSFitPage -sDEVICE=pdfwrite -sOutputFile="{f.name}.pdf" {' '.join(pslist)}''', shell=True)
+                    do_pianoroll.wait()
+                    do_pianoroll.terminate()    
+                    for i in pslist:
+                        os.remove(i.strip('"'))
+                    f.close()
+                    os.remove(f.name)
+                except:
+                    messagebox.showinfo(title="Can't export PDF!",
+                                        message='''Be sure you have selected a valid path to "gswin64c.exe" in the gspath.json file that is located in the same folder as PianoScript program. You have to set the path+gswin64c.exe. example: "gspath":"C:/Program Files/gs/gs9.54.0/bin/gswin64c.exe". Then, restart PianoScript app.''')
+            else:
+                print(f.name)
+                counter = 0
+                numofpages = range(engrave_pianoscript_vertical('export',
+                        renderpageno,
+                        Score,
+                        MM,
+                        last_pianotick,
+                        color_notation_editor,
+                        color_editor_canvas,
+                        pview,root,
+                        BLACK))
+                for export in numofpages:
+                    counter += 1
+                    print('printing page ', counter)
+                    pview.postscript(file=f"{f.name}{counter}.ps", 
+                        colormode='gray', 
+                        x=export * (Score['properties']['page-width'] * MM), 
+                        y=10000,
+                        width=(Score['properties']['page-width'] * MM), 
+                        height=(Score['properties']['page-height'] * MM),
+                        rotate=False,
+                        fontmap='-*-Courier-Bold-R-Normal--*-120-*')
+                    pslist.append(str('"' + str(f.name) + str(counter) + '.ps' + '"'))
+                try:
+                    do_pianoroll = subprocess.Popen(
+                        f'''"C:/Program Files/gs/gs10.01.1/bin/gswin64c.exe" -dQUIET -dBATCH -dNOPAUSE -dFIXEDMEDIA -sPAPERSIZE=a4 -dEPSFitPage -sDEVICE=pdfwrite -sOutputFile="{f.name}.pdf" {' '.join(pslist)}''', shell=True)
+                    do_pianoroll.wait()
+                    do_pianoroll.terminate()    
+                    for i in pslist:
+                        os.remove(i.strip('"'))
+                    f.close()
+                    os.remove(f.name)
+                except:
+                    messagebox.showinfo(title="Can't export PDF!",
+                                        message='''Be sure you have selected a valid path to "gswin64c.exe" in the gspath.json file that is located in the same folder as PianoScript program. You have to set the path+gswin64c.exe. example: "gspath":"C:/Program Files/gs/gs9.54.0/bin/gswin64c.exe". Then, restart PianoScript app.''')
     do_engrave()
 
 
@@ -2496,7 +2671,36 @@ def add_quick_linebreaks(e=''):
 
     do_engrave()
 
+def switch_hand_selection(direction):
 
+    global Score
+
+    for s in selection_buffer:
+
+        for n in Score['events']['note']:
+            if n['id'] == s['id']:
+                if direction == 'l':
+                    n['hand'] = 'l'
+                else:
+                    n['hand'] = 'r'
+                
+                # redraw the changed note on the editor:
+                editor.delete(n['id'])
+                draw_note_pianoroll(n, 
+                            False, 
+                            editor, 
+                            hbar, 
+                            y_scale_percent, 
+                            x_scale_quarter_mm, 
+                            MM, 
+                            color_notation_editor, 
+                            BLACK, 
+                            color_editor_canvas, 
+                            Score,
+                            False,
+                            True)
+                update_drawing_order_editor(editor)
+                do_engrave()
 
 
 
@@ -2738,9 +2942,9 @@ prevpage_button.configure(command=cycle_trough_pages_button)
 # --------------------------------------------------------
 def cut_selection(e=''):
     print('cut...')
-    global selection_buffer, active_selection, file_changed
+    global copycut_buffer, active_selection, file_changed
     file_changed = True
-    selection_buffer = []
+    copycut_buffer = []
     lowest_time_from_selection = 0
     lowest_assign = True
     for note in Score['events']['note']:
@@ -2749,7 +2953,7 @@ def cut_selection(e=''):
                 lowest_time_from_selection = note['time']
                 lowest_assign = False
             note['time'] -= lowest_time_from_selection
-            selection_buffer.append(note)
+            copycut_buffer.append(note)
     for note in reversed(Score['events']['note']):
         if note['id'] in selection_tags:
             Score['events']['note'].remove(note)
@@ -2761,8 +2965,8 @@ def copy_selection(e=''):
     if not active_selection:
         return
     print('copy...')
-    global selection_buffer 
-    selection_buffer = []
+    global copycut_buffer 
+    copycut_buffer = []
     lowest_time_from_selection = 0
     lowest_assign = True
     for note in Score['events']['note']:
@@ -2780,13 +2984,13 @@ def copy_selection(e=''):
                 "type":note['type'],
                 "notestop":note['notestop']
             }
-            selection_buffer.append(new)
+            copycut_buffer.append(new)
 
 def paste_selection(e=''):
     print('paste...')
-    global new_id, selection_buffer, file_changed
+    global new_id, copycut_buffer, file_changed
     file_changed = True
-    for e in selection_buffer:
+    for e in copycut_buffer:
         if 'note' in e['id']:
             new = {
                 "id":"note%i"%new_id,
@@ -2820,9 +3024,9 @@ def select_all(e=''):
 
 def transpose_up(e=''):
     print('transpose_up')
-    global new_id, selection_buffer
+    global new_id, copycut_buffer
     mt = mouse_time
-    for e in selection_buffer:
+    for e in copycut_buffer:
         if 'note' in e['id']:
             e['pitch'] += 1
             draw_note_pianoroll(e,
@@ -3036,6 +3240,8 @@ root.bind('<Control-e>', exportPDF)
 root.bind('<Up>', transpose_up)
 root.bind('<Key-g>', grideditor)
 root.bind('<Key-q>', lambda e: quantize(Score))
+root.bind('[', lambda e: switch_hand_selection('l'))
+root.bind(']', lambda e: switch_hand_selection('r'))
 
 
 

@@ -117,7 +117,7 @@ def draw_staff_vert(x_cursor,
             x,
             y2,
             fill=color_black,
-            width=2*draw_scale,
+            width=1.5*draw_scale,
             capstyle='round')
         pview.create_line(
             x+(10*draw_scale),
@@ -125,7 +125,7 @@ def draw_staff_vert(x_cursor,
             x+(10*draw_scale),
             y2,
             fill=color_black,
-            width=2*draw_scale,
+            width=1.5*draw_scale,
             capstyle='round')
         pview.create_line(
             x+(20*draw_scale),
@@ -133,7 +133,7 @@ def draw_staff_vert(x_cursor,
             x+(20*draw_scale),
             y2,
             fill=color_black,
-            width=2*draw_scale,
+            width=1.5*draw_scale,
             capstyle='round')
         
     def clef(x):
@@ -378,6 +378,7 @@ def engrave_pianoscript_vertical(render_type,
     staff_sizer = Score['events']['staff-sizer']
     start_repeat = Score['events']['start-repeat']
     end_repeat = Score['events']['end-repeat']
+    beam = Score['events']['beam']
     color_right_midinote = Score['properties']['color-right-hand-midinote']
     color_left_midinote = Score['properties']['color-left-hand-midinote']
     grid = Score['events']['grid']
@@ -433,34 +434,27 @@ def engrave_pianoscript_vertical(render_type,
         DOC.append({'type': 'endbarline', 'time': total_pianoticks-0.0000001})
 
         # we add all events from Score to the DOC list
-        for note_evt in note:
-            e = note_evt
+        for e in note:
             e['type'] = 'note'
             e = note_split_processor(e, Score)
             for ev in e:
                 DOC.append(ev)
-        for text_evt in text:
-            e = text_evt
+        for e in text:
             e['type'] = 'text'
             DOC.append(e)
-        for bpm_evt in bpm:
-            e = bpm_evt
+        for e in bpm:
             e['type'] = 'bpm'
             DOC.append(e)
-        for slur_evt in slur:
-            e = slur_evt
+        for e in slur:
             e['type'] = 'slur'
             DOC.append(e)
-        for pedal_evt in pedal:
-            e = pedal_evt
+        for e in pedal:
             e['type'] = 'pedal'
             DOC.append(e)
-        for countline_evt in count_line:
-            e = countline_evt
+        for e in count_line:
             e['type'] = 'countline'
             DOC.append(e)
-        for staffsizer_evt in staff_sizer:
-            e = staffsizer_evt
+        for e in staff_sizer:
             e['type'] = 'invis'
             DOC.append(e)
         for e in start_repeat:
@@ -468,6 +462,9 @@ def engrave_pianoscript_vertical(render_type,
             DOC.append(e)
         for e in end_repeat:
             e['type'] = 'endrepeat'
+            DOC.append(e)
+        for e in beam:
+            e['type'] = 'beam'
             DOC.append(e)
 
         # now we sort the events on time-key
@@ -697,7 +694,7 @@ def engrave_pianoscript_vertical(render_type,
                     p_marg_u,
                     text=Score['header']['title']['text'],
                     anchor='nw',
-                    font=('courier', 18, "normal"),
+                    font=('courier', 18, "bold"),
                     fill=color_black)
                 pview.create_text(x_cursor + page_width - p_marg_r,
                     p_marg_u,
@@ -742,16 +739,16 @@ def engrave_pianoscript_vertical(render_type,
                                           yy,
                                           x_cursor+sw,
                                           yy,
-                                          width=2 * draw_scale,
+                                          width=.75 * draw_scale,
                                           capstyle='round',
                                           tag='grid',
                                           fill=color_black)
-                        pview.create_text(x_cursor+sw+(5*draw_scale),
+                        pview.create_text(x_cursor+sw+(20*draw_scale),
                                           yy+(3*draw_scale),
                                           text=b_counter,
                                           tag='grid',
                                           fill=color_black,
-                                          font=('courier', round(12 * draw_scale), "normal"),
+                                          font=('courier', round(14 * draw_scale), "normal"),
                                           anchor='nw')
                         b_counter += 1
 
@@ -767,7 +764,7 @@ def engrave_pianoscript_vertical(render_type,
                                           yy,
                                           x_cursor+sw,
                                           yy,
-                                          width=2 * draw_scale,
+                                          width=.75 * draw_scale,
                                           capstyle='round',
                                           tag='grid',
                                           fill=color_black)
@@ -784,7 +781,7 @@ def engrave_pianoscript_vertical(render_type,
                                           yy,
                                           x_cursor+sw,
                                           yy,
-                                          width=6 * draw_scale,
+                                          width=4 * draw_scale,
                                           capstyle='round',
                                           tag='grid',
                                           fill=color_black)
@@ -801,7 +798,7 @@ def engrave_pianoscript_vertical(render_type,
                                           yy,
                                           x_cursor+sw,
                                           yy,
-                                          width=.5 * draw_scale,
+                                          width=1 * draw_scale,
                                           capstyle='round',
                                           tag='grid',
                                           fill=color_black,
@@ -828,38 +825,19 @@ def engrave_pianoscript_vertical(render_type,
                                               y1, 
                                               x1,
                                               y1,
-                                              width=2 * draw_scale,
+                                              width=1.5 * draw_scale,
                                               fill=color_black,
                                               tag=('midi_note','notestop'))
 
                         # left hand
                         if obj['hand'] == 'l':
-
-                            # # midinote (old)
-                            # pview.create_polygon(xx,
-                            #     y0,
-                            #     x0,
-                            #     y0+(5*draw_scale),
-                            #     x0,
-                            #     y1-(5*draw_scale),
-                            #     xx,
-                            #     y1,
-                            #     x1,
-                            #     y1-(5*draw_scale),
-                            #     x1,
-                            #     y0+(5*draw_scale),
-                            #     xx,
-                            #     y0,
-                            #     fill=Score['properties']['color-left-hand-midinote'],
-                            #     tag='midi_note',
-                            #     width=20 * draw_scale)
                             # midinote
-                            pview.create_polygon(xx,y0,
-                                x0,y1,
-                                x1,y1,
+                            pview.create_line(
+                                xx,y0,
+                                xx,y1,
                                 fill=Score['properties']['color-left-hand-midinote'],
                                 tag='midi_note',
-                                width=20 * draw_scale)
+                                width=10 * draw_scale)
 
                             if obj['type'] == 'split':
                                 pview.create_oval(xx+(2.5*draw_scale),y0+(2.5*draw_scale),
@@ -874,35 +852,35 @@ def engrave_pianoscript_vertical(render_type,
                                                       y0,
                                                       xx - (25 * draw_scale),
                                                       y0,
-                                                      width=2 * draw_scale,
+                                                      width=3 * draw_scale,
                                                       tag='stem',
-                                                      fill=color_black)
-                                    for bl in bl_times:
-
-                                        if diff(obj['time'], bl) < 1:
-                                            pview.create_line(xx + (10 * draw_scale),
-                                                              y0,
-                                                              xx - (30 * draw_scale),
-                                                              y0,
-                                                              width=2 * draw_scale,
-                                                              tag='white_space',
-                                                              fill=color_white)
+                                                      fill=color_black,
+                                                      capstyle='round')
+                                    # for bl in bl_times:
+                                    #     if diff(obj['time'], bl) < 1:
+                                    #         pview.create_line(xx + (10 * draw_scale),
+                                    #                           y0,
+                                    #                           xx - (30 * draw_scale),
+                                    #                           y0,
+                                    #                           width=2 * draw_scale,
+                                    #                           tag='white_space',
+                                    #                           fill=color_white)
                                 # notehead
                                 if obj['pitch'] in BLACK:
 
-                                    pview.create_oval(x0,
+                                    pview.create_oval(xx-(2.5*draw_scale),
                                                       y0,
-                                                      x1,
-                                                      y0 + (5 * draw_scale),
+                                                      xx+(2.5*draw_scale),
+                                                      y0 + (10 * draw_scale),
                                                       tag='black_notestart',
                                                       fill=color_black,
                                                       outline=color_black,
                                                       width=2 * draw_scale)
                                     # left dot black
                                     pview.create_oval(xx - (1*draw_scale),
-                                                      y0 + (1.5 * draw_scale),
+                                                      y0 + (4 * draw_scale),
                                                       xx + (1*draw_scale),
-                                                      y0 + (3.5 * draw_scale),
+                                                      y0 + (6 * draw_scale),
                                                       tag='left_dot',
                                                       fill=color_white,
                                                       outline='')
@@ -926,33 +904,10 @@ def engrave_pianoscript_vertical(render_type,
 
                         # right hand
                         else:
-                            # # midinote
-                            # pview.create_polygon(xx,
-                            #     y0,
-                            #     x0,
-                            #     y0+(5*draw_scale),
-                            #     x0,
-                            #     y1-(5*draw_scale),
-                            #     xx,
-                            #     y1,
-                            #     x1,
-                            #     y1-(5*draw_scale),
-                            #     x1,
-                            #     y0+(5*draw_scale),
-                            #     xx,
-                            #     y0,
-                            #     fill=Score['properties']['color-right-hand-midinote'],
-                            #     tag='midi_note',
-                            #     width=20 * draw_scale)
-                            pview.create_polygon(xx,
-                                y0,
-                                x0,
-                                y1,
-                                x1,
-                                y1,
-                                fill=Score['properties']['color-left-hand-midinote'],
+                            pview.create_line(xx,y0,xx,y1,
+                                fill=Score['properties']['color-right-hand-midinote'],
                                 tag='midi_note',
-                                width=20 * draw_scale)
+                                width=10 * draw_scale)
 
                             if obj['type'] == 'split':
                                 pview.create_oval(xx+(2.5*draw_scale),y0+(2.5*draw_scale),
@@ -967,25 +922,25 @@ def engrave_pianoscript_vertical(render_type,
                                                       y0,
                                                       xx + (25 * draw_scale),
                                                       y0,
-                                                      width=2 * draw_scale,
+                                                      width=3 * draw_scale,
                                                       tag='stem',
-                                                      fill=color_black)
-                                    for bl in bl_times:
-
-                                        if diff(obj['time'], bl) < 1:
-                                            pview.create_line(xx - (10 * draw_scale),
-                                                              y0,
-                                                              xx + (30 * draw_scale),
-                                                              y0,
-                                                              width=2 * draw_scale,
-                                                              tag='white_space',
-                                                              fill=color_white)
+                                                      fill=color_black,
+                                                      capstyle='round')
+                                    # for bl in bl_times:
+                                    #     if diff(obj['time'], bl) < 1:
+                                    #         pview.create_line(xx - (10 * draw_scale),
+                                    #                           y0,
+                                    #                           xx + (30 * draw_scale),
+                                    #                           y0,
+                                    #                           width=2 * draw_scale,
+                                    #                           tag='white_space',
+                                    #                           fill=color_white)
                                 # notehead
                                 if obj['pitch'] in BLACK:
-                                    pview.create_oval(x0,
+                                    pview.create_oval(xx-(2.5*draw_scale),
                                                       y0,
-                                                      x1,
-                                                      y0 + (5 * draw_scale),
+                                                      xx+(2.5*draw_scale),
+                                                      y0 + (10 * draw_scale),
                                                       tag='black_notestart',
                                                       fill=color_black,
                                                       outline=color_black,
@@ -1015,7 +970,7 @@ def engrave_pianoscript_vertical(render_type,
                                                           stem_y,
                                                           xx,
                                                           y0,
-                                                          width=2 * draw_scale,
+                                                          width=3 * draw_scale,
                                                           capstyle='round',
                                                           tag='connect_stem',
                                                           fill=color_black)
@@ -1028,12 +983,12 @@ def engrave_pianoscript_vertical(render_type,
                             yy = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True,False)
                         else:
                             yy = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
-                        pview.create_text(x_cursor - (40 * draw_scale), 
-                                          yy + (2.5 * draw_scale),
+                        pview.create_text(x_cursor - (20 * draw_scale), 
+                                          yy + (3 * draw_scale),
                                           text=obj['text'],
                                           tag='tsigtext',
-                                          anchor='nw',
-                                          font=('courier', 10),
+                                          anchor='w',
+                                          font=('courier', 14, 'bold'),
                                           fill=color_black,
                                           angle=-90)
 
@@ -1109,15 +1064,21 @@ def engrave_pianoscript_vertical(render_type,
                         else:
                             yy = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
                         pview.create_line(x_cursor,yy,
-                            x_cursor+sw+(40*draw_scale),yy,
+                            x_cursor+sw+(50*draw_scale),yy,
                             width=2*draw_scale,
                             capstyle='round',
-                            fill=color_black)
-                        pview.create_line(x_cursor+sw+(40*draw_scale),yy,
-                            x_cursor+sw+(40*draw_scale),yy+(20*draw_scale),
-                            arrow='last',
                             fill=color_black,
-                            width=2*draw_scale)
+                            dash=(1,2))
+                        pview.create_oval(x_cursor+sw+(40*draw_scale),yy+(5*draw_scale),
+                            x_cursor+sw+(45*draw_scale),yy+(10*draw_scale),
+                            fill=color_black,
+                            width=2*draw_scale,
+                            outline=color_black)
+                        pview.create_oval(x_cursor+sw+(30*draw_scale),yy+(5*draw_scale),
+                            x_cursor+sw+(35*draw_scale),yy+(10*draw_scale),
+                            fill=color_black,
+                            width=2*draw_scale,
+                            outline=color_black)
                     # end repeat
                     if obj['type'] == 'endrepeat':
                         if not idx_l and not idx_p:
@@ -1127,15 +1088,147 @@ def engrave_pianoscript_vertical(render_type,
                         else:
                             yy = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
                         pview.create_line(x_cursor+sw,yy,
-                            x_cursor+sw+(40*draw_scale),yy,
+                            x_cursor+sw+(50*draw_scale),yy,
                             width=2*draw_scale,
                             capstyle='round',
-                            fill=color_black)
-                        pview.create_line(x_cursor+sw+(40*draw_scale),yy,
-                            x_cursor+sw+(40*draw_scale),yy-(20*draw_scale),
-                            arrow='last',
                             fill=color_black,
-                            width=2*draw_scale)
+                            dash=(1,2))
+                        pview.create_oval(x_cursor+sw+(40*draw_scale),yy-(5*draw_scale),
+                            x_cursor+sw+(45*draw_scale),yy-(10*draw_scale),
+                            fill=color_black,
+                            width=2*draw_scale,
+                            outline=color_black)
+                        pview.create_oval(x_cursor+sw+(30*draw_scale),yy-(5*draw_scale),
+                            x_cursor+sw+(35*draw_scale),yy-(10*draw_scale),
+                            fill=color_black,
+                            width=2*draw_scale,
+                            outline=color_black)
+                    
+                    # beam grouping
+                    if obj['type'] == 'beam':
+                        
+                        # beam right hand
+                        if obj['hand'] == 'r':
+                            beamnotelist = []
+                            # right beam
+                            for n in line:
+                                if n['type'] == 'note' and n['time'] >= obj['time']+obj['duration']:
+                                    break
+                                elif n['type'] == 'note' and n['time'] >= obj['time'] and n['time'] < obj['time']+obj['duration'] and obj['hand'] == n['hand'] and n['stem-visible']:
+                                    beamnotelist.append(n)
+                            # beamnotelist contains now all notes that need to be grouped using a beam.
+                            # We check if we have to draw a beam; only if there are two or more notes in the beam:
+                            if len(beamnotelist) < 2:
+                                continue
+                            # first we detect the highest and lowest note from the beam
+                            h_note = {"pitch":1}
+                            for bm in beamnotelist:
+                                if bm['pitch'] >= h_note['pitch']:
+                                    h_note = bm
+                            h_notex = note_x_pos(h_note['pitch'],mn,mx,x_cursor,draw_scale)
+                            # now we have the highest beamnote position, we can draw this simple implementation
+                            # for a beam. We draw from the highest position to a small portion higher to the end
+                            # of the beam.
+                            f_note = beamnotelist[0]
+                            l_note = beamnotelist[-1]
+                            if not idx_l and not idx_p:
+                                f_notey = event_y_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],True,True)
+                            elif not idx_p:
+                                f_notey = event_y_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],True,False)
+                            else:
+                                f_notey = event_y_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
+                            if not idx_l and not idx_p:
+                                l_notey = event_y_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],True,True)
+                            elif not idx_p:
+                                l_notey = event_y_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],True,False)
+                            else:
+                                l_notey = event_y_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
+                            if f_notey == l_notey:
+                                continue
+                            # drawing the beam:
+                            pview.create_line(h_notex+(25*draw_scale),f_notey,
+                                              h_notex+(30*draw_scale),l_notey,
+                                              tag='beam',
+                                              width=5*draw_scale,
+                                              capstyle='round',
+                                              fill=color_black)
+                            # now we only have to connect the stems to the beam:
+                            for bm in beamnotelist:
+                                if not idx_l and not idx_p:
+                                    yy = event_y_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],True,True)
+                                elif not idx_p:
+                                    yy = event_y_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],True,False)
+                                else:
+                                    yy = event_y_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
+                                x = note_x_pos(bm['pitch'], mn, mx, x_cursor, draw_scale)
+                                stem_length = (5*interpolation(f_notey,l_notey,yy)*draw_scale)
+                                pview.create_line(x+(25*draw_scale),yy,
+                                                    h_notex+(25*draw_scale)+stem_length,yy,
+                                                    tag='beam',
+                                                    width=3*draw_scale,
+                                                    capstyle='round',
+                                                    fill=color_black)
+                        # beam left hand
+                        else:
+                            beamnotelist = []
+                            # left beam
+                            for n in line:
+                                if n['type'] == 'note' and n['time'] >= obj['time']+obj['duration']:
+                                    break
+                                elif n['type'] == 'note' and n['time'] >= obj['time'] and n['time'] < obj['time']+obj['duration'] and obj['hand'] == n['hand'] and n['stem-visible']:
+                                    beamnotelist.append(n)
+                            # beamnotelist contains now all notes that need to be grouped using a beam.
+                            # We check if we have to draw a beam; only if there are two or more notes in the beam:
+                            if len(beamnotelist) < 2:
+                                continue
+                            # first we detect the highest and lowest note from the beam
+                            lw_note = {"pitch":88}
+                            for bm in beamnotelist:
+                                if bm['pitch'] <= lw_note['pitch']:
+                                    lw_note = bm
+                            lw_notex = note_x_pos(lw_note['pitch'],mn,mx,x_cursor,draw_scale)
+                            # now we have the highest beamnote position, we can draw this simple implementation
+                            # for a beam. We draw from the highest position to a small portion higher to the end
+                            # of the beam.
+                            f_note = beamnotelist[0]
+                            l_note = beamnotelist[-1]
+                            if not idx_l and not idx_p:
+                                f_notey = event_y_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],True,True)
+                            elif not idx_p:
+                                f_notey = event_y_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],True,False)
+                            else:
+                                f_notey = event_y_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
+                            if not idx_l and not idx_p:
+                                l_notey = event_y_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],True,True)
+                            elif not idx_p:
+                                l_notey = event_y_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],True,False)
+                            else:
+                                l_notey = event_y_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
+                            if f_notey == l_notey:
+                                continue
+                            # drawing the beam:
+                            pview.create_line(lw_notex-(25*draw_scale),f_notey,
+                                              lw_notex-(30*draw_scale),l_notey,
+                                              tag='beam',
+                                              width=5*draw_scale,
+                                              capstyle='round',
+                                              fill=color_black)
+                            # now we only have to connect the stems to the beam:
+                            for bm in beamnotelist:
+                                if not idx_l and not idx_p:
+                                    yy = event_y_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],True,True)
+                                elif not idx_p:
+                                    yy = event_y_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],True,False)
+                                else:
+                                    yy = event_y_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
+                                x = note_x_pos(bm['pitch'], mn, mx, x_cursor, draw_scale)
+                                stem_length = (5*interpolation(f_notey,l_notey,yy)*draw_scale)
+                                pview.create_line(x-(25*draw_scale),yy,
+                                                    lw_notex-(25*draw_scale)-stem_length,yy,
+                                                    tag='beam',
+                                                    width=3*draw_scale,
+                                                    capstyle='round',
+                                                    fill=color_black)
 
                     # end for obj ----------------------------------------
 
@@ -1182,10 +1275,11 @@ def engrave_pianoscript_vertical(render_type,
                 dash=(6,4,5,2,3,1))
 
         # drawing order
+        pview.tag_raise('countline')
         pview.tag_raise('staff')
-        pview.tag_raise('notestop')
         pview.tag_raise('grid')
         pview.tag_raise('white_space')
+        pview.tag_raise('notestop')
         pview.tag_raise('stem')
         pview.tag_raise('white_notestart')
         pview.tag_raise('black_notestart')
@@ -1197,7 +1291,6 @@ def engrave_pianoscript_vertical(render_type,
         pview.tag_raise('tie_dot')
         pview.tag_raise('textbg')
         pview.tag_raise('text')
-        pview.tag_raise('countline')
         #pview.tag_lower('midi_note')
         
         # make the new render update fluently(without blinking) and scale

@@ -45,7 +45,6 @@ class GridEditor:
         self.window.geometry("%sx%s+%s+%s" % (int(self.sw/4), int(self.sh/2), int(self.sw/4*1.5), int(self.sh/4)))
         self.window.wm_attributes("-topmost", 1)
         self.window.protocol("WM_DELETE_WINDOW", self._cancel)
-        self.window.bind('<Configure>', self._onresize)
 
         # main frame
         self.main_frame = Frame(self.window, bg='#eee8d5')
@@ -56,11 +55,11 @@ class GridEditor:
         self.buttons_frame.pack(fill='both', padx=10,pady=10)
 
         # apply button
-        self.apply_button = Button(self.buttons_frame, text='     Apply     ', font=('Courier', 14), command=self._apply)
+        self.apply_button = Button(self.buttons_frame, text='Apply', font=('Courier', 14), command=self._apply)
         self.apply_button.pack(side='left')
 
         # cancel button
-        self.cancel_button = Button(self.buttons_frame, text='     Cancel     ', font=('Courier', 14), command=self._cancel)
+        self.cancel_button = Button(self.buttons_frame, text='Cancel', font=('Courier', 14), command=self._cancel)
         self.cancel_button.pack(side='right')
         self.cancel_button.bind('<Escape>', self._cancel)
 
@@ -148,11 +147,6 @@ class GridEditor:
         # display the popup window and wait for it to be destroyed
         self.parent.wait_window(self.window)
 
-    def _onresize(self, event=''):
-        
-        self.window.update()
-        self.example.configure(wraplength=self.window.winfo_screenwidth())
-
 
 
 
@@ -164,8 +158,6 @@ class GridEditor:
 
 # TEST
 if __name__ == '__main__':
-    root = tk.Tk()
-    dialog = GridEditor()
-    root.wait_window(dialog)
-    print(f"Grid map editor string: {dialog.result}")
-    root.mainloop()
+    root = Tk()
+    from savefilestructure import *
+    dialog = GridEditor(root, Score)

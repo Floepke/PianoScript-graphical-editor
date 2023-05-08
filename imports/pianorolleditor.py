@@ -296,7 +296,7 @@ def draw_note_pianoroll(note,
             y0 = y - (5*y_factor)
             y1 = y + (5*y_factor)
             editor.create_polygon(x,y,x1,y0,x1,y1,
-                fill=color_right_midinote,
+                fill=color_left_midinote,
                 tag=(note['id'], 'midinote'))
         # notestop
         editor.create_line(x1,
@@ -369,6 +369,8 @@ def update_drawing_order_editor(canvas):
     canvas.tag_raise('countline')
     canvas.tag_raise('texttext')
     canvas.tag_raise('staffsizer')
+    canvas.tag_raise('startrepeat')
+    canvas.tag_raise('endrepeat')
 
 
 def draw_linebreak_editor(linebreak,
@@ -387,9 +389,6 @@ def draw_linebreak_editor(linebreak,
     # define x and y position on the editor canvas:
     # calculate dimensions for staff (in px)
     editor_height = editor.winfo_height() - hbar.winfo_height()
-    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2
-    staff_height = editor_height - staff_xy_margin - staff_xy_margin
-    y_factor = staff_height / 490
     x = time2x_editor(linebreak['time'],
         editor, 
         hbar, 
@@ -422,8 +421,81 @@ def draw_linebreak_editor(linebreak,
             fill='green')
     editor.tag_raise(linebreak['id'])
 
+
+def draw_cursor_editor(cursor,
+    editor,
+    hbar,
+    y_scale_percent,
+    x_scale_quarter_mm,
+    MM,
+    color_highlight,
+    beam):
+    '''draws a newline symbol in the editor'''
     
-def draw_select_rectangle(selection, editor, hbar, y_scale_percent, x_scale_quarter_mm, MM):
+    editor.delete(cursor['id'])
+
+    # define x and y position on the editor canvas:
+    # calculate dimensions for staff (in px)
+    editor_height = editor.winfo_height() - hbar.winfo_height()
+    x = time2x_editor(cursor['time'],
+        editor, 
+        hbar, 
+        y_scale_percent, 
+        x_scale_quarter_mm,
+        MM)
+    if beam:
+        if beam == 'up':
+            editor.create_line(x,
+                0,
+                x,
+                editor_height * 0.2 / 2,
+                width=4,
+                tag=cursor['id'],
+                fill=color_highlight,
+                arrow='first',
+                arrowshape=(20,20,20))
+            editor.create_line(x,
+                editor_height - (editor_height * 0.2 / 2),
+                x,
+                editor_height - (editor_height * 0.2 / 2) + editor_height * 0.2 / 2,
+                width=4,
+                tag=cursor['id'],
+                fill=color_highlight)
+        else:
+            editor.create_line(x,
+                0,
+                x,
+                editor_height * 0.2 / 2,
+                width=4,
+                tag=cursor['id'],
+                fill=color_highlight)
+            editor.create_line(x,
+                editor_height - (editor_height * 0.2 / 2),
+                x,
+                editor_height - (editor_height * 0.2 / 2) + editor_height * 0.2 / 2,
+                width=4,
+                tag=cursor['id'],
+                fill=color_highlight,
+                arrow='last',
+                arrowshape=(20,20,20))
+    else:
+        editor.create_line(x,
+            0,
+            x,
+            editor_height * 0.2 / 2,
+            width=4,
+            tag=cursor['id'],
+            fill=color_highlight)
+        editor.create_line(x,
+            editor_height - (editor_height * 0.2 / 2),
+            x,
+            editor_height - (editor_height * 0.2 / 2) + editor_height * 0.2 / 2,
+            width=4,
+            tag=cursor['id'],
+            fill=color_highlight)
+
+    
+def draw_select_rectangle(selection, editor):
     '''
         We redraw the select rectangle in this function.
     '''
@@ -558,7 +630,7 @@ def draw_text_editor(text,
     mytext = editor.create_text(t,p,
         text=text['text'],
         anchor=anchor,
-        tag=(text['id'], 'texttext'),
+        tag=(text['id'], 'textfg', 'texttext'),
         angle=angle)
     bb = editor.bbox(mytext)
     w = bb[2]-bb[0]
@@ -568,15 +640,15 @@ def draw_text_editor(text,
             t+w,p-h,
             fill='#eee8d5',
             outline='#268bd2',
-            tag=(text['id'],'textbg'))
+            tag=(text['id'],'textbg', 'texttext'))
     else:
         editor.create_rectangle(t,p-(h/2),
             t+w,p+(h/2),
             fill='#eee8d5',
             outline='#268bd2',
-            tag=(text['id'],'textbg'))
+            tag=(text['id'],'textbg', 'texttext'))
     editor.tag_raise('textbg')
-    editor.tag_raise('texttext')
+    editor.tag_raise('textfg')
 
 def draw_staffsizer_editor(sizer, 
     editor, hbar, y_scale_percent, 
@@ -586,9 +658,9 @@ def draw_staffsizer_editor(sizer,
     t = time2x_editor(sizer['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
     p = pitch2y_editor(sizer['pitch'], editor, hbar, y_scale_percent)
     if sizer['pitch'] < 40:
-        editor.create_polygon(t-10,p-10,t+10,p-10,t,p+10,outline='',fill='red',tag=sizer['id'])
+        editor.create_polygon(t-10,p-10,t+10,p-10,t,p+10,outline='',fill='red',tag=(sizer['id'], 'staffsizer'))
     else:
-        editor.create_polygon(t-10,p+10,t+10,p+10,t,p-10,outline='',fill='red',tag=sizer['id'])
+        editor.create_polygon(t-10,p+10,t+10,p+10,t,p-10,outline='',fill='red',tag=(sizer['id'], 'staffsizer'))
 
 def draw_startrepeat_editor(repeat, 
     editor, hbar, y_scale_percent, 
@@ -597,19 +669,18 @@ def draw_startrepeat_editor(repeat,
     editor.delete(repeat['id'])
     t = time2x_editor(repeat['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
     editor_height = editor.winfo_height() - hbar.winfo_height()
-    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2
-    staff_height = editor_height - staff_xy_margin - staff_xy_margin  
+    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2  
     
     editor.create_line(t,staff_xy_margin,
         t,staff_xy_margin/2,
         width=2,
-        tag=repeat['id'],
+        tag=(repeat['id'],'startrepeat'),
         fill='purple')
     editor.create_line(t,staff_xy_margin/2,
         t+40,staff_xy_margin/2,
         arrow='last',
         width=4,
-        tag=repeat['id'],
+        tag=(repeat['id'], 'startrepeat'),
         fill='purple')
 
 def draw_endrepeat_editor(repeat, 
@@ -619,38 +690,72 @@ def draw_endrepeat_editor(repeat,
     editor.delete(repeat['id'])
     t = time2x_editor(repeat['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
     editor_height = editor.winfo_height() - hbar.winfo_height()
-    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2
-    staff_height = editor_height - staff_xy_margin - staff_xy_margin  
+    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2  
     
     editor.create_line(t,staff_xy_margin,
         t,staff_xy_margin/2,
         width=2,
-        tag=repeat['id'],
+        tag=(repeat['id'], 'endrepeat'),
         fill='purple')
     editor.create_line(t,staff_xy_margin/2,
         t-40,staff_xy_margin/2,
         arrow='last',
         width=4,
-        tag=repeat['id'],
+        tag=(repeat['id'], 'endrepeat'),
         fill='purple')
 
 
-def draw_beam_editor(beam,Score,
+def draw_beam_editor(beam,
     editor, hbar, y_scale_percent, 
     x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
-        
+
+    editor_height = editor.winfo_height() - hbar.winfo_height()
+    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2  
+    staff_height = editor_height - staff_xy_margin - staff_xy_margin
+
     editor.delete(beam['id'])
+
+    start = time2x_editor(beam['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    end = time2x_editor(beam['time']+beam['duration'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    if beam['hand'] == 'r':    
+        editor.create_line(start,staff_xy_margin/2,
+                        end,staff_xy_margin/2,
+                        fill='#c83f49',
+                        width=5,
+                        capstyle='round',
+                        tag=(beam['id'],'beam') )
+        editor.create_line(start,staff_xy_margin/2,
+                        start,staff_xy_margin/2+20,
+                        fill='#c83f49',
+                        width=2,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
+        editor.create_line(end,staff_xy_margin/2,
+                        end,staff_xy_margin/2+20,
+                        end-10,staff_xy_margin/2+25,
+                        fill='#c83f49',
+                        width=2,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
+    else:    
+        editor.create_line(start,staff_xy_margin+staff_height+(staff_xy_margin/2),
+                        end,staff_xy_margin+staff_height+(staff_xy_margin/2),
+                        fill='#c83f49',
+                        width=5,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
+        editor.create_line(start,staff_xy_margin+staff_height+(staff_xy_margin/2),
+                        start,staff_xy_margin+staff_height+(staff_xy_margin/2)-20,
+                        fill='#c83f49',
+                        width=2,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
+        editor.create_line(end,staff_xy_margin+staff_height+(staff_xy_margin/2),
+                        end,staff_xy_margin+staff_height+(staff_xy_margin/2)-20,
+                        end-10,staff_xy_margin+staff_height+(staff_xy_margin/2)-25,
+                        fill='#c83f49',
+                        width=2,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
     
-    # gather all notes from Score that are part of the beam depending on their start time. 
-    beamlist = []
-    for evt in Score['events']['note']:
-        
-        if evt['time'] >= beam['time'] and evt['time'] <= beam['time']+beam['duration']:
-            beamlist.append(e)
-        elif evt['time'] > beam['time']+beam['duration']:
-            break
     
-    # calculating and drawing the beam 
-    for note in beamlist:
-        
-        ...
