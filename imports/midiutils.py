@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 from midiutil.MidiFile import MIDIFile
 from tkinter import filedialog
 from imports.tools import *
+from mido import Message, MetaMessage, MidiFile, MidiTrack, bpm2tempo, second2tick
 
 def midiexport(root,Score):
 
@@ -34,29 +35,39 @@ def midiexport(root,Score):
         filetypes=[("midi files", "*.mid")])
     
     if f:
-        # create empoty midifile
-        midi = MIDIFile(1)
+        mid = MidiFile(ticks_per_beat=256*64)
+        track = MidiTrack()
+        track.append(MetaMessage('set_tempo', tempo=bpm2tempo(120)))
 
-        # add tempo
-        midi.addTempo(0, 0, 120)# track, time, tempo
-
-        # add timesignatures
-        time = 0
-        for ts in Score['properties']['grid']:
-            
-            midi.addTimeSignature(0, time, ts['numerator'], 2, 24)
-
-            # calculate the length of the time signature:
+        times = 0
+        for ts in Score['events']['grid']:
+            track.append(MetaMessage('time_signature', numerator=ts['numerator'], denominator=ts['denominator'], time=times))
             for l in range(ts['amount']):
-                time += measure_length((ts['numerator'],ts['denominator']))
-
+                times += (measure_length((ts['numerator'],ts['denominator']))*64)
         # add the notes:
+        # in order to add the notes at delta time we need to create a list of note_on and note_off messages in linear time first:
+        msg = []
         for note in Score['events']['note']:
-            if note['hand'] == 'r':
-                midi.addNote(0,0,note['pitch']+20,note['time'],.5,64)# addNote(track, channel, pitch, time, duration, volume, annotation=None)
+            t = note['time'] / (256*64)
+            d = note['duration'] / (256*64)
+            if note['hand'] == 'l':
+                msg.append({'type':'note_on','channel':0,'pitch':note['pitch']+20,'velocity':64,'time':t})
+                msg.append({'type':'note_off','channel':0,'pitch':note['pitch']+20,'velocity':0,'time':t+d})
             else:
-                midi.addNote(0,1,note['pitch']+20,note['time'],.5,64)
-
-        # save the midifile
-        with open("major-scale.mid", "wb") as output_file:
-            midi.writeFile(output_file)
+                msg.append({'type':'note_on','channel':1,'pitch':note['pitch']+20,'velocity':64,'time':t})
+                msg.append({'type':'note_off','channel':1,'pitch':note['pitch']+20,'velocity':0,'time':t+d})
+        # now we have a msg list with note_on and note_off messages in linear time and we need to convert and sort
+        # the messages to delta time:
+        msg = sorted(msg, key=lambda time: time['time'])
+        prev_time = 0
+        for m in msg:
+            t = m['time']
+            m['time'] = m['time'] - prev_time
+            prev_time = t
+        # write messages to midifile object in delta times:
+        for m in msg:
+            t = int(round(m['time']))
+            track.append(Message(m['type'], channel=m['channel'], note=m['pitch'], velocity=m['velocity'], time=t))
+        track.append(MetaMessage('end_of_track'))
+        mid.tracks.append(track)
+        mid.save(f.name)

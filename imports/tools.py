@@ -1,6 +1,4 @@
 '''
-Copyright 2023 Philip Bergwerf
-
 This file is part of the pianoscript project: http://www.pianoscript.org/
 
 Permission is hereby granted, free of charge, to any person obtaining 
@@ -59,6 +57,7 @@ def baseround(x, base=5):
         baseround rounds x to the closest base
     '''
     return round((x - (base / 2)) / base) * base
+
 
 def barline_times(time_signatures):
     '''
@@ -188,14 +187,16 @@ def note_split_processor(note, Score):
                             'time': start,
                             'duration': split_points[0] - start,
                             'hand': note['hand'],
-                            'notestop':False})
+                            'notestop':False,
+                            'stem-visible':note['stem-visible']})
             elif i == len(split_points):  # if last iteration
                 splitted.append({'type': 'split',
                             'pitch': note['pitch'],
                             'time': split_points[i - 1],
                             'duration': end - split_points[i - 1],
                             'hand': note['hand'],
-                            'notestop':True})
+                            'notestop':True,
+                            'stem-visible':note['stem-visible']})
                 return splitted
             else:  # if not first and not last iteration
                 splitted.append({'type': 'split', 
@@ -203,4 +204,36 @@ def note_split_processor(note, Score):
                             'time': split_points[i - 1],
                             'duration': split_points[i] - split_points[i - 1],
                             'hand': note['hand'],
-                            'notestop':False})
+                            'notestop':False,
+                            'stem-visible':note['stem-visible']})
+
+
+def round_rectangle(widget, x1, y1, x2, y2, radius=5, **kwargs):
+    points = [x1 + radius, y1,
+              x1 + radius, y1,
+              x2 - radius, y1,
+              x2 - radius, y1,
+              x2, y1,
+              x2, y1 + radius,
+              x2, y1 + radius,
+              x2, y2 - radius,
+              x2, y2 - radius,
+              x2, y2,
+              x2 - radius, y2,
+              x2 - radius, y2,
+              x1 + radius, y2,
+              x1 + radius, y2,
+              x1, y2,
+              x1, y2 - radius,
+              x1, y2 - radius,
+              x1, y1 + radius,
+              x1, y1 + radius,
+              x1, y1]
+
+    return widget.create_polygon(points, **kwargs, smooth=True)
+
+def proper_round(num, dec=0):
+    num = str(num)[:str(num).index('.')+dec+2]
+    if num[-1]>='5':
+        return float(num[:-2-(not dec)]+str(int(num[-2-(not dec)])+1))
+    return float(num[:-1])

@@ -1,0 +1,582 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass extarticle
+\begin_preamble
+\usepackage{musicography}\title{PianoScript\footnote{Inspired by Klavarskribo music notation: https://www.klavarskribo.eu}}
+\author{The piano-roll music notation format}
+\end_preamble
+\options 10pt
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package none
+\inputencoding auto
+\fontencoding default
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize 12
+\spacing single
+\use_hyperref false
+\papersize a4paper
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 0
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date true
+\justification true
+\use_refstyle 0
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 15mm
+\topmargin 15mm
+\rightmargin 15mm
+\bottommargin 15mm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+PIANOSCRIPT
+\end_layout
+
+\begin_layout Author
+by Philip Bergwerf
+\end_layout
+
+\begin_layout Date
+Suitable for reading and learning complex harmony.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename images/moonlight.jpg
+	lyxscale 30
+	width 30text%
+	scaleBeforeRotation
+	rotateOrigin center
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Introduction; what is PianoScript and why?
+\end_layout
+
+\begin_layout Standard
+PianoScript is a music notation for pianists that like to read music in
+ a visual and practical way.
+ It aimes to be a tool and can be extended as full replacement but that
+ is not the goal of the project.
+ The main goal is to provide a tool that plots the rhythm and harmony of
+ a midifile in a readable design.
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+PianoScript is based/inspired by an almost hundred year old music notation
+ called 'Klavarskribo'.
+ There are a small number of eye-catching visual differences that make PianoScri
+pt a different music notation.
+ Besides that PianoScript is only aiming for piano music/players in its
+ current design so the user can learn and practice the music from this printed
+ plot.
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The main reason PianoScript was born is that Philip Bergwerf discovered
+ Klavarskribo and begun searching for improvements and different possibillities
+ in terms of visual design as well practical readabillity of the notation
+ itself.
+ In this process, Philip formed the idea of plotting a midifile over the
+ klavarskribo staff in the form of grey midi-notes.
+ Along with other visual differences PianoScript deserves it's own name
+ because it is too different from Klavarskribo music notation.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+This paper describes the system and the ways of writing complex rhythm and
+ harmony in this system.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename images/moonlight.jpg
+	lyxscale 30
+	width 30text%
+	scaleBeforeRotation
+	rotateAngle 90
+	rotateOrigin center
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Part
+PianoScript Music Notation
+\end_layout
+
+\begin_layout Section
+Basic system
+\end_layout
+
+\begin_layout Standard
+PianoScript can be read from left to right or from top to bottom.
+ The reader can choose to read horizontal or vertical.
+ The advantage of reading vertical is that the orientation of the notation
+ is the same as the orientation of the instrument you are playing.
+ For extra clarity we only explain everything in the horizontal orientation.
+\end_layout
+
+\begin_layout Subsection
+Pitch
+\end_layout
+
+\begin_layout Standard
+Pitch is expressed on a twelve tone staff.
+ As you can see on the first page of this document, the staff exists from
+ groups of two and three lines that are connected to a miniature piano-keyboard
+ and thus, are the black keys.
+ In a traditional PianoScript sheet the miniature piano-keyboard is only
+ printed at the first line of the document.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Preview
+
+\begin_layout Standard
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename images/cminor.jpg
+	lyxscale 30
+	scale 150
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\emph{\small picture 1: a c minor chord on the PianoScript staff}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The notes are black or white depending on the color of the pianokey.
+ This means that all black notes are on top of a staff line while all white
+ notes are in between or glued to a group of staff lines.
+\end_layout
+
+\begin_layout Standard
+The staff is at least as large as the range of the music.
+ A rule is that the dashed lines are always visible because it's the clef.
+\end_layout
+
+\begin_layout Subsection
+Clef
+\end_layout
+
+\begin_layout Standard
+The clef is represented as a group of two c
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+musSharp
+\end_layout
+
+\end_inset
+
+/d
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+musFlat
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset space \space{}
+\end_inset
+
+and d
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+musSharp
+\end_layout
+
+\end_inset
+
+/e
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+musFlat
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \space{}
+\end_inset
+
+lines.
+ We call them 
+\series bold
+\emph on
+the central lines
+\series default
+\emph default
+.
+ They give the position of the 
+\bar under
+central-c
+\bar default
+; the c that is in front of you in the middle of the piano keyboard; 
+\bar under
+c4
+\bar default
+.
+\end_layout
+
+\begin_layout Standard
+You can read in which octave a note is written by reading it relative to
+ the central lines.
+ The central lines are always visible.
+ An empty measure shows only the central lines.
+\end_layout
+
+\begin_layout Subsection
+Rhythm
+\end_layout
+
+\begin_layout Standard
+Rhythm is expressed in distance like in a pianoroll editor or inside 'Synthesia'
+ youtube videos.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename images/moonlightonebar.jpg
+	lyxscale 30
+	scaleBeforeRotation
+	rotateAngle 90
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\emph{\small picture 2: the first bar of the moonlight sonata}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This example bar is written in 
+\bar under
+4/4 time-signature
+\bar default
+.
+ We divide the length of the bar in four equal pieces and thus every 
+\bar under
+grid space
+\bar default
+ is one 
+\bar under
+quarter
+\bar default
+ note long.
+ We call this the 
+\emph on
+\bar under
+base grid
+\emph default
+\bar default
+.
+\end_layout
+
+\begin_layout Standard
+If we follow the logic of relatively reading the rhythm: There are two notes
+ with a duration of a 
+\bar under
+whole
+\bar default
+ note(four quarters/grid spaces).
+ The grouped notes on the upper side are all a equal length.
+ There fit three notes in a quarter grid space so these are 
+\bar under
+quarter triplets
+\bar default
+.
+\end_layout
+
+\begin_layout Standard
+The stem of the note is used to point out the exact point in time the note
+ starts.
+\end_layout
+
+\begin_layout Standard
+Optionally we can group notes to give an overview of the rhythmic information
+ using a beam.
+ A beam looks like a eight-beamed beam from the traditional music notation
+ but has nothing to do with length.
+ Usually we group all notes that are inside the base grid but depending
+ on the situation this can differ.
+\end_layout
+
+\begin_layout Subsection
+Hand
+\end_layout
+
+\begin_layout Standard
+You can read for which hand the note is written in two ways: 
+\end_layout
+
+\begin_layout Itemize
+The left hand notes do have a tiny dot inside the note.
+ The right hand notes don't have a dot inside the note.
+\end_layout
+
+\begin_layout Itemize
+If the stem points down the hand is left.
+ If the stem points up the hand is right.
+\end_layout
+
+\begin_layout Subsection
+Base grid and manual grid
+\end_layout
+
+\begin_layout Standard
+There is a base grid that points out the obvious beats in a time-signature.
+ In a lot of cases we need more grid lines to clarify the rhytm.
+ We cal them 
+\bar under
+manual grid
+\bar default
+.
+ The visual difference is that the base grid spans the whole staff height
+ and the maunal grid is a finer dashed partially spanned line that usually
+ highlights the half of a beat if nessesary.
+ The manual grid is manually added by the typesetter
+\end_layout
+
+\begin_layout Section
+Other elements
+\end_layout
+
+\begin_layout Subsection
+Ornaments
+\end_layout
+
+\begin_layout Standard
+Roughly there are two types of notes: 
+\end_layout
+
+\begin_layout Itemize
+normal notes
+\end_layout
+
+\begin_layout Itemize
+ornament or decoration notes
+\end_layout
+
+\begin_layout Standard
+In the traditional music notation there are many symbols that represent
+ all kinds of ornaments.
+ Because PianoScript is a performance notation(it's basically a midi-file
+ representaion suitable for printing and reading on a piece of paper), the
+ best way to write ornaments is to write them out like how you should play
+ it.
+\end_layout
+
+\begin_layout Standard
+To make clear we are writing an ornament, we write ornaments without a stem.
+ Ornaments are in general meant like a roughly timed note or group of notes;
+ it leaves a lot of interpretation for the pianist.
+ Therefore it doesn't bother if the rhythmic notation is less clear because
+ of the abcense of the stem, it still gives a clear guideline on how to
+ play the ornament.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+ Let's show some practical examples of ornaments: 
+\end_layout
+
+\begin_layout Itemize
+Arpeggio:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Graphics
+	filename images/arpeggio.jpg
+	lyxscale 10
+	width 50text%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+In this example we see also for the first time a manual grid applied to
+ point out where the arpeggio ends; so this arpeggio spans a eight note
+ value.
+\end_layout
+
+\begin_layout Itemize
+Turn
+\end_layout
+
+\begin_layout Itemize
+Mordent
+\end_layout
+
+\begin_layout Itemize
+Trill
+\end_layout
+
+\begin_layout Itemize
+Acciaccatura
+\end_layout
+
+\end_body
+\end_document

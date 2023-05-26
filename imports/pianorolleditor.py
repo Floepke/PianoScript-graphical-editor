@@ -1,7 +1,5 @@
 '''
-Copyright 2023 Philip Bergwerf
-
-This program is part of the pianoscript project: http://www.pianoscript.org/
+This file is part of the pianoscript project: http://www.pianoscript.org/
 
 Permission is hereby granted, free of charge, to any person obtaining 
 a copy of this software and associated documentation files 
@@ -24,7 +22,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 from imports.tools import *
-from imports.savefilestructure import Settings
 import random
 
 def rcolor():
@@ -213,57 +210,59 @@ def draw_note_pianoroll(note,
             state=state)
     # stem
     if note['hand'] == 'r':
-        editor.create_line(x,
-            y,
-            x,
-            y-(20*y_factor),
-            width=2,
-            fill=note_color,
-            tag=(note['id'], 'stem'),
-            state=state)
-        # barline white space
-        bl_times = barline_times(Score['events']['grid'])
-        if note['time'] in bl_times:
+        if note['stem-visible']:
             editor.create_line(x,
+                y,
+                x,
                 y-(20*y_factor),
-                x,
-                y-(25*y_factor),
                 width=2,
-                tag=(note['id'], 'whitespace'),
-                fill=color_editor_canvas)
-            editor.create_line(x,
-                y,
-                x,
-                y+(7.5*y_factor),
-                width=2,
-                tag=(note['id'], 'whitespace'),
-                fill=color_editor_canvas)
+                fill=note_color,
+                tag=(note['id'], 'stem'),
+                state=state)
+            # barline white space
+            bl_times = barline_times(Score['events']['grid'])
+            if note['time'] in bl_times:
+                editor.create_line(x,
+                    y-(20*y_factor),
+                    x,
+                    y-(25*y_factor),
+                    width=2,
+                    tag=(note['id'], 'whitespace'),
+                    fill=color_editor_canvas)
+                editor.create_line(x,
+                    y,
+                    x,
+                    y+(7.5*y_factor),
+                    width=2,
+                    tag=(note['id'], 'whitespace'),
+                    fill=color_editor_canvas)
     else:
-        editor.create_line(x,
-            y,
-            x,
-            y+(20*y_factor),
-            width=2,
-            fill=note_color,
-            tag=(note['id'], 'stem'),
-            state=state)
-        # barline white space
-        bl_times = barline_times(Score['events']['grid'])
-        if note['time'] in bl_times:
-            editor.create_line(x,
-                y+(20*y_factor),
-                x,
-                y+(25*y_factor),
-                width=2,
-                tag=(note['id'], 'whitespace'),
-                fill=color_editor_canvas)
+        if note['stem-visible']:
             editor.create_line(x,
                 y,
                 x,
-                y-(7.5*y_factor),
+                y+(20*y_factor),
                 width=2,
-                tag=(note['id'], 'whitespace'),
-                fill=color_editor_canvas)
+                fill=note_color,
+                tag=(note['id'], 'stem'),
+                state=state)
+            # barline white space
+            bl_times = barline_times(Score['events']['grid'])
+            if note['time'] in bl_times:
+                editor.create_line(x,
+                    y+(20*y_factor),
+                    x,
+                    y+(25*y_factor),
+                    width=2,
+                    tag=(note['id'], 'whitespace'),
+                    fill=color_editor_canvas)
+                editor.create_line(x,
+                    y,
+                    x,
+                    y-(7.5*y_factor),
+                    width=2,
+                    tag=(note['id'], 'whitespace'),
+                    fill=color_editor_canvas)
         # left dot
         if note['pitch'] in BLACK:
             r = 1.5
@@ -290,35 +289,13 @@ def draw_note_pianoroll(note,
         if note['hand'] == 'r':
             y0 = y - (5*y_factor)
             y1 = y + (5*y_factor)
-            editor.create_polygon(x,
-                y,
-                x + (5 * y_factor),
-                y0,
-                x1 - (5 * y_factor),
-                y0,
-                x1,
-                y,
-                x1 - (5 * y_factor),
-                y1,
-                x + (5 * y_factor),
-                y1,
+            editor.create_polygon(x,y,x1,y0,x1,y1,
                 fill=color_right_midinote,
                 tag=(note['id'], 'midinote'))
         else:
             y0 = y - (5*y_factor)
             y1 = y + (5*y_factor)
-            editor.create_polygon(x,
-                y,
-                x + (5 * y_factor),
-                y0,
-                x1 - (5 * y_factor),
-                y0,
-                x1,
-                y,
-                x1 - (5 * y_factor),
-                y1,
-                x + (5 * y_factor),
-                y1,
+            editor.create_polygon(x,y,x1,y0,x1,y1,
                 fill=color_left_midinote,
                 tag=(note['id'], 'midinote'))
         # notestop
@@ -329,8 +306,9 @@ def draw_note_pianoroll(note,
             width=2,
             fill=note_color,
             tag=(note['id'], 'notestop'))
-    update_connectstem(note,editor,hbar,y_scale_percent,x_scale_quarter_mm,MM,Score,color_notation_editor, False,'r')
-    update_connectstem(note,editor,hbar,y_scale_percent,x_scale_quarter_mm,MM,Score,color_notation_editor, False,'l')
+    if note['stem-visible']:
+        update_connectstem(note,editor,hbar,y_scale_percent,x_scale_quarter_mm,MM,Score,color_notation_editor, False,'r')
+        update_connectstem(note,editor,hbar,y_scale_percent,x_scale_quarter_mm,MM,Score,color_notation_editor, False,'l')
     
 
     if edit:
@@ -388,6 +366,11 @@ def update_drawing_order_editor(canvas):
     canvas.tag_raise('new')
     canvas.tag_raise('connectstem')
     canvas.tag_raise('cursor')
+    canvas.tag_raise('countline')
+    canvas.tag_raise('texttext')
+    canvas.tag_raise('staffsizer')
+    canvas.tag_raise('startrepeat')
+    canvas.tag_raise('endrepeat')
 
 
 def draw_linebreak_editor(linebreak,
@@ -406,9 +389,6 @@ def draw_linebreak_editor(linebreak,
     # define x and y position on the editor canvas:
     # calculate dimensions for staff (in px)
     editor_height = editor.winfo_height() - hbar.winfo_height()
-    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2
-    staff_height = editor_height - staff_xy_margin - staff_xy_margin
-    y_factor = staff_height / 490
     x = time2x_editor(linebreak['time'],
         editor, 
         hbar, 
@@ -438,11 +418,84 @@ def draw_linebreak_editor(linebreak,
             width=2,
             dash=(10,6),
             tag=linebreak['id'],
-            fill=color_notation_editor)
-    editor.tag_lower(linebreak['id'])
+            fill='green')
+    editor.tag_raise(linebreak['id'])
+
+
+def draw_cursor_editor(cursor,
+    editor,
+    hbar,
+    y_scale_percent,
+    x_scale_quarter_mm,
+    MM,
+    color_highlight,
+    beam):
+    '''draws a newline symbol in the editor'''
+    
+    editor.delete(cursor['id'])
+
+    # define x and y position on the editor canvas:
+    # calculate dimensions for staff (in px)
+    editor_height = editor.winfo_height() - hbar.winfo_height()
+    x = time2x_editor(cursor['time'],
+        editor, 
+        hbar, 
+        y_scale_percent, 
+        x_scale_quarter_mm,
+        MM)
+    if beam:
+        if beam == 'up':
+            editor.create_line(x,
+                0,
+                x,
+                editor_height * 0.2 / 2,
+                width=4,
+                tag=cursor['id'],
+                fill=color_highlight,
+                arrow='first',
+                arrowshape=(20,20,20))
+            editor.create_line(x,
+                editor_height - (editor_height * 0.2 / 2),
+                x,
+                editor_height - (editor_height * 0.2 / 2) + editor_height * 0.2 / 2,
+                width=4,
+                tag=cursor['id'],
+                fill=color_highlight)
+        else:
+            editor.create_line(x,
+                0,
+                x,
+                editor_height * 0.2 / 2,
+                width=4,
+                tag=cursor['id'],
+                fill=color_highlight)
+            editor.create_line(x,
+                editor_height - (editor_height * 0.2 / 2),
+                x,
+                editor_height - (editor_height * 0.2 / 2) + editor_height * 0.2 / 2,
+                width=4,
+                tag=cursor['id'],
+                fill=color_highlight,
+                arrow='last',
+                arrowshape=(20,20,20))
+    else:
+        editor.create_line(x,
+            0,
+            x,
+            editor_height * 0.2 / 2,
+            width=4,
+            tag=cursor['id'],
+            fill=color_highlight)
+        editor.create_line(x,
+            editor_height - (editor_height * 0.2 / 2),
+            x,
+            editor_height - (editor_height * 0.2 / 2) + editor_height * 0.2 / 2,
+            width=4,
+            tag=cursor['id'],
+            fill=color_highlight)
 
     
-def draw_select_rectangle(selection, editor, hbar, y_scale_percent, x_scale_quarter_mm, MM):
+def draw_select_rectangle(selection, editor):
     '''
         We redraw the select rectangle in this function.
     '''
@@ -489,17 +542,18 @@ def slur_editor(editor, slur, idd, draw_scale, thickness=7.5, steps=100, drawcon
     for t in range(steps):
         x, y = evaluate_cubic_bezier(t / steps, slur)
         slur_points.append([x, y])
-    # for t in reversed(range(steps)):
-    #     x, y = evaluate_cubic_bezier(t / steps, 
-    #         [ctl1,(ctl2[0]+thickness,ctl2[1]+thickness),(ctl3[0]+thickness,ctl3[1]+thickness),ctl4])
-    #     slur_points.append([x, y])
+    thickness_x = thickness * (ctl4[0] / ctl1[1])
+    thickness_y = thickness * (ctl4[1] / ctl1[0])
+    for t in reversed(range(steps)):
+        x, y = evaluate_cubic_bezier(t / steps, 
+            [ctl1,(ctl2[0]+thickness_x,ctl2[1]+thickness_y),(ctl3[0]+thickness_x,ctl3[1]+thickness_y),ctl4])
+        slur_points.append([x, y])
     
     # draw slur
-    editor.create_line(slur_points, 
+    editor.create_polygon(slur_points, 
         fill='black', 
         tag=idd,
-        width=4*draw_scale,
-        capstyle='round')
+        width=4*draw_scale)
     
     # draw control points
     if drawcontrols:
@@ -533,3 +587,175 @@ def slur_editor(editor, slur, idd, draw_scale, thickness=7.5, steps=100, drawcon
             fill='yellow',
             outline='')
 
+
+def draw_countline_editor(countline, 
+    editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
+    
+    editor.delete(countline['id'])
+
+    t = time2x_editor(countline['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    p1 = pitch2y_editor(countline['pitch1'], editor, hbar, y_scale_percent)
+    p2 = pitch2y_editor(countline['pitch2'], editor, hbar, y_scale_percent)
+    editor.create_line(t,p1,t,p2,
+        fill=color_notation_editor,
+        width=1,
+        dash=(2,2),
+        tag=(countline['id'], 'countline'))
+    editor.create_rectangle(t-5,p1-5,t+5,p1+5,
+        fill='green',
+        outline='',
+        tag=(countline['id'], 'handle1', 'countline'))
+    editor.create_rectangle(t-5,p2-5,t+5,p2+5,
+        fill='green',
+        outline='',
+        tag=(countline['id'], 'handle2', 'countline'))
+
+
+def draw_text_editor(text,
+    editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
+    
+    editor.delete(text['id'])
+
+    t = time2x_editor(text['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    p = pitch2y_editor(text['pitch'], editor, hbar, y_scale_percent)
+    if text['vert'] == 1:
+        angle = 90
+        anchor = 'nw'
+    else:
+        angle = 0
+        anchor = 'w'
+
+    mytext = editor.create_text(t,p,
+        text=text['text'],
+        anchor=anchor,
+        tag=(text['id'], 'textfg', 'texttext'),
+        angle=angle)
+    bb = editor.bbox(mytext)
+    w = bb[2]-bb[0]
+    h = bb[3]-bb[1]
+    if text['vert'] == 1:
+        editor.create_rectangle(t,p,
+            t+w,p-h,
+            fill='#eee8d5',
+            outline='#268bd2',
+            tag=(text['id'],'textbg', 'texttext'))
+    else:
+        editor.create_rectangle(t,p-(h/2),
+            t+w,p+(h/2),
+            fill='#eee8d5',
+            outline='#268bd2',
+            tag=(text['id'],'textbg', 'texttext'))
+    editor.tag_raise('textbg')
+    editor.tag_raise('textfg')
+
+def draw_staffsizer_editor(sizer, 
+    editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
+    
+    editor.delete(sizer['id'])
+    t = time2x_editor(sizer['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    p = pitch2y_editor(sizer['pitch'], editor, hbar, y_scale_percent)
+    if sizer['pitch'] < 40:
+        editor.create_polygon(t-10,p-10,t+10,p-10,t,p+10,outline='',fill='red',tag=(sizer['id'], 'staffsizer'))
+    else:
+        editor.create_polygon(t-10,p+10,t+10,p+10,t,p-10,outline='',fill='red',tag=(sizer['id'], 'staffsizer'))
+
+def draw_startrepeat_editor(repeat, 
+    editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
+    
+    editor.delete(repeat['id'])
+    t = time2x_editor(repeat['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    editor_height = editor.winfo_height() - hbar.winfo_height()
+    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2  
+    
+    editor.create_line(t,staff_xy_margin,
+        t,staff_xy_margin/2,
+        width=2,
+        tag=(repeat['id'],'startrepeat'),
+        fill='purple')
+    editor.create_line(t,staff_xy_margin/2,
+        t+40,staff_xy_margin/2,
+        arrow='last',
+        width=4,
+        tag=(repeat['id'], 'startrepeat'),
+        fill='purple')
+
+def draw_endrepeat_editor(repeat, 
+    editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
+    
+    editor.delete(repeat['id'])
+    t = time2x_editor(repeat['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    editor_height = editor.winfo_height() - hbar.winfo_height()
+    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2  
+    
+    editor.create_line(t,staff_xy_margin,
+        t,staff_xy_margin/2,
+        width=2,
+        tag=(repeat['id'], 'endrepeat'),
+        fill='purple')
+    editor.create_line(t,staff_xy_margin/2,
+        t-40,staff_xy_margin/2,
+        arrow='last',
+        width=4,
+        tag=(repeat['id'], 'endrepeat'),
+        fill='purple')
+
+
+def draw_beam_editor(beam,
+    editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, color_notation_editor='#002b66'):
+
+    editor_height = editor.winfo_height() - hbar.winfo_height()
+    staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2  
+    staff_height = editor_height - staff_xy_margin - staff_xy_margin
+
+    editor.delete(beam['id'])
+
+    start = time2x_editor(beam['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    end = time2x_editor(beam['time']+beam['duration'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    if beam['hand'] == 'r':    
+        editor.create_line(start,staff_xy_margin/2,
+                        end,staff_xy_margin/2,
+                        fill='#c83f49',
+                        width=5,
+                        capstyle='round',
+                        tag=(beam['id'],'beam') )
+        editor.create_line(start,staff_xy_margin/2,
+                        start,staff_xy_margin/2+20,
+                        fill='#c83f49',
+                        width=2,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
+        editor.create_line(end,staff_xy_margin/2,
+                        end,staff_xy_margin/2+20,
+                        end-10,staff_xy_margin/2+25,
+                        fill='#c83f49',
+                        width=2,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
+    else:    
+        editor.create_line(start,staff_xy_margin+staff_height+(staff_xy_margin/2),
+                        end,staff_xy_margin+staff_height+(staff_xy_margin/2),
+                        fill='#c83f49',
+                        width=5,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
+        editor.create_line(start,staff_xy_margin+staff_height+(staff_xy_margin/2),
+                        start,staff_xy_margin+staff_height+(staff_xy_margin/2)-20,
+                        fill='#c83f49',
+                        width=2,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
+        editor.create_line(end,staff_xy_margin+staff_height+(staff_xy_margin/2),
+                        end,staff_xy_margin+staff_height+(staff_xy_margin/2)-20,
+                        end-10,staff_xy_margin+staff_height+(staff_xy_margin/2)-25,
+                        fill='#c83f49',
+                        width=2,
+                        capstyle='round',
+                        tag=(beam['id'],'beam'))
+    
+    

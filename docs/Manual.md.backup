@@ -1,0 +1,53 @@
+## PianoScript -- Manual
+---
+
+### At first usage
+PianoScript is written for Windows MacOS and Linux. The different systems do have different ways to set everything up.
+The app draws the music on a 'canvas'(digital paper) and can only export .postscript files(.ps). This means we have to setup a way to convert the postscript file to pdf in order to make the documents printable and easily shareable. Below the setup steps for the different systems:
+
+* MacOS
+	* For MacOS you need the following command line programs: *`pstopdf`* and *`pdfunite`* (which is included in *`poppler`* package)
+	* Test if *`pstopdf`* exists on your system by typing *`pstopdf`* in the terminal. If you get usage information it exists and PianoScript can use it for pdf conversion.
+	* Usually *`pdfunite`* is not installed by default. Go to [https://brew.sh/](https://brew.sh/) and install homebrew if not already installed on your system. After installing homebrew enter *`brew install poppler`* to your terminal and hit enter.
+	* After a succesfull installation test if *`pdfunite`* is recognized as command if you enter this in the terminal.
+	
+	If all works PianoScript should be able to succesfully export the postscript and convert it to one single vector pdf file which you can then share or print.
+
+* Windows
+	* For Windows we only need the commandline program Ghostscript for the pdf conversion.
+	* Go to [https://www.ghostscript.com](https://www.ghostscript.com) and download Ghostscript (GNU Affero General Public License).
+	* After installing Ghostscript run PianoScript and try to export a pdf file. The app will ask for the ghostscript path and you need to select '*`gswin64c.exe`*' using a standard file dialog. Usually it's located at '*`C:/Program Files/gs/gs[currentversion]/bin/gswin64c.exe`*'.
+	
+	The Ghostscript path is now saved in *`~/Documents/PianoScript/windows.ghostpath`*.
+* Linux
+	* Everything Ususlly works out of the box because the commandline programs are on almost every linux distibution installed by default.
+	* Type *`ps2pdfwr`* into the command line to check if it is installed.
+	* Type *`pdfunite`* into the command line to check if it is installed.
+	
+	If everything is installed the pdf export should work.
+
+---
+This manual is assuming that you are already familiar with the PianoScript music notation. If not please read the tutorial at [pianoscript.org](http://www.pianoscript.org/tutorial.html)
+
+### Interface
+![Image](./app.jpg)
+
+There are four areas:
+* Gridselector
+	- The cursor (blue vertical line in the editor) snaps on the grid division that you have selected in the gridselector. In the listbox: 1=whole,2=Half,4=Quarter,8=Eight etc... Using the divide and multiply spinboxes below the listbox, you can form every possible rhythmic figure. For example you can select a quarter triplet length by selecting '4' in the listbox and '3' in the divide spinbox. Now you can draw a triplet since the grid snaps on triplet lengths.
+* Toolbar; from left to right:
+	- **Right note input;** in this mode you can enter right hand notes by clicking the left mouse button. By click+drag you can edit the length of the note. The length will snap to the current selected grid in the gridselector. While editing a note you edit only the length or the pitch. If you click+drag the mouse pointer before the start of the note, you can change the pitch; else you edit the note length.
+	- **Left note input;** Same as right note input but the stem points down and there is a dot inside the left hand note.
+	- **Linebreak;** In linebreak mode you can enter the points in time on which you want the music to 'break' the line and go to the next line.
+	- **Countline;** A countline is used to highlight the subgrid in case of notes that are way shorter then the base grid. Add by left clicking, edit the line on the green handles by leftclick+drag, and delete by rightclick on a green handle.
+	- **Text;** In Text mode we can add, edit and delete text. By leftclick, you add a text on that position in time and pitch. The dialog has a text input where you enter your text and the option to put the text 'vertical in relation to staff'. So by default the text is printed in the direction of the staff but when the chackbox in the dialog is checked it will be printed vertically.
+	- **Slur; **[need to create]
+	- **StaffSizer;** A staff sizer is used to make the staff bigger. It is in fact an invisible note. The staff will be extended to the pitch position of the staff sizer at that point in time. rightclick on the red staffsizer indicator will delete it.
+	- **Repeat signs;** Leftclick wil add a start repeat, ctrl+leftclick will add end repeat. Rightclick on the repeat postition will delete the repeat start and/or end.
+* Editor
+* Printview
+
+
+
+
+
