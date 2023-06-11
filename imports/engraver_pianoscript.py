@@ -630,6 +630,7 @@ def engrave_pianoscript(render_type,
             color_black = 'black'
             color_white = 'white'
         else:
+            # pview.configure(bg='#cccccc')
             color_black = color_notation_editor
             color_white = color_editor_canvas
 
@@ -795,6 +796,18 @@ def engrave_pianoscript(render_type,
                                               width=2 * draw_scale,
                                               fill=color_black,
                                               tag=('midi_note','notestop'))
+
+                        # accidental
+                        if obj['accidental'] == 1:
+                            pview.create_line(x0+(10*draw_scale),y, x0+(15*draw_scale),y1,
+                            width=2*draw_scale,
+                            tag='accidental',
+                            fill=color_black)
+                        if obj['accidental'] == -1:
+                            pview.create_line(x0+(10*draw_scale),y, x0+(15*draw_scale),y0,
+                            width=2*draw_scale,
+                            tag='accidental',
+                            fill=color_black)
 
                         # left hand
                         if obj['hand'] == 'l':
@@ -1240,6 +1253,7 @@ def engrave_pianoscript(render_type,
         pview.tag_raise('notestop')
         pview.tag_raise('stem')
         pview.tag_raise('white_notestart')
+        
         pview.tag_raise('black_notestart')
         pview.tag_raise('connect_stem')
         pview.tag_raise('titles')
@@ -1250,7 +1264,8 @@ def engrave_pianoscript(render_type,
         pview.tag_raise('textbg')
         pview.tag_raise('text')
         pview.tag_raise('beam')
-        #pview.tag_lower('midi_note')
+        pview.tag_lower('midi_note')
+        pview.tag_raise('accidental')
         
         # make the new render update fluently(without blinking) and scale
         if not render_type == 'export':    

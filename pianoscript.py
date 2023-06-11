@@ -109,6 +109,7 @@ from imports.engraver_pianoscript_vertical import *
 from imports.engraver_pianoscript import *
 from imports.grideditor import *
 from imports.dialogs import *
+from imports.slur import *
 
 
 
@@ -119,7 +120,7 @@ from imports.dialogs import *
 color_basic_gui = '#002B36'
 color_right_midinote = Score['properties']['color-right-hand-midinote']
 color_left_midinote = Score['properties']['color-left-hand-midinote']
-color_editor_canvas = '#eee8d5'#d9d9d9 #fdffd1
+color_editor_canvas = '#eee8d5'#eee8d5'#d9d9d9 #fdffd1
 color_highlight = '#268bd2'#a6a832
 color_notation_editor = '#002b66'
 
@@ -141,59 +142,95 @@ rootframe.pack(fill='both',expand=True)
 toolbarpanel = Frame(rootframe, bg='#666666', relief='ridge')
 toolbarpanel.pack(fill='x', expand=False, side='top',padx=5,pady=5)
 
-input_right_button = Button(toolbarpanel, text='right', activebackground=color_highlight, bg=color_highlight)
+input_right_button = Button(toolbarpanel, text='Right input', activebackground=color_highlight, bg=color_highlight)
 input_right_button.pack(side='left')
-ir_photo = PhotoImage(file = r"icons/noteinput_R.png")
-input_right_button.configure(image=ir_photo)
-input_right_button_tooltip = Tooltip(input_right_button, text='Right hand note', wraplength=scrwidth)
+try:
+    ir_photo = PhotoImage(file = r"icons/noteinput_R.png")
+    input_right_button.configure(image=ir_photo)
+except:
+    ...
+input_right_button_tooltip = Tooltip(input_right_button, text='Right hand input; ctl+click for stemless ornamented note', wraplength=scrwidth)
 
-input_left_button = Button(toolbarpanel, bg='#f0f0f0', activebackground=color_highlight)
+input_left_button = Button(toolbarpanel, bg='#f0f0f0', activebackground=color_highlight, text='Left input')
 input_left_button.pack(side='left')
-il_photo = PhotoImage(file = r"icons/noteinput_L.png")
-input_left_button.configure(image=il_photo)
-input_left_button_tooltip = Tooltip(input_left_button, text='Left hand note', wraplength=scrwidth)
+try:
+    il_photo = PhotoImage(file = r"icons/noteinput_L.png")
+    input_left_button.configure(image=il_photo)
+except:
+    ...
+input_left_button_tooltip = Tooltip(input_left_button, text='Left hand input; ctl+click for stemless ornamented note', wraplength=scrwidth)
 
-linebreak_button = Button(toolbarpanel, text='linebreak', activebackground=color_highlight, bg='#f0f0f0')
+linebreak_button = Button(toolbarpanel, text='Line-break', activebackground=color_highlight, bg='#f0f0f0')
 linebreak_button.pack(side='left')
-lb_photo = PhotoImage(file = r"icons/linebreak.png")
-linebreak_button.configure(image=lb_photo)
-linebreak_button_tooltip = Tooltip(linebreak_button, text='Line-break; \nYou can edit margins for each line by clicking\non a line-break.', wraplength=scrwidth)
+try:
+    lb_photo = PhotoImage(file = r"icons/linebreak.png")
+    linebreak_button.configure(image=lb_photo)
+except:
+    ...
+linebreak_button_tooltip = Tooltip(linebreak_button, text='Line-break tool; \nYou can edit margins for each line by clicking\non a line-break.', wraplength=scrwidth)
 
-countline_button = Button(toolbarpanel, text='countline*', bg='#f0f0f0', activebackground=color_highlight)
+countline_button = Button(toolbarpanel, text='Countline*', bg='#f0f0f0', activebackground=color_highlight)
 countline_button.pack(side='left')
-cnt_photo = PhotoImage(file = r"icons/countline.png")
-countline_button.configure(image=cnt_photo)
-countline_button_tooltip = Tooltip(countline_button, text='Countline', wraplength=scrwidth)
+try:
+    cnt_photo = PhotoImage(file = r"icons/countline.png")
+    countline_button.configure(image=cnt_photo)
+except:
+    ...
+countline_button_tooltip = Tooltip(countline_button, text='Countline tool; for highlighting the rhythm', wraplength=scrwidth)
 
-txt_button = Button(toolbarpanel, text='text*', bg='#f0f0f0', activebackground=color_highlight)
+txt_button = Button(toolbarpanel, text='Text', bg='#f0f0f0', activebackground=color_highlight)
 txt_button.pack(side='left')
-txt_photo = PhotoImage(file = r"icons/text.png")
-txt_button.configure(image=txt_photo)
-txt_button_tooltip = Tooltip(txt_button, text='Text; Edit text by\nctrl+click on a existing text.', wraplength=scrwidth)
+try:
+    txt_photo = PhotoImage(file = r"icons/text.png")
+    txt_button.configure(image=txt_photo)
+except:
+    ...
+txt_button_tooltip = Tooltip(txt_button, text='Text tool; Edit text by\nctl+click on a existing text.', wraplength=scrwidth)
 
-slur_button = Button(toolbarpanel, text='slur*', bg='#f0f0f0', activebackground=color_highlight)
+slur_button = Button(toolbarpanel, text='Slur', bg='#f0f0f0', activebackground=color_highlight)
 slur_button.pack(side='left')
-slr_photo = PhotoImage(file = "icons/slur.png")
-slur_button.configure(image=slr_photo)
-slur_button_tooltip = Tooltip(slur_button, text='Slur', wraplength=scrwidth)
+try:
+    slr_photo = PhotoImage(file = "icons/slur.png")
+    slur_button.configure(image=slr_photo)
+except:
+    ...
+slur_button_tooltip = Tooltip(slur_button, text='Slur tool*', wraplength=scrwidth)
 
 staffsizer_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
 staffsizer_button.pack(side='left')
-stf_photo = PhotoImage(file = "icons/staffspacer.png")
-staffsizer_button.configure(image=stf_photo)
-staffspacer_tooltip = Tooltip(staffsizer_button, text='Staff sizer', wraplength=scrwidth)
+try:
+    stf_photo = PhotoImage(file = "icons/staffspacer.png")
+    staffsizer_button.configure(image=stf_photo)
+except:
+    ...
+staffspacer_tooltip = Tooltip(staffsizer_button, text='Staff sizer tool; for manually expanding the staff', wraplength=scrwidth)
 
-repeats_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
+repeats_button = Button(toolbarpanel, text='Repeats', bg='#f0f0f0', activebackground=color_highlight)
 repeats_button.pack(side='left')
-rpts_photo = PhotoImage(file = "icons/repeats.png")
-repeats_button.configure(image=rpts_photo)
-repeats_tooltip = Tooltip(repeats_button, text='Repeat symbols; click to add start repeat, ctrl+click to add end repeat', wraplength=scrwidth)
+try:
+    rpts_photo = PhotoImage(file = "icons/repeats.png")
+    repeats_button.configure(image=rpts_photo)
+except:
+    ...
+repeats_tooltip = Tooltip(repeats_button, text='Repeat symbols tool; click to add start repeat, ctl+click to add end repeat', wraplength=scrwidth)
 
-beam_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
+beam_button = Button(toolbarpanel, text='Beam', bg='#f0f0f0', activebackground=color_highlight)
 beam_button.pack(side='left')
-beam_photo = PhotoImage(file = "icons/beam.png")
-beam_button.configure(image=beam_photo)
-beam_tooltip = Tooltip(beam_button, text='Beam tool', wraplength=scrwidth)
+try:
+    beam_photo = PhotoImage(file = "icons/beam.png")
+    beam_button.configure(image=beam_photo)
+except:
+    ...
+beam_tooltip = Tooltip(beam_button, text='Beam tool; for grouping notes (ctl+click to set a default beam grouping)', wraplength=scrwidth)
+
+accidental_button = Button(toolbarpanel, text='Accidental', bg='#f0f0f0', activebackground=color_highlight)
+accidental_button.pack(side='left')
+try:
+    accidental_photo = PhotoImage(file = "icons/accidental.png")
+    accidental_button.configure(image=accidental_photo)
+except:
+    ...
+accidental_tooltip = Tooltip(accidental_button, text='Accidental tool; for writing sharps and flats', wraplength=scrwidth)
 
 # Engraver selector
 engraver_button = Button(toolbarpanel, text='V')
@@ -319,7 +356,7 @@ file_path = 'New'
 
 def test_file():
     print('test_file...')
-    with open('/home/nauerna/Desktop/test.pianoscript', 'r') as f:
+    with open('test.pianoscript', 'r') as f:
         global Score
         Score = json.load(f)
         # run the piano-roll and print-view
@@ -408,7 +445,8 @@ def load_file(e=''):
             except:
                 print('ERROR: file is not a pianoscript file or is damaged.')
 
-        
+        # converter(filepath)
+        # Score = converter(file_path, Score)
 
         # run the piano-roll and print-view
         do_pianoroll()
@@ -429,7 +467,7 @@ def save(e=''):
 
     if file_path != 'New':
         f = open(file_path, 'w')
-        f.write(json.dumps(Score, separators=(',', ':')))#, indent=2))# publish
+        f.write(json.dumps(Score, separators=(',', ':')))
         f.close()
         file_changed = False
     else:
@@ -856,9 +894,6 @@ def mouse_handling(event, event_type):
     ex = x2tick_editor(mx, editor, hbar, y_scale_percent, x_scale_quarter_mm, last_pianotick, edit_grid, MM)
     ey = y2pitch_editor(my, editor, hbar, y_scale_percent)
 
-    # if event_type == 'shiftbtn1click':
-    #     shiftbutton1click = True
-    #     print('default-draw-scale')
     if event_type == 'shiftbtn1release':
         shiftbutton1click = False
 
@@ -894,8 +929,6 @@ def mouse_handling(event, event_type):
             if not editing:
                 # create a new note in Score
 
-                add_ctrl_z()#experimental
-
                 new_note = {
                     "id": 'note%i'%new_id,
                     "time": ex,
@@ -904,7 +937,8 @@ def mouse_handling(event, event_type):
                     "hand": hand,
                     "x-offset": 0,
                     "y-offset": 0,
-                    "stem-visible": stem_visible
+                    "stem-visible": stem_visible,
+                    "accidental":0
                 }
                 draw_note_pianoroll(new_note, 
                     False, 
@@ -989,7 +1023,8 @@ def mouse_handling(event, event_type):
                     "hand": hand,
                     "x-offset": 0,
                     "y-offset": 0,
-                    "stem-visible": True
+                    "stem-visible": True,
+                    "accidental":0
                 }
                 draw_note_pianoroll(cursor, 
                     True, 
@@ -1019,7 +1054,8 @@ def mouse_handling(event, event_type):
                 "hand": hand,
                 "x-offset": 0,
                 "y-offset": 0,
-                "stem-visible": True
+                "stem-visible": True,
+                "accidental":0
             }
             draw_note_pianoroll(cursor, 
                 True, 
@@ -1480,7 +1516,6 @@ def mouse_handling(event, event_type):
 
             # there are two options; editing or adding
             tags = editor.gettags('current')
-            print(tags)
             edit = False
             try:
                 if 'countline' in tags[0]:
@@ -1569,28 +1604,29 @@ def mouse_handling(event, event_type):
             new_id += 1
             
             # draw slur
+            # slur_editor(editor,
+            #     new_slur['bezier-points'],
+            #     new_slur['id'],
+            #     Score['properties']['draw-scale'],
+            #     new_slur['width'], 
+            #     100, 
+            #     False)
             slur_editor(editor,
-                new_slur['bezier-points'],
-                new_slur['id'],
-                Score['properties']['draw-scale'],
-                new_slur['width'], 
-                100, 
-                False)
+                new_slur,
+                Score['properties']['draw-scale'])
 
         if event_type == 'motion':
 
             if ms_xy[0]:
                 # define middle two control points
-                point1 = [ms_xy[0]+((mx-ms_xy[0])/10), ms_xy[1]+40]#((my-ms_xy[1])/10)]
-                point2 = [ms_xy[0]+((mx-ms_xy[0])/10*9), ms_xy[1]+40]#((my-ms_xy[1])/10*9)]
+                point1 = [ms_xy[0]+((mx-ms_xy[0])/10), ms_xy[1]+40] #((my-ms_xy[1])/10)]
+                point2 = [ms_xy[0]+((mx-ms_xy[0])/10*9), ms_xy[1]+40] #((my-ms_xy[1])/10*9)]
+                new_slur['bezier-points'] = [[mx,my],point2,point1,ms_xy]
+                print(new_slur['bezier-points'])
                 # draw slur
                 slur_editor(editor,
-                    [[ms_xy[0],ms_xy[1]],point1,point2,[mx,my]],
-                    new_slur['id'],
-                    Score['properties']['draw-scale'],
-                    new_slur['width'],
-                    100,
-                    False)
+                            new_slur,
+                            Score['properties']['draw-scale'])
 
         if event_type == 'btn1release':
 
@@ -1837,6 +1873,100 @@ def mouse_handling(event, event_type):
                         editor.delete(bm['id'])
                         do_engrave()
                         file_changed = True
+
+    if input_mode == 'accidental':
+
+        if event_type == 'btn1click':
+
+            # detect note
+            tags = editor.gettags(editor.find_withtag('current'))
+            if tags:
+                if 'note' in tags[0]:
+                    tags = tags[0]
+            
+            for evt in Score['events']['note']:
+                if evt['id'] == tags:
+                    evt['accidental'] = 1
+
+                    # redraw note
+                    print(evt)
+                    draw_note_pianoroll(evt,
+                            False, 
+                            editor,
+                            hbar, 
+                            y_scale_percent, 
+                            x_scale_quarter_mm, 
+                            MM, 
+                            color_notation_editor, 
+                            BLACK, 
+                            color_editor_canvas, 
+                            Score,
+                            False)
+                    update_drawing_order_editor(editor)
+        
+        if event_type == 'btn2click':
+
+            # detect note
+            tags = editor.gettags(editor.find_withtag('current'))
+            if tags:
+                if 'note' in tags[0]:
+                    tags = tags[0]
+            
+            for evt in Score['events']['note']:
+                if evt['id'] == tags:
+                    evt['accidental'] = 0
+
+                    # redraw note
+                    print(evt)
+                    draw_note_pianoroll(evt,
+                            False, 
+                            editor,
+                            hbar, 
+                            y_scale_percent, 
+                            x_scale_quarter_mm, 
+                            MM, 
+                            color_notation_editor, 
+                            BLACK, 
+                            color_editor_canvas, 
+                            Score,
+                            False)
+                    update_drawing_order_editor(editor)
+
+        if event_type == 'btn3click':
+
+            # detect note
+            tags = editor.gettags(editor.find_withtag('current'))
+            if tags:
+                if 'note' in tags[0]:
+                    tags = tags[0]
+            
+            for evt in Score['events']['note']:
+                if evt['id'] == tags:
+                    evt['accidental'] = -1
+
+                    # redraw note
+                    print(evt)
+                    draw_note_pianoroll(evt,
+                            False, 
+                            editor,
+                            hbar, 
+                            y_scale_percent, 
+                            x_scale_quarter_mm, 
+                            MM, 
+                            color_notation_editor, 
+                            BLACK, 
+                            color_editor_canvas, 
+                            Score,
+                            False)
+                    update_drawing_order_editor(editor)
+
+        if not event_type == 'motion': do_engrave()
+
+
+            
+
+            
+
                     
 
 
@@ -1870,7 +2000,7 @@ def keyboard_handling(event):
 
 
 def midi_import():
-    global file_changed
+    global   file_changed, Score
 
     # asking for save since we are creating a new file with the midifile in it.
     if file_changed == True:
@@ -1963,7 +2093,8 @@ def midi_import():
                                                 'pitch': i['note'] - 20, 
                                                 'hand': 'l', 
                                                 'id':new_id,
-                                                'stem-visible':True})
+                                                'stem-visible':True,
+                                                'accidental':0})
                 new_id += 1
             if i['type'] == 'note_on' and i['channel'] >= 1:
                 Score['events']['note'].append({'time': i['time'], 
@@ -1971,9 +2102,13 @@ def midi_import():
                                                 'pitch': i['note'] - 20, 
                                                 'hand': 'r', 
                                                 'id':new_id,
-                                                'stem-visible':True})
+                                                'stem-visible':True,
+                                                'accidental':0})
                 new_id += 1
 
+        add_quick_linebreaks()
+
+        # engraving and drawing the pianoroll
         threading.Thread(target=do_pianoroll).start()
         do_engrave()
 
@@ -1996,7 +2131,7 @@ def midi_import():
 # ------------------
 # export
 # ------------------
-def exportPDF(event=''):
+def exportPDF(event=''):    
     def is_tool(name):
         """Check whether `name` is on PATH and marked as executable."""
         return which(name) is not None
@@ -2545,40 +2680,6 @@ def grideditor(event=''):
     last_pianotick = edit.last_pianotick
     do_pianoroll()
     do_engrave()
-    # t = GridEditor(root, Score)
-    # Score['events']['grid'] = []
-    # for ts in t:
-    #     numerator = None
-    #     denominator = None
-    #     amount = None
-    #     grid = None
-    #     visible = None
-    #     if ts:
-    #         try:
-    #             numerator = int(ts.split()[0].split('/')[0])
-    #             denominator = int(ts.split()[0].split('/')[1])
-    #             amount = int(ts.split()[1])
-    #             grid = int(ts.split()[2])
-    #             visible = int(ts.split()[3])
-    #         except:
-    #             print(
-    #                 '''Please read the documentation about how to provide the grid mapping correctly.
-    #                 a correct gridmap:
-    #                 4/4 16 4 1''')
-    #             return
-    #     else:
-    #         continue
-    #     # gridmap add to Score
-    #     Score['events']['grid'].append(
-    #         {'amount': amount, 'numerator': numerator, 'denominator': denominator,
-    #          'grid': grid, 'visible': visible})
-    # # remove linebreaks from Score that are >= then last_pianotick
-    # last_pianotick = 0
-    # for grid in Score['events']['grid']:
-    #     last_pianotick += (grid['amount'] * measure_length((grid['numerator'], grid['denominator'])))
-    # for lb in reversed(Score['events']['line-break']):
-    #     if lb['time'] >= last_pianotick:
-    #         Score['events']['line-break'].remove(lb)
 
 
 def update_textbox():
@@ -2743,7 +2844,7 @@ def add_quick_linebreaks(e=''):
 
     do_engrave()
 
-def switch_hand_selection(direction):
+def switch_hand_selection(e, direction):
 
     global Score
 
@@ -2800,7 +2901,8 @@ def mode_select(mode,i_mode):
     slur_button,
     staffsizer_button,
     repeats_button,
-    beam_button
+    beam_button,
+    accidental_button
     ]
 
     for i,conf in enumerate(modes):
@@ -2818,7 +2920,8 @@ def mode_select(mode,i_mode):
             "hand": 'r',
             "x-offset": 0,
             "y-offset": 0,
-            "stem-visible": True
+            "stem-visible": True,
+            "accidental":0
         }
         draw_note_pianoroll(cursor, 
             True, 
@@ -2840,7 +2943,8 @@ def mode_select(mode,i_mode):
             "hand": 'l',
             "x-offset": 0,
             "y-offset": 0,
-            "stem-visible": True
+            "stem-visible": True,
+            "accidental":0
         }
         draw_note_pianoroll(cursor, 
             True, 
@@ -2865,6 +2969,7 @@ slur_button.configure(command=lambda: [mode_select(5,'slur'), noteinput_label.fo
 staffsizer_button.configure(command=lambda: [mode_select(6,'staffsizer'), noteinput_label.focus_force()])
 repeats_button.configure(command=lambda: [mode_select(7,'repeats'), noteinput_label.focus_force()])
 beam_button.configure(command=lambda: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
+accidental_button.configure(command=lambda: [mode_select(9,'accidental'), noteinput_label.focus_force()])
 
 def space_shift(event):
     '''
@@ -3054,7 +3159,8 @@ def copy_selection(e=''):
                 "hand":note['hand'],
                 "stem-visible":note['stem-visible'],
                 "type":note['type'],
-                "notestop":note['notestop']
+                "notestop":note['notestop'],
+                "accidental":note['accidental']
             }
             copycut_buffer.append(new)
 
@@ -3072,7 +3178,8 @@ def paste_selection(e=''):
                 "hand":e['hand'],
                 "stem-visible":e['stem-visible'],
                 "type":e['type'],
-                "notestop":e['notestop']
+                "notestop":e['notestop'],
+                "accidental":e['accidental']
             }
             new_id += 1
             Score['events']['note'].append(new)
@@ -3332,8 +3439,9 @@ root.bind('<Up>', transpose_up)
 root.bind('<Down>', transpose_down)
 root.bind('<Key-g>', grideditor)
 root.bind('<Key-q>', lambda e: quantize(Score))
-root.bind('[', lambda e: switch_hand_selection('l'))
-root.bind(']', lambda e: switch_hand_selection('r'))
+root.bind('[', lambda e: switch_hand_selection(e,'l'))
+root.bind(']', lambda e: switch_hand_selection(e,'r'))
+root.bind('p', lambda e: play_midi(e, Score, 'test2.mid', root))
 
 
 
@@ -3352,6 +3460,6 @@ root.bind('<F11>', fullscreen)
 
 if __name__ == '__main__':
     new_file()
-    #test_file()
+    #test_file()    
     root.mainloop()
 

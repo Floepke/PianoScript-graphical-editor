@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
     functions. Every function has a doc string to explain what it does
     or were it's used for.
 '''
-
+import time
 
 def measure_length(tsig):
     '''
@@ -188,7 +188,8 @@ def note_split_processor(note, Score):
                             'duration': split_points[0] - start,
                             'hand': note['hand'],
                             'notestop':False,
-                            'stem-visible':note['stem-visible']})
+                            'stem-visible':note['stem-visible'],
+                            'accidental':note['accidental']})
             elif i == len(split_points):  # if last iteration
                 splitted.append({'type': 'split',
                             'pitch': note['pitch'],
@@ -196,7 +197,8 @@ def note_split_processor(note, Score):
                             'duration': end - split_points[i - 1],
                             'hand': note['hand'],
                             'notestop':True,
-                            'stem-visible':note['stem-visible']})
+                            'stem-visible':note['stem-visible'],
+                            'accidental':note['accidental']})
                 return splitted
             else:  # if not first and not last iteration
                 splitted.append({'type': 'split', 
@@ -205,7 +207,8 @@ def note_split_processor(note, Score):
                             'duration': split_points[i] - split_points[i - 1],
                             'hand': note['hand'],
                             'notestop':False,
-                            'stem-visible':note['stem-visible']})
+                            'stem-visible':note['stem-visible'],
+                            'accidental':note['accidental']})
 
 
 def round_rectangle(widget, x1, y1, x2, y2, radius=5, **kwargs):
@@ -237,3 +240,13 @@ def proper_round(num, dec=0):
     if num[-1]>='5':
         return float(num[:-2-(not dec)]+str(int(num[-2-(not dec)])+1))
     return float(num[:-1])
+
+
+def set_pview_width(root,master_paned):
+    
+    w = root.winfo_width()
+
+    for i in range(100):
+        
+        master_paned.configure(width=i)
+        time.sleep(1000)

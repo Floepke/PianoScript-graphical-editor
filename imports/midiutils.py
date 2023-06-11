@@ -26,7 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 from midiutil.MidiFile import MIDIFile
 from tkinter import filedialog
 from imports.tools import *
-from mido import Message, MetaMessage, MidiFile, MidiTrack, bpm2tempo, second2tick
+from mido import Message, MetaMessage, MidiFile, MidiTrack, bpm2tempo, second2tick, open_output, get_output_names
+import midiutil as mt
+import time
 
 def midiexport(root,Score):
 
@@ -71,3 +73,36 @@ def midiexport(root,Score):
         track.append(MetaMessage('end_of_track'))
         mid.tracks.append(track)
         mid.save(f.name)
+
+
+# play the song trough a midi port that can be selected by external synth
+MIDIplayerSwitch = False
+def play_midi(event, Score, midi_file_path, root):
+    
+    '''Playing the midi-file trough midi port'''
+
+    mf = MIDIFile(1)
+    mf.addTempo(0,0, 120)
+
+    for note in Score['events']['note']:
+        if note['hand'] == 'l':
+            mf.addNote(0, 0, note['pitch']+20, note['time']/256, note['duration'], 80)
+        else:
+            mf.addNote(0, 1, note['pitch']+20, note['time']/256, note['duration'], 80)
+
+    with open("PLAYER.mid", "wb") as output_file:
+        mf.writeFile(output_file)
+
+    mf = MidiFile('PLAYER.mid')
+    names = get_output_names()
+    port = open_output(names[0])
+    for msg in mf.play():
+        port.send(msg)
+
+    # for msg in MidiFile('PLAYER.mid'):
+    #     time.sleep(msg.time)
+    #     port = open_output('Port Name')
+    #     if not msg.is_meta:
+    #         port.send(msg)
+
+

@@ -652,8 +652,13 @@ def engrave_pianoscript_vertical(render_type,
             color_black = 'black'
             color_white = 'white'
         else:
+            #pview.configure(bg='#cccccc')
             color_black = color_notation_editor
             color_white = color_editor_canvas
+            
+
+
+
 
         x_cursor = 0
         idx_l = 0
@@ -737,7 +742,7 @@ def engrave_pianoscript_vertical(render_type,
                             yy = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
                         pview.create_line(x_cursor,
                                           yy,
-                                          x_cursor+sw,
+                                          x_cursor+sw+(35*draw_scale),
                                           yy,
                                           width=.75 * draw_scale,
                                           capstyle='round',
@@ -828,6 +833,20 @@ def engrave_pianoscript_vertical(render_type,
                                               width=1.5 * draw_scale,
                                               fill=color_black,
                                               tag=('midi_note','notestop'))
+                            
+                        # accidental
+                        if obj['accidental'] == 1:
+                            pview.create_line(xx,y0+(10*draw_scale), x0,y0+(15*draw_scale),
+                            width=2*draw_scale,
+                            tag='accidental',
+                            fill=color_black,
+                            capstyle='round')
+                        if obj['accidental'] == -1:
+                            pview.create_line(xx,y0+(10*draw_scale), x1,y0+(15*draw_scale),
+                            width=2*draw_scale,
+                            tag='accidental',
+                            fill=color_black,
+                            capstyle='round')
 
                         # left hand
                         if obj['hand'] == 'l':
@@ -1283,6 +1302,7 @@ def engrave_pianoscript_vertical(render_type,
         pview.tag_raise('stem')
         pview.tag_raise('white_notestart')
         pview.tag_raise('black_notestart')
+        pview.tag_raise('accidental')
         pview.tag_raise('connect_stem')
         pview.tag_raise('titles')
         pview.tag_raise('cursor')

@@ -191,9 +191,9 @@ def draw_note_pianoroll(note,
     # notehead
     if note['pitch'] in BLACK:
         editor.create_oval(x,
-            y-(5*y_factor),
-            x+(5*y_factor),
-            y+(5*y_factor),
+            y-(2.5*y_factor),
+            x+(10*y_factor),
+            y+(2.5*y_factor),
             fill=note_color,
             outline=note_color,
             tag=(note['id'], 'notehead', 'blacknote'),
@@ -208,6 +208,25 @@ def draw_note_pianoroll(note,
             outline=note_color,
             tag=(note['id'], 'notehead'),
             state=state)
+    # accidental
+    if note['accidental'] == 1:
+        editor.create_line(
+                            x+(10*y_factor),
+                            y,
+                            x+(15*y_factor),
+                            y+(5*y_factor),
+                            width=2,
+                            tag=(note['id'], 'accidental'),
+                            fill=note_color)
+    if note['accidental'] == -1:
+        editor.create_line(
+                           x+(10*y_factor),
+                           y,
+                           x+(15*y_factor),
+                           y-(5*y_factor),
+                           width=2,
+                           tag=(note['id'], 'accidental'),
+                           fill=note_color)
     # stem
     if note['hand'] == 'r':
         if note['stem-visible']:
@@ -215,7 +234,7 @@ def draw_note_pianoroll(note,
                 y,
                 x,
                 y-(20*y_factor),
-                width=2,
+                width=3,
                 fill=note_color,
                 tag=(note['id'], 'stem'),
                 state=state)
@@ -226,14 +245,14 @@ def draw_note_pianoroll(note,
                     y-(20*y_factor),
                     x,
                     y-(25*y_factor),
-                    width=2,
+                    width=3,
                     tag=(note['id'], 'whitespace'),
                     fill=color_editor_canvas)
                 editor.create_line(x,
                     y,
                     x,
                     y+(7.5*y_factor),
-                    width=2,
+                    width=3,
                     tag=(note['id'], 'whitespace'),
                     fill=color_editor_canvas)
     else:
@@ -242,7 +261,7 @@ def draw_note_pianoroll(note,
                 y,
                 x,
                 y+(20*y_factor),
-                width=2,
+                width=3,
                 fill=note_color,
                 tag=(note['id'], 'stem'),
                 state=state)
@@ -253,22 +272,22 @@ def draw_note_pianoroll(note,
                     y+(20*y_factor),
                     x,
                     y+(25*y_factor),
-                    width=2,
+                    width=3,
                     tag=(note['id'], 'whitespace'),
                     fill=color_editor_canvas)
                 editor.create_line(x,
                     y,
                     x,
                     y-(7.5*y_factor),
-                    width=2,
+                    width=3,
                     tag=(note['id'], 'whitespace'),
                     fill=color_editor_canvas)
         # left dot
         if note['pitch'] in BLACK:
             r = 1.5
-            editor.create_oval((x+(2.5*y_factor))+r,
+            editor.create_oval((x+(5*y_factor))+r,
                 y-r,
-                (x+(2.5*y_factor))-r,
+                (x+(5*y_factor))-r,
                 y+r,
                 fill=color_editor_canvas,
                 outline=color_editor_canvas,
@@ -289,15 +308,25 @@ def draw_note_pianoroll(note,
         if note['hand'] == 'r':
             y0 = y - (5*y_factor)
             y1 = y + (5*y_factor)
-            editor.create_polygon(x,y,x1,y0,x1,y1,
-                fill=color_right_midinote,
-                tag=(note['id'], 'midinote'))
+            editor.create_polygon(x,y,
+                                  x+(5*y_factor),y0,
+                                  x1,y0,
+                                  x1,y1,
+                                  x+(5*y_factor),y1,
+                                  fill=color_right_midinote,
+                                  tag=(note['id'], 'midinote'),
+                                  outline='')
         else:
             y0 = y - (5*y_factor)
             y1 = y + (5*y_factor)
-            editor.create_polygon(x,y,x1,y0,x1,y1,
-                fill=color_left_midinote,
-                tag=(note['id'], 'midinote'))
+            editor.create_polygon(x,y,
+                                  x+(5*y_factor),y0,
+                                  x1,y0,
+                                  x1,y1,
+                                  x+(5*y_factor),y1,
+                                  fill=color_left_midinote,
+                                  tag=(note['id'], 'midinote'),
+                                  outline='')
         # notestop
         editor.create_line(x1,
             y-(5*y_factor),
@@ -329,7 +358,6 @@ def update_connectstem(note,
     editor_height = editor.winfo_height() - hbar.winfo_height()
     staff_xy_margin = (editor_height - (y_scale_percent * editor_height)) / 2
     staff_height = editor_height - staff_xy_margin - staff_xy_margin
-    y_factor = staff_height / 490
     x = time2x_editor(note['time'], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
     
     # connect stems if two notes are starting at the same time
@@ -347,7 +375,7 @@ def update_connectstem(note,
             pitch2y_editor(buffer[0]['pitch'], editor, hbar, y_scale_percent),
             x,
             pitch2y_editor(buffer[-1]['pitch'], editor, hbar, y_scale_percent),
-            width=2,
+            width=3,
             fill=color_notation_editor,
             tag=tags)
 
@@ -358,6 +386,7 @@ def update_drawing_order_editor(canvas):
     canvas.tag_raise('staffline')
     canvas.tag_raise('notestop')
     canvas.tag_raise('whitespace')
+    canvas.tag_raise('accidental')
     canvas.tag_raise('notehead')
     canvas.tag_raise('whitedot')
     canvas.tag_raise('blacknote')
@@ -516,76 +545,76 @@ def draw_select_rectangle(selection, editor):
         fill='')
 
 
-def slur_editor(editor, slur, idd, draw_scale, thickness=7.5, steps=100, drawcontrols=True):
-    '''
-    Draws a musical slur on the given tkinter canvas with the given parameters.
-    controls is a list with four xy positions for drawing a bezier curve. This 
-    function draws two bezier curves to form a slur.
-    '''
+# def slur_editor(editor, slur, idd, draw_scale, thickness=7.5, steps=100, drawcontrols=True):
+#     '''
+#     Draws a musical slur on the given tkinter canvas with the given parameters.
+#     controls is a list with four xy positions for drawing a bezier curve. This 
+#     function draws two bezier curves to form a slur.
+#     '''
 
-    editor.delete(idd)
+#     editor.delete(idd)
 
-    def evaluate_cubic_bezier(t, control_points):
-        p0, p1, p2, p3 = control_points
-        x = (1 - t) ** 3 * p0[0] + 3 * t * (1 - t) ** 2 * p1[0] + 3 * t ** 2 * (1 - t) * p2[0] + t ** 3 * p3[0]
-        y = (1 - t) ** 3 * p0[1] + 3 * t * (1 - t) ** 2 * p1[1] + 3 * t ** 2 * (1 - t) * p2[1] + t ** 3 * p3[1]
-        return x, y
+#     def evaluate_cubic_bezier(t, control_points):
+#         p0, p1, p2, p3 = control_points
+#         x = (1 - t) ** 3 * p0[0] + 3 * t * (1 - t) ** 2 * p1[0] + 3 * t ** 2 * (1 - t) * p2[0] + t ** 3 * p3[0]
+#         y = (1 - t) ** 3 * p0[1] + 3 * t * (1 - t) ** 2 * p1[1] + 3 * t ** 2 * (1 - t) * p2[1] + t ** 3 * p3[1]
+#         return x, y
     
-    # define control points
-    ctl1 = slur[0]
-    ctl2 = slur[1]
-    ctl3 = slur[2]
-    ctl4 = slur[3]
+#     # define control points
+#     ctl1 = slur[0]
+#     ctl2 = slur[1]
+#     ctl3 = slur[2]
+#     ctl4 = slur[3]
 
-    # calculate slur
-    slur_points = []
-    for t in range(steps):
-        x, y = evaluate_cubic_bezier(t / steps, slur)
-        slur_points.append([x, y])
-    thickness_x = thickness * (ctl4[0] / ctl1[1])
-    thickness_y = thickness * (ctl4[1] / ctl1[0])
-    for t in reversed(range(steps)):
-        x, y = evaluate_cubic_bezier(t / steps, 
-            [ctl1,(ctl2[0]+thickness_x,ctl2[1]+thickness_y),(ctl3[0]+thickness_x,ctl3[1]+thickness_y),ctl4])
-        slur_points.append([x, y])
+#     # calculate slur
+#     slur_points = []
+#     for t in range(steps):
+#         x, y = evaluate_cubic_bezier(t / steps, slur)
+#         slur_points.append([x, y])
+#     thickness_x = thickness * (ctl4[0] / ctl1[1])
+#     thickness_y = thickness * (ctl4[1] / ctl1[0])
+#     for t in reversed(range(steps)):
+#         x, y = evaluate_cubic_bezier(t / steps, 
+#             [ctl1,(ctl2[0]+thickness_x,ctl2[1]+thickness_y),(ctl3[0]+thickness_x,ctl3[1]+thickness_y),ctl4])
+#         slur_points.append([x, y])
     
-    # draw slur
-    editor.create_polygon(slur_points, 
-        fill='black', 
-        tag=idd,
-        width=4*draw_scale)
+#     # draw slur
+#     editor.create_polygon(slur_points, 
+#         fill='black', 
+#         tag=idd,
+#         width=4*draw_scale)
     
-    # draw control points
-    if drawcontrols:
-        r = 10
-        editor.create_oval(ctl1[0]-r,
-            ctl1[1]-r,
-            ctl1[0]+r,
-            ctl1[1]+r,
-            tag=idd,
-            fill='yellow',
-            outline='')
-        editor.create_oval(ctl2[0]-r,
-            ctl2[1]-r,
-            ctl2[0]+r,
-            ctl2[1]+r,
-            tag=idd,
-            fill='#268bd2',
-            outline='')
-        editor.create_oval(ctl3[0]-r,
-            ctl3[1]-r,
-            ctl3[0]+r,
-            ctl3[1]+r,
-            tag=idd,
-            fill='#268bd2',
-            outline='')
-        editor.create_oval(ctl4[0]-r,
-            ctl4[1]-r,
-            ctl4[0]+r,
-            ctl4[1]+r,
-            tag=idd,
-            fill='yellow',
-            outline='')
+#     # draw control points
+#     if drawcontrols:
+#         r = 10
+#         editor.create_oval(ctl1[0]-r,
+#             ctl1[1]-r,
+#             ctl1[0]+r,
+#             ctl1[1]+r,
+#             tag=idd,
+#             fill='yellow',
+#             outline='')
+#         editor.create_oval(ctl2[0]-r,
+#             ctl2[1]-r,
+#             ctl2[0]+r,
+#             ctl2[1]+r,
+#             tag=idd,
+#             fill='#268bd2',
+#             outline='')
+#         editor.create_oval(ctl3[0]-r,
+#             ctl3[1]-r,
+#             ctl3[0]+r,
+#             ctl3[1]+r,
+#             tag=idd,
+#             fill='#268bd2',
+#             outline='')
+#         editor.create_oval(ctl4[0]-r,
+#             ctl4[1]-r,
+#             ctl4[0]+r,
+#             ctl4[1]+r,
+#             tag=idd,
+#             fill='yellow',
+#             outline='')
 
 
 def draw_countline_editor(countline, 

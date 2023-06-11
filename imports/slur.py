@@ -8,14 +8,14 @@ write a function called 'slur' with the parameters: canvas, time, duration, cont
 
 import tkinter as tk
 
-def slur_editor(editor, slur, idd, thickness=7.5, steps=100):
+def slur_editor(editor, slur, scale, steps=100):
     '''
     Draws a musical slur on the given tkinter canvas with the given parameters.
     controls is a list with four xy positions for drawing a bezier curve. This 
     function draws two bezier curves to form a slur.
     '''
 
-    editor.delete(idd)
+    editor.delete(slur['id'])
 
     def evaluate_cubic_bezier(t, control_points):
         p0, p1, p2, p3 = control_points
@@ -23,46 +23,45 @@ def slur_editor(editor, slur, idd, thickness=7.5, steps=100):
         y = (1 - t) ** 3 * p0[1] + 3 * t * (1 - t) ** 2 * p1[1] + 3 * t ** 2 * (1 - t) * p2[1] + t ** 3 * p3[1]
         return x, y
     
-    # define control points
-    ctl1 = slur[0]
-    ctl2 = slur[1]
-    ctl3 = slur[2]
-    ctl4 = slur[3]
+    # unpack data
+    ctl1,ctl2,ctl3,ctl4 = slur['bezier-points']
+    # scale = scale['properties']['draw-scale']
+
 
     # calculate slur
     slur_points = []
     for t in range(steps):
-        x, y = evaluate_cubic_bezier(t / steps, slur)
+        x, y = evaluate_cubic_bezier(t / steps, slur['bezier-points'])
         slur_points.append([x, y])
-    for t in reversed(range(steps)):
-        x, y = evaluate_cubic_bezier(t / steps, 
-        	[ctl1,(ctl2[0]+thickness,ctl2[1]+thickness),(ctl3[0]+thickness,ctl3[1]+thickness),ctl4])
-        slur_points.append([x, y])
-    editor.create_polygon(slur_points, fill='black', tag=idd)
+
+    # draw slur
+    editor.create_line(slur_points, fill='black', tag=slur['id'], width=4)
+    
+    # draw handles
     r = 5
     editor.create_oval(ctl1[0]-r,
     	ctl1[1]-r,
     	ctl1[0]+r,
     	ctl1[1]+r,
-    	tag=idd,
+    	tag=slur['id'],
     	fill='yellow')
     editor.create_oval(ctl2[0]-r,
     	ctl2[1]-r,
     	ctl2[0]+r,
     	ctl2[1]+r,
-    	tag=idd,
+    	tag=slur['id'],
     	fill='#268bd2')
     editor.create_oval(ctl3[0]-r,
     	ctl3[1]-r,
     	ctl3[0]+r,
     	ctl3[1]+r,
-    	tag=idd,
+    	tag=slur['id'],
     	fill='#268bd2')
     editor.create_oval(ctl4[0]-r,
     	ctl4[1]-r,
     	ctl4[0]+r,
     	ctl4[1]+r,
-    	tag=idd,
+    	tag=slur['id'],
     	fill='yellow')
 
     
