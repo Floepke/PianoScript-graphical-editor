@@ -102,7 +102,8 @@ Score = {
     "start-repeat":[],
     "end-repeat":[],
     "start-hook":[],
-    "end-hook":[]
+    "end-hook":[],
+    "beam":[]
   }
 }
 try:
