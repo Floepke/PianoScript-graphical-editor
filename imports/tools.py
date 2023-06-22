@@ -250,3 +250,36 @@ def set_pview_width(root,master_paned):
         
         master_paned.configure(width=i)
         time.sleep(1000)
+
+
+def make_event_backwards_compitable(event):
+    
+    if event['type'] == 'note':
+        if not 'id' in event:
+            event['id'] = 'note'
+        if not 'time' in event:
+            event['time'] = 0
+        if not 'duration' in event:
+            event['duration'] = 256
+        if not 'pitch' in event:
+            event['pitch'] = 40
+        if not 'hand' in event:
+            event['hand'] = 'l'
+        if not 'x-offset' in event:
+            event['x-offset'] = 0
+        if not 'y-offset' in event:
+            event['y-offset'] = 0
+        if not 'accidental' in event:
+            event['accidental'] = 0
+        if not 'staff' in event:
+            event['staff'] = 0
+        if not 'type' in event:
+            event['type'] = 'note'
+
+    if event['type'] == '':
+        ...
+
+    return event
+
+
+

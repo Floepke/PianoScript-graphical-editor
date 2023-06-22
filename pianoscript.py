@@ -50,6 +50,7 @@ print('')
 print('--------------------------------------------------')
 print('| PianoScript Version: 1.0                       |')
 print('| Code by Philip Bergwerf                        |')
+print('| and Henk van den Brink                         |')
 print('--------------------------------------------------')
 print('')
 
@@ -111,8 +112,6 @@ from imports.grideditor import *
 from imports.dialogs import *
 from imports.slur import *
 
-
-
 # --------------------
 # GUI
 # --------------------
@@ -129,7 +128,36 @@ root = Tk()
 root.configure(bg=color_basic_gui)
 MM = root.winfo_fpixels('1m')
 root.title('PianoScript')
-ttk.Style(root).theme_use("alt")
+# Create an instance of ttk style
+ttkstyle = ttk.Style()
+ttkstyle.theme_create('pianoscript', settings={
+    ".": {
+        "configure": {
+            "background": '#eee8d5', # All except tabs
+            "foreground": '#002b66',
+            "font": 'red'
+        }
+    },
+    "TNotebook": {
+        "configure": {
+            "background":'#eee8d5', # Your margin color
+            "tabmargins": [2, 5, 0, 0], # margins: left, top, right, separator
+        }
+    },
+    "TNotebook.Tab": {
+        "configure": {
+            "background": '#eee8d5', # tab color when not selected
+            "padding": [10, 2], # [space between text and horizontal tab-button border, space between text and vertical tab_button border]
+            "font":["courier", 16]
+        },
+        "map": {
+            "background": [("selected", '#eeeeee')], # Tab color when selected
+            "expand": [("selected", [1, 1, 1, 0])] # text margins
+        }
+    }
+})
+ttk.Style(root).theme_use("pianoscript")
+
 scrwidth = root.winfo_screenwidth()
 scrheight = root.winfo_screenheight()
 root.geometry("%sx%s+0+0" % (int(scrwidth), int(scrheight)))
@@ -244,6 +272,9 @@ nextpage_tooltip = Tooltip(nextpage_button, text='next page', wraplength=scrwidt
 prevpage_button = Button(toolbarpanel, text='<')
 prevpage_button.pack(side='right',fill='y')
 prevpage_tooltip = Tooltip(prevpage_button, text='previous page', wraplength=scrwidth)
+options_button = Button(toolbarpanel, text='=')
+options_button.pack(side='right',fill='y')
+options_tooltip = Tooltip(options_button, text='Score Options', wraplength=scrwidth)
 
 
 # PanedWindow
@@ -284,7 +315,7 @@ fill_label1.pack(fill='x')
 
 # editor
 root.update()
-editorpanel = Frame(master_paned, bg=color_basic_gui, width=scrwidth / 3 * 1.75)
+editorpanel = Frame(master_paned, bg=color_basic_gui, width=scrwidth / 3 * 1.805)
 master_paned.add(editorpanel)
 editor = Canvas(editorpanel, bg=color_editor_canvas, relief='flat', cursor='cross')
 editor.place(relwidth=1, relheight=1)
@@ -764,6 +795,7 @@ def do_pianoroll(event='event'):
     # draw note events
     for note in Score['events']['note']:
         note['id'] = 'note%i'%new_id
+        note = make_event_backwards_compitable(note)
         draw_note_pianoroll(note, 
             False, 
             editor, 
@@ -938,8 +970,11 @@ def mouse_handling(event, event_type):
                     "x-offset": 0,
                     "y-offset": 0,
                     "stem-visible": stem_visible,
-                    "accidental":0
+                    "accidental":0,
+                    "type":'note'
                 }
+                new_note = make_event_backwards_compitable(new_note)
+
                 draw_note_pianoroll(new_note, 
                     False, 
                     editor, 
@@ -1359,7 +1394,8 @@ def mouse_handling(event, event_type):
                     "id":'linebreak%i'%new_id,
                     "time":ex,
                     "margin-up-left":10,
-                    "margin-down-right":10
+                    "margin-down-right":10,
+                    "type":'linebreak'
                 }
                 new_id += 1
                 draw_linebreak_editor(new_linebreak,
@@ -2059,6 +2095,7 @@ def midi_import():
             if i['type'] == 'note_on':
                 for n in mesgs[index:]:         
                     if n['type'] == 'note_off' and i['note'] == n['note']:
+                        print(n['time'], ' - ', i['time'], ' = ', n['time']-i['time'])
                         i['duration'] = n['time'] - i['time']
                         break
 
@@ -2068,6 +2105,12 @@ def midi_import():
                         i['duration'] = t['time'] - i['time']
                         break
             index += 1
+
+        # check for messages without duration:
+        for i in mesgs:
+            if i['type'] == 'note_on':
+                if not 'duration' in i:
+                    i['duration'] = 0
 
         # write time_signatures:
         count = 0
@@ -2086,25 +2129,63 @@ def midi_import():
                 count += 1
 
         # write notes
+        # we calculate the average of the notes, if we have more than 2 channels, the lowest is called p(edal), the 2nd lowest l(eft), the 
+        # 3rd r(ight). If there are more than 3 channels, they are directed to 'l' and 'r' 
+        channelsum={}
+        notes_in_channel={}
+        channelmax={}
+        channelmin={}
+        channelmean={}
         for i in mesgs:
-            if i['type'] == 'note_on' and i['channel'] == 0:
+            if i['type'] == 'note_on':
+                c=i['channel']
+                if c not in channelsum:
+                    channelsum[c]=0
+                    notes_in_channel[c]=0
+                    channelmax[c]=-99
+                    channelmin[c]=99
+
+                channelsum[c]+=i['note']
+                notes_in_channel[c]+=1
+                if i['note'] < channelmin[c]:
+                    channelmin[c]=i['note']
+                if i['note'] > channelmax[c]:
+                    channelmax[c]=i['note']
+
+        for c in channelsum:
+            channelmean[c]=channelsum[c]/notes_in_channel[c]
+
+        xx=dict(sorted(channelmean.items(), key=lambda item: item[1]))
+        hand={}
+        name=['p','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l']
+        if len(xx) > 2:
+            for i,x in enumerate(xx):
+                hand[x]=name[i]
+        else:
+            for i,x in enumerate(xx):
+                hand[x]=name[i+1]
+
+        for i in mesgs:
+            if i['type'] == 'note_on':
+                print(i)
                 Score['events']['note'].append({'time': i['time'], 
                                                 'duration': i['duration'], 
                                                 'pitch': i['note'] - 20, 
-                                                'hand': 'l', 
+                                                'hand': hand[i['channel']], 
                                                 'id':new_id,
                                                 'stem-visible':True,
-                                                'accidental':0})
+                                                'accidental':0,
+                                                'staff':0})
                 new_id += 1
-            if i['type'] == 'note_on' and i['channel'] >= 1:
-                Score['events']['note'].append({'time': i['time'], 
-                                                'duration': i['duration'], 
-                                                'pitch': i['note'] - 20, 
-                                                'hand': 'r', 
-                                                'id':new_id,
-                                                'stem-visible':True,
-                                                'accidental':0})
-                new_id += 1
+#            if i['type'] == 'note_on' and i['channel'] >= 1:
+#                Score['events']['note'].append({'time': i['time'], 
+#                                                'duration': i['duration'], 
+#                                                'pitch': i['note'] - 20, 
+#                                                'hand': 'r', 
+#                                                'id':new_id,
+#                                                'stem-visible':True,
+#                                                'accidental':0})
+#                new_id += 1
 
         add_quick_linebreaks()
 
@@ -2522,138 +2603,6 @@ check_resize()
 # --------------
 # editor tools |
 # --------------
-def set_value(t):
-    global Score, Settings, file_changed
-
-    # Score settings
-    if t == 'title':
-        user_input = AskString(root, 
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['header'][t]['text'])
-        if user_input.result is not None: 
-            Score['header'][t]['text'] = user_input.result
-            file_changed = True
-    elif t == 'composer':
-        user_input = AskString(root, 
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['header'][t]['text'])
-        if user_input.result is not None: 
-            Score['header'][t]['text'] = user_input.result
-            file_changed = True
-    elif t == 'copyright':
-        user_input = AskString(root, 
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['header'][t]['text'])
-        if user_input.result is not None: 
-            Score['header'][t]['text'] = user_input.result
-            file_changed = True
-    elif t == 'page-width':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None:
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-height':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-margin-left':
-        user_input = AskFloat(root,
-            f'Set {t}...', f'Please provide the {t} for the document:', initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-margin-right':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-margin-up':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-margin-down':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'draw-scale':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t}(1=default, 2=twice as big so from .5 to 1.5 is reasonable) for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'header-height':
-        user_input = AskFloat(root,
-            f'Set {t}...', f'Please provide the {t} in mm for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'footer-height':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} in mm for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'color-right-hand-midinote':
-        user_input = GreyscalePicker(root, 
-            "Every printer prints a different shade of grey. \nSo you can set a custom greyscale color here \nthat looks readable on your printouts.", 
-            int(Score['properties'][t][5:], 16)).color
-        if user_input: 
-            Score['properties'][t] = user_input
-            file_changed = True
-            do_pianoroll()
-    elif t == 'color-left-hand-midinote':
-        user_input = GreyscalePicker(root, 
-            "Every printer prints a different shade of grey. \nSo you can set a custom greyscale color here \nthat looks readable on your printouts.", 
-            int(Score['properties'][t][5:], 16)).color
-        if user_input: 
-            Score['properties'][t] = user_input
-            file_changed = True
-            do_pianoroll()
-
-    
-    # editor Settings
-    elif t == 'editor-x-zoom':
-        user_input = AskFloat(root,f'Set {t}...', f'Please provide the {t} from 0 to 100(or more) for the editor:', 
-            initialvalue=Score['properties'][t]).result
-        if user_input:
-            print(user_input)
-            Score['properties'][t] = user_input
-            do_pianoroll()
-    elif t == 'editor-y-zoom':
-        user_input = AskFloat(root,f'Set {t}...', f'Please provide the {t} (50 will make the staff height 50% of the editor view) for the editor:', 
-            initialvalue=Score['properties'][t]).result
-        if user_input: 
-            Score['properties'][t] = user_input
-            do_pianoroll()
-    
-    do_engrave()
-
 listbox_value = 8
 def grid_selector(event='event'):
     global edit_grid, listbox_value
@@ -2971,24 +2920,28 @@ repeats_button.configure(command=lambda: [mode_select(7,'repeats'), noteinput_la
 beam_button.configure(command=lambda: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
 accidental_button.configure(command=lambda: [mode_select(9,'accidental'), noteinput_label.focus_force()])
 
+root.bind('1', lambda e: [mode_select(0,'right'), noteinput_label.focus_force()])
+root.bind('2', lambda e: [mode_select(1,'left'), noteinput_label.focus_force()])
+root.bind('3', lambda e: [mode_select(2,'linebreak'), noteinput_label.focus_force()])
+root.bind('4', lambda e: [mode_select(3,'countline'), noteinput_label.focus_force()])
+root.bind('5', lambda e: [mode_select(4,'text'), noteinput_label.focus_force()])
+root.bind('6', lambda e: [mode_select(5,'slur'), noteinput_label.focus_force()])
+root.bind('7', lambda e: [mode_select(6,'staffsizer'), noteinput_label.focus_force()])
+root.bind('8', lambda e: [mode_select(7,'repeats'), noteinput_label.focus_force()])
+root.bind('9', lambda e: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
+root.bind('0', lambda e: [mode_select(9,'accidental'), noteinput_label.focus_force()])
+
 def space_shift(event):
     '''
         This is a switch for mode 1 & 2 (right and left)
     '''
-    if input_mode in ['linebreak', 'select', 'text', 'countline']:
+    if input_mode in ['linebreak', 'select', 'text', 'countline', 'text', 'slur', 'staffsizer', 'repeats', 'beamtool', 'accidental']:
         mode_select(0,'right')
         return
     if input_mode == 'right':
         mode_select(1,'left')
     elif input_mode == 'left':
         mode_select(0,'right')
-
-
-
-
-# ----------------
-# Engraver switch
-# ----------------
 
 
 
@@ -3197,15 +3150,17 @@ def paste_selection(e=''):
             update_drawing_order_editor(editor)
     do_engrave()
 
-def select_all(e=''):
+def select_all(event=''):
     
     ...
 
-def transpose_up(e=''):
+def transpose_up(event=''):
     global new_id, selection_buffer
     for e in selection_buffer:
         if 'note' in e['id']:
             e['pitch'] += 1
+            if e['pitch'] > 88:
+                e['pitch'] = 88
             draw_note_pianoroll(e,
                 False, 
                 editor, 
@@ -3222,11 +3177,13 @@ def transpose_up(e=''):
             update_drawing_order_editor(editor)
     do_engrave()
 
-def transpose_down(e=''):
+def transpose_down(event=''):
     global new_id, selection_buffer
     for e in selection_buffer:
         if 'note' in e['id']:
             e['pitch'] -= 1
+            if e['pitch'] < 1:
+                e['pitch'] = 1
             draw_note_pianoroll(e,
                 False, 
                 editor, 
@@ -3242,6 +3199,31 @@ def transpose_down(e=''):
                 True)
             update_drawing_order_editor(editor)
     do_engrave()
+
+
+def quantize_selection(e=''):
+    
+    global selection_buffer, Score
+
+    for s in selection_buffer:
+
+        for n in Score['events']['note']:
+            if n['id'] == s['id']:
+                start = n['time']
+                end = n['time'] + n['duration']
+                n['time'] = round(start / edit_grid) * edit_grid
+                n['duration'] = end - n['time']
+
+        for n in Score['events']['note']:
+            if n['id'] == s['id']:
+                start = n['time']
+                end = n['time'] + n['duration']
+                end = round(end / edit_grid) * edit_grid
+                n['duration'] = end - n['time']
+
+    do_engrave()
+    do_pianoroll()
+
 
 
 def quantize(Score):
@@ -3276,6 +3258,18 @@ def quantize(Score):
     do_pianoroll()
 
 
+
+def text_engraver():
+    
+    '''
+        This dialog generates a text version of PianoScript.
+    '''
+    global Score
+
+    Score = TextEngraver(root,Score).score
+
+
+
 # --------------------------------------------------------
 # MENU
 # --------------------------------------------------------
@@ -3304,31 +3298,12 @@ selectionMenu.add_command(label="Paste [ctl+v]", underline=None, command=paste_s
 selectionMenu.add_separator()
 selectionMenu.add_command(label="Select all [ctl+a]", underline=None, command=select_all)
 menubar.add_cascade(label="Selection", underline=None, menu=selectionMenu)
-setMenu = Menu(menubar, tearoff=1)
-setMenu.add_command(label='Title (string)', command=lambda: set_value('title'))
-setMenu.add_command(label='Composer (string)', command=lambda: set_value('composer'))
-setMenu.add_command(label='Copyright (string)', command=lambda: set_value('copyright'))
-setMenu.add_separator()
-setMenu.add_command(label='Draw scale (0.3-2.5)', command=lambda: set_value('draw-scale'))
-setMenu.add_command(label='Page width (mm)', command=lambda: set_value('page-width'))
-setMenu.add_command(label='Page height (mm)', command=lambda: set_value('page-height'))
-setMenu.add_command(label='Header height (mm)', command=lambda: set_value('header-height'))
-setMenu.add_command(label='Footer height (mm)', command=lambda: set_value('footer-height'))
-setMenu.add_command(label='Page margin left (mm)', command=lambda: set_value('page-margin-left'))
-setMenu.add_command(label='Page margin right (mm)', command=lambda: set_value('page-margin-right'))
-setMenu.add_command(label='Page margin up (mm)', command=lambda: set_value('page-margin-up'))
-setMenu.add_command(label='Page margin down (mm)', command=lambda: set_value('page-margin-down'))
-setMenu.add_command(label='Color right hand midinote', command=lambda: set_value('color-right-hand-midinote'))
-setMenu.add_command(label='Color left hand midinote', command=lambda: set_value('color-left-hand-midinote'))
-setMenu.add_separator()
-setMenu.add_command(label='Editor x zoom (0-100 or more)', command=lambda: set_value('editor-x-zoom'))
-setMenu.add_command(label='Editor y zoom (0-100)', command=lambda: set_value('editor-y-zoom'))
-menubar.add_cascade(label="Settings", underline=None, menu=setMenu)
 toolsMenu = Menu(menubar, tearoff=1)
 toolsMenu.add_command(label='Redraw editor', command=lambda: do_pianoroll())
 toolsMenu.add_command(label='Quantize', command=lambda: quantize(Score))
 toolsMenu.add_command(label='Add quick line breaks', command=lambda: add_quick_linebreaks())
 toolsMenu.add_command(label='Transpose', command=lambda: transpose())
+toolsMenu.add_command(label='Text engraver', command=lambda: text_engraver())
 menubar.add_cascade(label="Tools", underline=None, menu=toolsMenu)
 
 
@@ -3353,10 +3328,11 @@ engraver_button.configure(command=engraver_switch)
 
 
 
-
-
-
-
+def options_editor():
+    global Score
+    Score = OptionsDialog(root, Score).score
+    do_engrave()
+options_button.configure(command=options_editor)
 
 
 # --------------------------------------------------------
@@ -3377,6 +3353,7 @@ if platform.system() == 'Linux' or platform.system() == 'Windows':
     pview.bind('<Button-1>', lambda e: cycle_trough_pages(e))
     pview.bind('<Button-3>', lambda e: cycle_trough_pages(e))
 if platform.system() == 'Darwin':
+    editor.bind('<Control-Button-1>', lambda event: mouse_handling(event, 'ctl-click-btn1'))
     editor.bind('<Double-Button-1>', lambda event: mouse_handling(event, 'double-btn1'))
     editor.bind('<Button-3>', lambda event: mouse_handling(event, 'btn2click'))
     editor.bind('<ButtonRelease-3>', lambda event: mouse_handling(event, 'btn2release'))
@@ -3438,10 +3415,11 @@ root.bind('<Control-e>', exportPDF)
 root.bind('<Up>', transpose_up)
 root.bind('<Down>', transpose_down)
 root.bind('<Key-g>', grideditor)
-root.bind('<Key-q>', lambda e: quantize(Score))
+root.bind('<Key-q>', lambda e: quantize_selection(Score))
 root.bind('[', lambda e: switch_hand_selection(e,'l'))
 root.bind(']', lambda e: switch_hand_selection(e,'r'))
 root.bind('p', lambda e: play_midi(e, Score, 'test2.mid', root))
+root.bind('s', lambda e: options_editor())
 
 
 
@@ -3460,6 +3438,6 @@ root.bind('<F11>', fullscreen)
 
 if __name__ == '__main__':
     new_file()
-    #test_file()    
+    #test_file()   
     root.mainloop()
 

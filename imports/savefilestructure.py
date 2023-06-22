@@ -71,7 +71,19 @@ Score = {
     "color-left-hand-midinote":'#c8c8c8',
     "printview-width(procents-froms-creen)":33,
     "editor-x-zoom":35,
-    "editor-y-zoom":80
+    "editor-y-zoom":80,
+    "staffonoff":True,
+    "stemonoff":True,
+    "beamonoff":True,
+    "noteonoff":True,
+    "midinoteonoff":True,
+    "notestoponoff":True,
+    "pagenumberingonoff":True,
+    "barlinesonoff":True,
+    "basegridonoff":True,
+    "countlineonoff":True,
+    "measurenumberingonoff":True,
+    "accidentalonoff":True
   },
   "events": {
     "grid": [
@@ -102,7 +114,18 @@ Score = {
     "start-repeat":[],
     "end-repeat":[],
     "start-hook":[],
-    "end-hook":[]
+    "end-hook":[],
+    "staff":[
+      {
+        "type":"staff",
+        "id":"staff",
+        "staff-number":0,
+        "margin-left":10,
+        "margin-right":10,
+        "visible":True,
+        "staff-scale":1
+      }
+    ]
   }
 }
 try:
@@ -183,7 +206,8 @@ OrginalScore = {
     "start-repeat":[],
     "end-repeat":[],
     "start-hook":[],
-    "end-hook":[]
+    "end-hook":[],
+    "beam":[]
   }
 }
 

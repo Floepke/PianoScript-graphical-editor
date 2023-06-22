@@ -31,14 +31,14 @@ class BezierCurveApp:
     def on_mouse_drag(self, event):
         if self.selected_point_index is not None:
             self.control_points[self.selected_point_index] = [event.x, event.y]
-            # if self.selected_point_index in [1,2]:
-            #     self.control_points2[self.selected_point_index] = [event.x+self.width, event.y]
-            # elif self.selected_point_index == 0:
-            #     self.control_points2[self.selected_point_index] = [event.x, event.y]
-            #     self.control_points2[self.selected_point_index] = [event.x, event.y]
-            # else:
-            #     self.control_points2[self.selected_point_index] = [event.x, event.y]
-            #     self.control_points2[self.selected_point_index] = [event.x, event.y]
+            if self.selected_point_index in [1,2]:
+                self.control_points2[self.selected_point_index] = [event.x+self.width, event.y]
+            elif self.selected_point_index == 0:
+                self.control_points2[self.selected_point_index] = [event.x, event.y]
+                self.control_points2[self.selected_point_index] = [event.x, event.y]
+            else:
+                self.control_points2[self.selected_point_index] = [event.x, event.y]
+                self.control_points2[self.selected_point_index] = [event.x, event.y]
 
             self.canvas.delete("all")
             self.draw_curve()

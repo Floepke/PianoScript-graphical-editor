@@ -363,7 +363,22 @@ def engrave_pianoscript(render_type,
     title = Score['header']['title']
     composer = Score['header']['composer']
     copyright = Score['header']['copyright']
+    
+    # elements on/off
     minipiano = Score['properties']['minipiano']
+    staffonoff = Score['properties']['staffonoff']
+    stemonoff = Score['properties']['stemonoff']
+    beamonoff = Score['properties']['beamonoff']
+    noteonoff = Score['properties']['noteonoff']
+    midinoteonoff = Score['properties']['midinoteonoff']
+    notestoponoff = Score['properties']['notestoponoff']
+    pagenumberingonoff = Score['properties']['pagenumberingonoff']
+    barlinesonoff = Score['properties']['barlinesonoff']
+    basegridonoff = Score['properties']['basegridonoff']
+    countlineonoff = Score['properties']['countlineonoff']
+    measurenumberingonoff = Score['properties']['measurenumberingonoff']
+    accidentalonoff = Score['properties']['accidentalonoff']
+
 
     def read():
         '''
@@ -710,11 +725,11 @@ def engrave_pianoscript(render_type,
                     # barline and numbering
                     if obj['type'] == 'barline':
                         if not idx_l:
-                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         pview.create_line(x,
-                                          y_cursor,
+                                          y_cursor - (35 * draw_scale),
                                           x,
                                           y_cursor + sh,
                                           width=1 * draw_scale,
@@ -733,7 +748,7 @@ def engrave_pianoscript(render_type,
                     # draw barline at end of the system/line:
                     if obj['type'] == 'endoflinebarline':
                         if not idx_l:
-                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         pview.create_line(x,
@@ -748,7 +763,7 @@ def engrave_pianoscript(render_type,
                     # draw the last barline that's more thick
                     if obj['type'] == 'endbarline':
                         if not idx_l:
-                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         pview.create_line(x,
@@ -763,7 +778,7 @@ def engrave_pianoscript(render_type,
                     # grid
                     if obj['type'] == 'gridline':
                         if not idx_l:
-                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         pview.create_line(x,
@@ -779,8 +794,8 @@ def engrave_pianoscript(render_type,
                     # note start
                     if obj['type'] in ['note', 'split']:
                         if not idx_l:
-                            x0 = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
-                            x1 = event_x_pos_engrave(obj['time'] + obj['duration'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x0 = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
+                            x1 = event_x_pos_engrave(obj['time'] + obj['duration'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x0 = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                             x1 = event_x_pos_engrave(obj['time'] + obj['duration'], split_times[idx_l],split_times[idx_l + 1])
@@ -949,7 +964,7 @@ def engrave_pianoscript(render_type,
                                 if abs(stem['time'] - obj['time']) <= 1 and stem['hand'] == obj['hand']:
                                     stem_length = note_y_pos(stem['pitch'], mn, mx, y_cursor, draw_scale)
                                     if not idx_l:
-                                        stem_x = event_x_pos_engrave(stem['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                                        stem_x = event_x_pos_engrave(stem['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                                     else:
                                         stem_x = event_x_pos_engrave(stem['time'], split_times[idx_l], split_times[idx_l + 1])
                                     pview.create_line(stem_x,
@@ -964,7 +979,7 @@ def engrave_pianoscript(render_type,
                     # time signature text
                     if obj['type'] == 'time_signature_text':
                         if not idx_l:
-                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         pview.create_text(x + (3 * draw_scale),
@@ -978,7 +993,7 @@ def engrave_pianoscript(render_type,
                     # text
                     if obj['type'] == 'text':
                         if not idx_l:
-                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         y = note_y_pos(obj['pitch'], mn, mx, y_cursor, draw_scale)
@@ -1019,7 +1034,7 @@ def engrave_pianoscript(render_type,
                     # count_line
                     if obj['type'] == 'countline':
                         if not idx_l:
-                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         y1 = note_y_pos(obj['pitch1'], mn, mx, y_cursor, draw_scale)
@@ -1037,7 +1052,7 @@ def engrave_pianoscript(render_type,
                     # start repeat
                     if obj['type'] == 'startrepeat':
                         if not idx_l:
-                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         pview.create_line(x,y_cursor,
@@ -1060,7 +1075,7 @@ def engrave_pianoscript(render_type,
                     # end repeat
                     if obj['type'] == 'endrepeat':
                         if not idx_l:
-                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                            x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                         else:
                             x = event_x_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1])
                         pview.create_line(x,y_cursor,
@@ -1108,11 +1123,11 @@ def engrave_pianoscript(render_type,
                             f_note = beamnotelist[0]
                             l_note = beamnotelist[-1]
                             if not idx_l:
-                                f_notex = event_x_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                                f_notex = event_x_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                             else:
                                 f_notex = event_x_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1])
                             if not idx_l:
-                                l_notex = event_x_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                                l_notex = event_x_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                             else:
                                 l_notex = event_x_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1])
                             if f_notex == l_notex:
@@ -1128,7 +1143,7 @@ def engrave_pianoscript(render_type,
                             for bm in beamnotelist:
                                 if bm['stem-visible']:
                                     if not idx_l:
-                                        x = event_x_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                                        x = event_x_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                                     else:
                                         x = event_x_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1])
                                     y = note_y_pos(bm['pitch'], mn, mx, y_cursor, draw_scale)
@@ -1164,11 +1179,11 @@ def engrave_pianoscript(render_type,
                             f_note = beamnotelist[0]
                             l_note = beamnotelist[-1]
                             if not idx_l:
-                                f_notex = event_x_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                                f_notex = event_x_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                             else:
                                 f_notex = event_x_pos_engrave(f_note['time'], split_times[idx_l], split_times[idx_l + 1])
                             if not idx_l:
-                                l_notex = event_x_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                                l_notex = event_x_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                             else:
                                 l_notex = event_x_pos_engrave(l_note['time'], split_times[idx_l], split_times[idx_l + 1])
                             if f_notex == l_notex:
@@ -1184,7 +1199,7 @@ def engrave_pianoscript(render_type,
                             for bm in beamnotelist:
                                 if bm['stem-visible']:
                                     if not idx_l:
-                                        x = event_x_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],True)
+                                        x = event_x_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1],minipiano)
                                     else:
                                         x = event_x_pos_engrave(bm['time'], split_times[idx_l], split_times[idx_l + 1])
                                     y = note_y_pos(bm['pitch'], mn, mx, y_cursor, draw_scale)

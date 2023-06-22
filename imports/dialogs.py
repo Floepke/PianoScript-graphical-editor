@@ -21,7 +21,8 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-from tkinter import Tk, Button, Label, Toplevel, Entry, Frame, Text, Scale, Listbox, Checkbutton, IntVar
+from tkinter import Tk, Button, Label, Toplevel, Entry, Frame, Text, Scale, Listbox, Checkbutton, IntVar, Checkbutton
+from tkinter import ttk
 
 if not __name__ == '__main__': 
     from imports.tools import measure_length
@@ -524,7 +525,306 @@ class AskTextEditor:
         # display the popup window and wait for it to be destroyed
         self.parent.wait_window(self.popup)
 
+class OptionsDialog:
+    def __init__(self, parent, Score):
+        self.parent = parent
+        self.close = False
+        self.score = Score
 
+        # create the popup window
+        self.popup = Toplevel(self.parent)
+        self.popup.title('PianoScript - Score Options')
+        self.popup.wm_attributes("-topmost", 1)
+
+        # tab
+        self.notebookframe = Frame(self.popup, bg='#eee8d5')
+        self.notebookframe.pack(padx=10, pady=10, fill='both')
+        self.notebook = ttk.Notebook(self.notebookframe)
+        self.notebook.pack(side='left',padx=5,pady=5, expand=True)
+        
+        # tab 1; titles
+        self.tab1 = ttk.Frame(self.notebook)
+        self.notebook.add(self.tab1, text='Titles')
+        self.title_label = Label(self.tab1, text='Title:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.title_label.grid(row=0, column=0, sticky='e')
+        self.title_entry = Entry(self.tab1, font=('Courier', 16), bg='white', fg='black')
+        self.title_entry.grid(row=0, column=1)
+        self.composer_label = Label(self.tab1, text='Composer:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.composer_label.grid(row=1, column=0, sticky='e')
+        self.composer_entry = Entry(self.tab1, font=('Courier', 16), bg='white', fg='black')
+        self.composer_entry.grid(row=1, column=1)
+        self.copyright_label = Label(self.tab1, text='Copyright:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.copyright_label.grid(row=2, column=0, sticky='e')
+        self.copyright_entry = Entry(self.tab1, font=('Courier', 16), bg='white', fg='black')
+        self.copyright_entry.grid(row=2, column=1)
+
+        #tab 2; layout
+        self.tab2 = ttk.Frame(self.notebook)
+        self.notebook.add(self.tab2, text='Layout')
+        self.drawscale_label = Label(self.tab2, text='Draw scale:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.drawscale_label.grid(row=0, column=0, ipadx=10, sticky='e')
+        self.drawscale_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.drawscale_entry.grid(row=0, column=1, ipadx=10)
+        self.pagewidth_label = Label(self.tab2, text='Page width(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.pagewidth_label.grid(row=1, column=0, ipadx=10, sticky='e')
+        self.pagewidth_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.pagewidth_entry.grid(row=1, column=1, ipadx=10)
+        self.pageheight_label = Label(self.tab2, text='Page height(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.pageheight_label.grid(row=2, column=0, ipadx=10, sticky='e')
+        self.pageheight_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.pageheight_entry.grid(row=2, column=1, ipadx=10)
+        self.headerheight_label = Label(self.tab2, text='Header height(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.headerheight_label.grid(row=3, column=0, ipadx=10, sticky='e')
+        self.headerheight_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.headerheight_entry.grid(row=3, column=1, ipadx=10)
+        self.footerheight_label = Label(self.tab2, text='Footer height(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.footerheight_label.grid(row=4, column=0, ipadx=10, sticky='e')
+        self.footerheight_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.footerheight_entry.grid(row=4, column=1, ipadx=10)
+        self.pagemargl_label = Label(self.tab2, text='Page margin left(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.pagemargl_label.grid(row=5, column=0, ipadx=10, sticky='e')
+        self.pagemargl_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.pagemargl_entry.grid(row=5, column=1, ipadx=10)
+        self.pagemargr_label = Label(self.tab2, text='Page margin right(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.pagemargr_label.grid(row=6, column=0, ipadx=10, sticky='e')
+        self.pagemargr_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.pagemargr_entry.grid(row=6, column=1, ipadx=10)
+        self.pagemargu_label = Label(self.tab2, text='Page margin up(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.pagemargu_label.grid(row=7, column=0, ipadx=10, sticky='e')
+        self.pagemargu_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.pagemargu_entry.grid(row=7, column=1, ipadx=10)
+        self.pagemargd_label = Label(self.tab2, text='Page margin down(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.pagemargd_label.grid(row=8, column=0, ipadx=10, sticky='e')
+        self.pagemargd_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.pagemargd_entry.grid(row=8, column=1, ipadx=10)
+        self.leftcolor_label = Label(self.tab2, text='left hand midinote color:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.leftcolor_label.grid(row=10, column=0, ipadx=10, sticky='e')
+        self.leftcolor_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.leftcolor_entry.grid(row=10, column=1, ipadx=10)
+        self.rightcolor_label = Label(self.tab2, text='right hand midinote color:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.rightcolor_label.grid(row=11, column=0, ipadx=10, sticky='e')
+        self.rightcolor_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.rightcolor_entry.grid(row=11, column=1, ipadx=10)
+
+        # tab 3; elements on/off
+        self.tab3 = ttk.Frame(self.notebook)
+        self.notebook.add(self.tab3, text='Elements on/off')
+        self.minipiano_variable = IntVar()
+        self.minipiano_label = Label(self.tab3, text='Piano-keyboard:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.minipiano_label.grid(row=0, column=0, ipadx=10, sticky='e')
+        self.minipiano_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.minipiano_variable)
+        self.minipiano_checkbutton.grid(row=0, column=1, ipadx=10)
+        
+        self.staff_variable = IntVar()
+        self.staff_label = Label(self.tab3, text='Staff:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.staff_label.grid(row=1, column=0, ipadx=10, sticky='e')
+        self.staff_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.staff_variable)
+        self.staff_checkbutton.grid(row=1, column=1, ipadx=10, sticky='e')
+
+        self.stem_variable = IntVar()
+        self.stem_label = Label(self.tab3, text='Stem:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.stem_label.grid(row=2, column=0, ipadx=10, sticky='e')
+        self.stem_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.stem_variable)
+        self.stem_checkbutton.grid(row=2, column=1, ipadx=10, sticky='e')
+
+        self.beam_variable = IntVar()
+        self.beam_label = Label(self.tab3, text='Beam:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.beam_label.grid(row=3, column=0, ipadx=10, sticky='e')
+        self.beam_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.beam_variable)
+        self.beam_checkbutton.grid(row=3, column=1, ipadx=10, sticky='e')
+
+        self.note_variable = IntVar()
+        self.note_label = Label(self.tab3, text='Note-head:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.note_label.grid(row=4, column=0, ipadx=10, sticky='e')
+        self.note_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.note_variable)
+        self.note_checkbutton.grid(row=4, column=1, ipadx=10, sticky='e')
+
+        self.midinote_variable = IntVar()
+        self.midinote_label = Label(self.tab3, text='Midi-note:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.midinote_label.grid(row=5, column=0, ipadx=10, sticky='e')
+        self.midinote_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.midinote_variable)
+        self.midinote_checkbutton.grid(row=5, column=1, ipadx=10, sticky='e')
+
+        self.notestop_variable = IntVar()
+        self.notestop_label = Label(self.tab3, text='Note-stop:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.notestop_label.grid(row=6, column=0, ipadx=10, sticky='e')
+        self.notestop_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.notestop_variable)
+        self.notestop_checkbutton.grid(row=6, column=1, ipadx=10, sticky='e')
+
+        self.pagenumbering_variable = IntVar()
+        self.pagenumbering_label = Label(self.tab3, text='Page-numbering:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.pagenumbering_label.grid(row=7, column=0, ipadx=10, sticky='e')
+        self.pagenumbering_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.pagenumbering_variable)
+        self.pagenumbering_checkbutton.grid(row=7, column=1, ipadx=10, sticky='e')
+
+        self.barlines_variable = IntVar()
+        self.barlines_label = Label(self.tab3, text='Barlines:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.barlines_label.grid(row=8, column=0, ipadx=10, sticky='e')
+        self.barlines_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.barlines_variable)
+        self.barlines_checkbutton.grid(row=8, column=1, ipadx=10, sticky='e')
+
+        self.basegrid_variable = IntVar()
+        self.basegrid_label = Label(self.tab3, text='Base-grid:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.basegrid_label.grid(row=9, column=0, ipadx=10, sticky='e')
+        self.basegrid_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.basegrid_variable)
+        self.basegrid_checkbutton.grid(row=9, column=1, ipadx=10, sticky='e')
+
+        self.countline_variable = IntVar()
+        self.countline_label = Label(self.tab3, text='Count-line:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.countline_label.grid(row=10, column=0, ipadx=10, sticky='e')
+        self.countline_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.countline_variable)
+        self.countline_checkbutton.grid(row=10, column=1, ipadx=10, sticky='e')
+
+        self.measurenumbering_variable = IntVar()
+        self.measurenumbering_label = Label(self.tab3, text='Measure-numbering:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.measurenumbering_label.grid(row=11, column=0, ipadx=10, sticky='e')
+        self.measurenumbering_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.measurenumbering_variable)
+        self.measurenumbering_checkbutton.grid(row=11, column=1, ipadx=10, sticky='e')
+
+        self.accidental_variable = IntVar()
+        self.accidental_label = Label(self.tab3, text='Accidentals:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.accidental_label.grid(row=12, column=0, ipadx=10, sticky='e')
+        self.accidental_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.accidental_variable)
+        self.accidental_checkbutton.grid(row=12, column=1, ipadx=10, sticky='e')
+
+
+        # Apply and Close buttons:
+        self.applycloseframe = Frame(self.popup)
+        self.applycloseframe.pack(padx=10, pady=10, fill='both')
+        # create the "Close" button
+        self.close_button = Button(self.applycloseframe, text="Close", command=self._close, font=('Courier', 16))
+        self.close_button.pack(side='left',padx=5,pady=5)
+        # create the "apply" button
+        self.apply_button = Button(self.applycloseframe, text="Apply", font=('Courier', 16))
+        self.apply_button.pack(side='left',padx=5,pady=5)
+        self.apply_button.configure(command=lambda: self._evaluate(self.score))
+
+        self.popup.bind('<Return>', lambda e: self._evaluate(self.score))
+
+        # sugar coating
+        self.popup.configure(bg='#002B36')
+        self.applycloseframe.configure(bg='#eee8d5')
+
+        # insert Score values in Entry's
+        # tab 1
+        self.title_entry.insert(0,Score['header']['title']['text'])
+        self.composer_entry.insert(0,Score['header']['composer']['text'])
+        self.copyright_entry.insert(0,Score['header']['copyright']['text'])
+        
+        # tab 2
+        self.drawscale_entry.insert(0,Score['properties']['draw-scale'])
+        self.pagewidth_entry.insert(0,Score['properties']['page-width'])
+        self.pageheight_entry.insert(0,Score['properties']['page-height'])
+        self.headerheight_entry.insert(0,Score['properties']['header-height'])
+        self.footerheight_entry.insert(0,Score['properties']['footer-height'])
+        self.pagemargl_entry.insert(0,Score['properties']['page-margin-left'])
+        self.pagemargr_entry.insert(0,Score['properties']['page-margin-right'])
+        self.pagemargu_entry.insert(0,Score['properties']['page-margin-up'])
+        self.pagemargd_entry.insert(0,Score['properties']['page-margin-down'])
+        self.leftcolor_entry.insert(0,Score['properties']['color-left-hand-midinote'])
+        self.rightcolor_entry.insert(0,Score['properties']['color-right-hand-midinote'])
+
+        # tab 3
+        if Score['properties']['minipiano'] == True: self.minipiano_checkbutton.select()
+        if Score['properties']['staffonoff'] == True: self.staff_checkbutton.select()
+        if Score['properties']['stemonoff'] == True: self.stem_checkbutton.select()
+        if Score['properties']['beamonoff'] == True: self.beam_checkbutton.select()
+        if Score['properties']['noteonoff'] == True: self.note_checkbutton.select()
+        if Score['properties']['midinoteonoff'] == True: self.midinote_checkbutton.select()
+        if Score['properties']['notestoponoff'] == True: self.notestop_checkbutton.select()
+        if Score['properties']['pagenumberingonoff'] == True: self.pagenumbering_checkbutton.select()
+        if Score['properties']['barlinesonoff'] == True: self.barlines_checkbutton.select()
+        if Score['properties']['basegridonoff'] == True: self.basegrid_checkbutton.select()
+        if Score['properties']['countlineonoff'] == True: self.countline_checkbutton.select()
+        if Score['properties']['measurenumberingonoff'] == True: self.measurenumbering_checkbutton.select()
+        if Score['properties']['accidentalonoff'] == True: self.accidental_checkbutton.select()
+
+        self.show()
+
+    def _close(self, event=''):
+        self.close = True
+        self.popup.destroy()
+
+    def _evaluate(self, Score, event=''):
+        Score['header']['title']['text'] = self.title_entry.get()
+        Score['header']['composer']['text'] = self.composer_entry.get()
+        Score['header']['copyright']['text'] = self.copyright_entry.get()
+
+        try:
+            Score['properties']['draw-scale'] = float(self.drawscale_entry.get())
+            Score['properties']['page-width'] = float(self.pagewidth_entry.get())
+            Score['properties']['page-height'] = float(self.pageheight_entry.get())
+            Score['properties']['header-height'] = float(self.headerheight_entry.get())
+            Score['properties']['footer-height'] = float(self.footerheight_entry.get())
+            Score['properties']['page-margin-left'] = float(self.pagemargl_entry.get())
+            Score['properties']['page-margin-right'] = float(self.pagemargr_entry.get())
+            Score['properties']['page-margin-up'] = float(self.pagemargu_entry.get())
+            Score['properties']['page-margin-down'] = float(self.pagemargd_entry.get())
+            Score['properties']['color-left-hand-midinote'] = self.leftcolor_entry.get()
+            Score['properties']['color-right-hand-midinote'] = self.rightcolor_entry.get()
+        except:
+            return
+
+        Score['properties']['minipiano'] = self.minipiano_variable.get()
+        Score['properties']['staffonoff'] = self.staff_variable.get()
+        Score['properties']['stemonoff'] = self.stem_variable.get()
+        Score['properties']['beamonoff'] = self.beam_variable.get()
+        Score['properties']['noteonoff'] = self.note_variable.get()
+        Score['properties']['midinoteonoff'] = self.midinote_variable.get()
+        Score['properties']['notestoponoff'] = self.notestop_variable.get()
+        Score['properties']['pagenumberingonoff'] = self.pagenumbering_variable.get()
+        Score['properties']['barlinesonoff'] = self.barlines_variable.get()
+        Score['properties']['basegridonoff'] = self.basegrid_variable.get()
+        Score['properties']['countlineonoff'] = self.countline_variable.get()
+        Score['properties']['measurenumberingonoff'] = self.measurenumbering_variable.get()
+        Score['properties']['accidentalonoff'] = self.accidental_variable.get()
+
+        self.score = Score
+        self.popup.destroy()
+
+    def show(self):
+        # display the popup window and wait for it to be destroyed
+        self.parent.wait_window(self.popup)
+
+
+class TextEngraver():
+    
+    def __init__(self,parent,Score):
+        
+        self.parent = parent
+        self.close = False
+        self.score = Score
+
+        self.result = ''
+
+        # create the popup window
+        self.popup = Toplevel(self.parent)
+        self.popup.title('PianoScript - Text Engraver')
+        self.popup.wm_attributes("-topmost", 1)
+
+        # Text widget
+        self.textframe = Frame(self.popup)
+        self.textframe.pack()
+        self.text = Text(self.textframe, font=('Courier', 16))
+        self.text.pack()
+
+        # Buttons
+        self.button_frame = Frame(self.popup)
+        self.button_frame.pack(fill='x')
+        self.generate_button = Button(self.button_frame, text='Generate...', command=lambda: self._generate(Score))
+        self.generate_button.pack(side='left')
+
+        self.show()
+
+    def _generate(self, Score):
+        
+        '''This function parses a text version of pianoscript which you can copy and email to someone :)'''
+        ...
+
+
+    def show(self):
+        # display the popup window and wait for it to be destroyed
+        self.parent.wait_window(self.popup)
 
 
 # Example usage
@@ -571,5 +871,21 @@ if __name__ == "__main__":
     # if color:
     #     print(color)
     # elif color == None:
+    #     print("Dialog was cancelled")
+
+    # # OptionsDialog
+    # dialog = OptionsDialog(root)
+    # result = dialog.result
+    # if result is not None:
+    #     print(result)
+    # else:
+    #     print("Dialog was cancelled")
+
+    # # TextEngraver
+    # dialog = TextEngraver(root, '')
+    # result = dialog.result
+    # if result is not None:
+    #     print(result)
+    # else:
     #     print("Dialog was cancelled")
 

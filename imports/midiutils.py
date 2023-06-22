@@ -30,49 +30,45 @@ from mido import Message, MetaMessage, MidiFile, MidiTrack, bpm2tempo, second2ti
 import midiutil as mt
 import time
 
+
 def midiexport(root,Score):
 
-    f = filedialog.asksaveasfile(parent=root, 
-        title='Save midi...', 
-        filetypes=[("midi files", "*.mid")])
-    
-    if f:
-        mid = MidiFile(ticks_per_beat=256*64)
-        track = MidiTrack()
-        track.append(MetaMessage('set_tempo', tempo=bpm2tempo(120)))
+    f = filedialog.asksaveasfile(parent=root,
+         title='Save midi...',
+         filetypes=[("midi files", "*.mid")])
 
-        times = 0
-        for ts in Score['events']['grid']:
-            track.append(MetaMessage('time_signature', numerator=ts['numerator'], denominator=ts['denominator'], time=times))
-            for l in range(ts['amount']):
-                times += (measure_length((ts['numerator'],ts['denominator']))*64)
-        # add the notes:
-        # in order to add the notes at delta time we need to create a list of note_on and note_off messages in linear time first:
-        msg = []
-        for note in Score['events']['note']:
-            t = note['time'] / (256*64)
-            d = note['duration'] / (256*64)
-            if note['hand'] == 'l':
-                msg.append({'type':'note_on','channel':0,'pitch':note['pitch']+20,'velocity':64,'time':t})
-                msg.append({'type':'note_off','channel':0,'pitch':note['pitch']+20,'velocity':0,'time':t+d})
-            else:
-                msg.append({'type':'note_on','channel':1,'pitch':note['pitch']+20,'velocity':64,'time':t})
-                msg.append({'type':'note_off','channel':1,'pitch':note['pitch']+20,'velocity':0,'time':t+d})
-        # now we have a msg list with note_on and note_off messages in linear time and we need to convert and sort
-        # the messages to delta time:
-        msg = sorted(msg, key=lambda time: time['time'])
-        prev_time = 0
-        for m in msg:
-            t = m['time']
-            m['time'] = m['time'] - prev_time
-            prev_time = t
-        # write messages to midifile object in delta times:
-        for m in msg:
-            t = int(round(m['time']))
-            track.append(Message(m['type'], channel=m['channel'], note=m['pitch'], velocity=m['velocity'], time=t))
-        track.append(MetaMessage('end_of_track'))
-        mid.tracks.append(track)
-        mid.save(f.name)
+    channel={}
+    nrchannels=0
+    for note in Score['events']['note']:
+        if note['hand'] not in channel:
+            channel[note['hand']]=nrchannels
+            nrchannels+=1
+
+    clocks_per_tick=24
+    denominator_dict = {
+        1:0,
+        2:1,
+        4:2,
+        8:3,
+        16:4,
+        32:5,
+        64:6,
+        128:7,
+        256:8
+    }
+
+    MyMIDI = MIDIFile(numTracks=nrchannels, removeDuplicates=True, deinterleave=True, adjust_origin=False, file_format=1, ticks_per_quarternote=256, eventtime_is_ticks=True) 
+    for ts in Score['events']['grid']:
+        for c in range(nrchannels):
+            MyMIDI.addTimeSignature(track=c,time=0, numerator=int(ts['numerator']), denominator=denominator_dict[int(ts['denominator'])], clocks_per_tick=clocks_per_tick, notes_per_quarter=8)
+            MyMIDI.addTempo(track=c,time=0, tempo=120)
+
+    for note in Score['events']['note']:
+        t = int(note['time'])
+        d = int(note['duration'])
+        MyMIDI.addNote(track=channel[note['hand']], channel=channel[note['hand']], pitch=int(note['pitch']+20), time=t, duration=d,volume=100,annotation=None) # pitch - 20 ???
+    with open(f.name, "wb") as output_file:
+        MyMIDI.writeFile(output_file)
 
 
 # play the song trough a midi port that can be selected by external synth
