@@ -1,0 +1,20 @@
+\contentsline {section}{\numberline {1}Introduction; what is PianoScript and why?}{3}%
+\contentsline {part}{I\hspace {1em}The PianoScript music notation explained}{4}%
+\contentsline {section}{\numberline {2}Introduction}{4}%
+\contentsline {subsection}{\numberline {2.1}Pitch on a twelve-tone staff}{4}%
+\contentsline {subsection}{\numberline {2.2}Clef}{4}%
+\contentsline {subsection}{\numberline {2.3}Rhythm}{4}%
+\contentsline {subsubsection}{\numberline {2.3.1}Midi-notes}{4}%
+\contentsline {subsubsection}{\numberline {2.3.2}Base grid and manual grid}{4}%
+\contentsline {subsubsection}{\numberline {2.3.3}Example: moonlight sonata, first bar}{5}%
+\contentsline {subsubsection}{\numberline {2.3.4}Grouping of notes}{5}%
+\contentsline {subsection}{\numberline {2.4}Hand}{5}%
+\contentsline {section}{\numberline {3}Discussing different elements and techniques}{5}%
+\contentsline {subsection}{\numberline {3.1}Ornaments}{5}%
+\contentsline {subsubsection}{\numberline {3.1.1}Arpeggio}{6}%
+\contentsline {subsubsection}{\numberline {3.1.2}Trill}{6}%
+\contentsline {subsubsection}{\numberline {3.1.3}Turn}{6}%
+\contentsline {subsection}{\numberline {3.2}Chords}{6}%
+\contentsline {subsection}{\numberline {3.3}Different voices}{7}%
+\contentsline {part}{II\hspace {1em}PianoScript software}{8}%
+\contentsline {section}{\numberline {4}Introduction}{8}%

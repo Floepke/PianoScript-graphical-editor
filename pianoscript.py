@@ -25,11 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 # TODO
 # -----
 '''
-    * select; move with arrow keys
-    * grouped notes
-    * text
-    * countline
-    * midi export
+    * ...
 '''
 
 # ----------------------
@@ -50,6 +46,7 @@ print('')
 print('--------------------------------------------------')
 print('| PianoScript Version: 1.0                       |')
 print('| Code by Philip Bergwerf                        |')
+print('| and Henk van den Brink                         |')
 print('--------------------------------------------------')
 print('')
 
@@ -109,8 +106,7 @@ from imports.engraver_pianoscript_vertical import *
 from imports.engraver_pianoscript import *
 from imports.grideditor import *
 from imports.dialogs import *
-
-
+from imports.slur import *
 
 # --------------------
 # GUI
@@ -119,7 +115,7 @@ from imports.dialogs import *
 color_basic_gui = '#002B36'
 color_right_midinote = Score['properties']['color-right-hand-midinote']
 color_left_midinote = Score['properties']['color-left-hand-midinote']
-color_editor_canvas = '#eee8d5'#d9d9d9 #fdffd1
+color_editor_canvas = '#eee8d5'#eee8d5'#d9d9d9 #fdffd1
 color_highlight = '#268bd2'#a6a832
 color_notation_editor = '#002b66'
 
@@ -128,7 +124,36 @@ root = Tk()
 root.configure(bg=color_basic_gui)
 MM = root.winfo_fpixels('1m')
 root.title('PianoScript')
-ttk.Style(root).theme_use("alt")
+# Create an instance of ttk style
+ttkstyle = ttk.Style()
+ttkstyle.theme_create('pianoscript', settings={
+    ".": {
+        "configure": {
+            "background": '#eee8d5', # All except tabs
+            "foreground": '#002b66',
+            "font": 'red'
+        }
+    },
+    "TNotebook": {
+        "configure": {
+            "background":'#eee8d5', # Your margin color
+            "tabmargins": [2, 5, 0, 0], # margins: left, top, right, separator
+        }
+    },
+    "TNotebook.Tab": {
+        "configure": {
+            "background": '#eee8d5', # tab color when not selected
+            "padding": [10, 2], # [space between text and horizontal tab-button border, space between text and vertical tab_button border]
+            "font":["courier", 16]
+        },
+        "map": {
+            "background": [("selected", '#eeeeee')], # Tab color when selected
+            "expand": [("selected", [1, 1, 1, 0])] # text margins
+        }
+    }
+})
+ttk.Style(root).theme_use("pianoscript")
+
 scrwidth = root.winfo_screenwidth()
 scrheight = root.winfo_screenheight()
 root.geometry("%sx%s+0+0" % (int(scrwidth), int(scrheight)))
@@ -141,59 +166,95 @@ rootframe.pack(fill='both',expand=True)
 toolbarpanel = Frame(rootframe, bg='#666666', relief='ridge')
 toolbarpanel.pack(fill='x', expand=False, side='top',padx=5,pady=5)
 
-input_right_button = Button(toolbarpanel, text='right', activebackground=color_highlight, bg=color_highlight)
+input_right_button = Button(toolbarpanel, text='Right input', activebackground=color_highlight, bg=color_highlight)
 input_right_button.pack(side='left')
-ir_photo = PhotoImage(file = r"icons/noteinput_R.png")
-input_right_button.configure(image=ir_photo)
-input_right_button_tooltip = Tooltip(input_right_button, text='Right hand note', wraplength=scrwidth)
+try:
+    ir_photo = PhotoImage(file = r"icons/noteinput_R.png")
+    input_right_button.configure(image=ir_photo)
+except:
+    ...
+input_right_button_tooltip = Tooltip(input_right_button, text='Right hand input; ctl+click for stemless ornamented note', wraplength=scrwidth)
 
-input_left_button = Button(toolbarpanel, bg='#f0f0f0', activebackground=color_highlight)
+input_left_button = Button(toolbarpanel, bg='#f0f0f0', activebackground=color_highlight, text='Left input')
 input_left_button.pack(side='left')
-il_photo = PhotoImage(file = r"icons/noteinput_L.png")
-input_left_button.configure(image=il_photo)
-input_left_button_tooltip = Tooltip(input_left_button, text='Left hand note', wraplength=scrwidth)
+try:
+    il_photo = PhotoImage(file = r"icons/noteinput_L.png")
+    input_left_button.configure(image=il_photo)
+except:
+    ...
+input_left_button_tooltip = Tooltip(input_left_button, text='Left hand input; ctl+click for stemless ornamented note', wraplength=scrwidth)
 
-linebreak_button = Button(toolbarpanel, text='linebreak', activebackground=color_highlight, bg='#f0f0f0')
+linebreak_button = Button(toolbarpanel, text='Line-break', activebackground=color_highlight, bg='#f0f0f0')
 linebreak_button.pack(side='left')
-lb_photo = PhotoImage(file = r"icons/linebreak.png")
-linebreak_button.configure(image=lb_photo)
-linebreak_button_tooltip = Tooltip(linebreak_button, text='Line-break; \nYou can edit margins for each line by clicking\non a line-break.', wraplength=scrwidth)
+try:
+    lb_photo = PhotoImage(file = r"icons/linebreak.png")
+    linebreak_button.configure(image=lb_photo)
+except:
+    ...
+linebreak_button_tooltip = Tooltip(linebreak_button, text='Line-break tool; \nYou can edit margins for each line by clicking\non a line-break.', wraplength=scrwidth)
 
-countline_button = Button(toolbarpanel, text='countline*', bg='#f0f0f0', activebackground=color_highlight)
+countline_button = Button(toolbarpanel, text='Countline*', bg='#f0f0f0', activebackground=color_highlight)
 countline_button.pack(side='left')
-cnt_photo = PhotoImage(file = r"icons/countline.png")
-countline_button.configure(image=cnt_photo)
-countline_button_tooltip = Tooltip(countline_button, text='Countline', wraplength=scrwidth)
+try:
+    cnt_photo = PhotoImage(file = r"icons/countline.png")
+    countline_button.configure(image=cnt_photo)
+except:
+    ...
+countline_button_tooltip = Tooltip(countline_button, text='Countline tool; for highlighting the rhythm', wraplength=scrwidth)
 
-txt_button = Button(toolbarpanel, text='text*', bg='#f0f0f0', activebackground=color_highlight)
+txt_button = Button(toolbarpanel, text='Text', bg='#f0f0f0', activebackground=color_highlight)
 txt_button.pack(side='left')
-txt_photo = PhotoImage(file = r"icons/text.png")
-txt_button.configure(image=txt_photo)
-txt_button_tooltip = Tooltip(txt_button, text='Text; Edit text by\nctrl+click on a existing text.', wraplength=scrwidth)
+try:
+    txt_photo = PhotoImage(file = r"icons/text.png")
+    txt_button.configure(image=txt_photo)
+except:
+    ...
+txt_button_tooltip = Tooltip(txt_button, text='Text tool; Edit text by\nctl+click on a existing text.', wraplength=scrwidth)
 
-slur_button = Button(toolbarpanel, text='slur*', bg='#f0f0f0', activebackground=color_highlight)
+slur_button = Button(toolbarpanel, text='Slur', bg='#f0f0f0', activebackground=color_highlight)
 slur_button.pack(side='left')
-slr_photo = PhotoImage(file = "icons/slur.png")
-slur_button.configure(image=slr_photo)
-slur_button_tooltip = Tooltip(slur_button, text='Slur', wraplength=scrwidth)
+try:
+    slr_photo = PhotoImage(file = "icons/slur.png")
+    slur_button.configure(image=slr_photo)
+except:
+    ...
+slur_button_tooltip = Tooltip(slur_button, text='Slur tool*', wraplength=scrwidth)
 
 staffsizer_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
 staffsizer_button.pack(side='left')
-stf_photo = PhotoImage(file = "icons/staffspacer.png")
-staffsizer_button.configure(image=stf_photo)
-staffspacer_tooltip = Tooltip(staffsizer_button, text='Staff sizer', wraplength=scrwidth)
+try:
+    stf_photo = PhotoImage(file = "icons/staffspacer.png")
+    staffsizer_button.configure(image=stf_photo)
+except:
+    ...
+staffspacer_tooltip = Tooltip(staffsizer_button, text='Staff sizer tool; for manually expanding the staff', wraplength=scrwidth)
 
-repeats_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
+repeats_button = Button(toolbarpanel, text='Repeats', bg='#f0f0f0', activebackground=color_highlight)
 repeats_button.pack(side='left')
-rpts_photo = PhotoImage(file = "icons/repeats.png")
-repeats_button.configure(image=rpts_photo)
-repeats_tooltip = Tooltip(repeats_button, text='Repeat symbols; click to add start repeat, ctrl+click to add end repeat', wraplength=scrwidth)
+try:
+    rpts_photo = PhotoImage(file = "icons/repeats.png")
+    repeats_button.configure(image=rpts_photo)
+except:
+    ...
+repeats_tooltip = Tooltip(repeats_button, text='Repeat symbols tool; click to add start repeat, ctl+click to add end repeat', wraplength=scrwidth)
 
-beam_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
+beam_button = Button(toolbarpanel, text='Beam', bg='#f0f0f0', activebackground=color_highlight)
 beam_button.pack(side='left')
-beam_photo = PhotoImage(file = "icons/beam.png")
-beam_button.configure(image=beam_photo)
-beam_tooltip = Tooltip(beam_button, text='Beam tool', wraplength=scrwidth)
+try:
+    beam_photo = PhotoImage(file = "icons/beam.png")
+    beam_button.configure(image=beam_photo)
+except:
+    ...
+beam_tooltip = Tooltip(beam_button, text='Beam tool; for grouping notes (ctl+click to set a default beam grouping)', wraplength=scrwidth)
+
+accidental_button = Button(toolbarpanel, text='Accidental', bg='#f0f0f0', activebackground=color_highlight)
+accidental_button.pack(side='left')
+try:
+    accidental_photo = PhotoImage(file = "icons/accidental.png")
+    accidental_button.configure(image=accidental_photo)
+except:
+    ...
+accidental_tooltip = Tooltip(accidental_button, text='Accidental tool; for writing sharps and flats', wraplength=scrwidth)
 
 # Engraver selector
 engraver_button = Button(toolbarpanel, text='V')
@@ -207,6 +268,9 @@ nextpage_tooltip = Tooltip(nextpage_button, text='next page', wraplength=scrwidt
 prevpage_button = Button(toolbarpanel, text='<')
 prevpage_button.pack(side='right',fill='y')
 prevpage_tooltip = Tooltip(prevpage_button, text='previous page', wraplength=scrwidth)
+options_button = Button(toolbarpanel, text='=')
+options_button.pack(side='right',fill='y')
+options_tooltip = Tooltip(options_button, text='Score Options', wraplength=scrwidth)
 
 
 # PanedWindow
@@ -231,22 +295,27 @@ list_dur.insert(7, "128")
 list_dur.select_set(3)
 divide_label = Label(gridpanel, text='÷', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
 divide_label.pack(fill='x')
-divide_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
+divide_variable = StringVar(value=1)
+divide_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'), textvariable=divide_variable)
 divide_spin.pack(fill='x')
-div_spin = StringVar(value=1)
-divide_spin.configure(textvariable=div_spin)
 times_label = Label(gridpanel, text='×', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
 times_label.pack(fill='x')
-times_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'))
+times_variable = StringVar(value=1)
+times_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'), textvariable=times_variable)
 times_spin.pack(fill='x')
-tim_spin = StringVar(value=1)
-times_spin.configure(textvariable=tim_spin)
 fill_label1 = Label(gridpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+fill_label1.pack()
+staffselect_label = Label(gridpanel, text='STAFF', bg=color_basic_gui, fg='white')
+staffselect_label.pack(fill='x')
+staffselect_variable = StringVar(value=1)
+staffselect_spin = Spinbox(gridpanel, from_=1, to=4, bg=color_highlight, font=('', 15, 'normal'), textvariable=staffselect_variable)
+staffselect_spin.pack(fill='x')
+
 fill_label1.pack(fill='x')
 
 # editor
 root.update()
-editorpanel = Frame(master_paned, bg=color_basic_gui, width=scrwidth / 3 * 1.75)
+editorpanel = Frame(master_paned, bg=color_basic_gui, width=scrwidth / 3 * 1.805)
 master_paned.add(editorpanel)
 editor = Canvas(editorpanel, bg=color_editor_canvas, relief='flat', cursor='cross')
 editor.place(relwidth=1, relheight=1)
@@ -318,7 +387,7 @@ file_path = 'New'
 
 def test_file():
     print('test_file...')
-    with open('/home/nauerna/Desktop/test.pianoscript', 'r') as f:
+    with open('test.pianoscript', 'r') as f:
         global Score
         Score = json.load(f)
         # run the piano-roll and print-view
@@ -357,10 +426,13 @@ def new_file(e=''):
     do_engrave()
 
     # set button switch horz. vert.
-    if Score['properties']['engraver'] == 'pianoscript':
-        engraver_button.configure(text='V')
-    else:
-        engraver_button.configure(text='H')
+    # if Score['properties']['engraver'] == 'pianoscript':
+    #     engraver_button.configure(text='V')
+    # else:
+    #     engraver_button.configure(text='H')
+
+    # set the staff to staff 1
+    staffselect_variable.set(1)
 
 
 def load_file(e=''):
@@ -384,12 +456,20 @@ def load_file(e=''):
     renderpageno = 0
 
     # open Score
-    f = filedialog.askopenfile(parent=root, 
-        mode='Ur', 
-        title='Open', 
-        filetypes=[("PianoScript files", "*.pianoscript")])
+    try: 
+        f = subprocess.check_output(["zenity", "--file-selection", "--title=Open file..."]).decode("utf-8").strip()
+    except:
+        f = filedialog.askopenfile(parent=root, 
+            mode='Ur', 
+            title='Open', 
+            filetypes=[("PianoScript files", "*.pianoscript")])
+        f = f.name
     if f:
-        with open(f.name, 'r') as f:
+        # update file_path
+        file_path = f
+
+        # load f:
+        with open(f, 'r') as f:
             fjson = json.load(f)
             try:
                 if fjson['header']['app-name'] == 'pianoscript':
@@ -399,18 +479,18 @@ def load_file(e=''):
             except:
                 print('ERROR: file is not a pianoscript file or is damaged.')
 
-        # update file_path
-        file_path = f.name
+        # converter(filepath)
+        # Score = converter(file_path, Score)
 
         # run the piano-roll and print-view
         do_pianoroll()
         do_engrave()
         root.title('PianoScript - %s' % f.name)
         # set button switch horz. vert.
-        if Score['properties']['engraver'] == 'pianoscript':
-            engraver_button.configure(text='V')
-        else:
-            engraver_button.configure(text='H')
+        # if Score['properties']['engraver'] == 'pianoscript':
+        #     engraver_button.configure(text='V')
+        # else:
+        #     engraver_button.configure(text='H')
     
     return
 
@@ -421,7 +501,7 @@ def save(e=''):
 
     if file_path != 'New':
         f = open(file_path, 'w')
-        f.write(json.dumps(Score, separators=(',', ':')))#, indent=2))# publish
+        f.write(json.dumps(Score, separators=(',', ':'), indent=2))# indent=2
         f.close()
         file_changed = False
     else:
@@ -433,18 +513,22 @@ def save_as(e=''):
     global file_path, file_changed
 
     # save Score
-    f = filedialog.asksaveasfile(parent=root, 
-        mode='w', 
-        filetypes=[("PianoScript files", "*.pianoscript")],
-        title='Save as...',
-        initialdir='~/Desktop/')
+    try: 
+        f = subprocess.check_output(["zenity", "--file-selection", "--save", "--title=Save file as..."]).decode("utf-8").strip()
+    except:
+        f = filedialog.asksaveasfile(parent=root, 
+            mode='w', 
+            filetypes=[("PianoScript files", "*.pianoscript")],
+            title='Save as...',
+            initialdir='~/Desktop/')
+        f = f.name
     if f:
-        root.title('PianoScript - %s' % f.name)
-        f = open(f.name, 'w')
-        f.write(json.dumps(Score, separators=(',', ':')))#, indent=2))# publish
-        f.close()
+        root.title('PianoScript - %s' % f)
+        file = open(f, 'w')
+        file.write(json.dumps(Score, separators=(',', ':'), indent=2))# indent=2
+        file.close()
         # update file_path
-        file_path = f.name
+        file_path = f
         file_changed = False
 
 
@@ -464,7 +548,7 @@ def quit_editor(event='dummy'):
     print('')
     print('----------------------------------')
     print('| http://www.pianoscript.org/ :) |')
-    print('| Much Love From Philip Bergwerf |')
+    print('| Many Love From Philip Bergwerf |')
     print('----------------------------------')
     # close thread
     global program_is_running
@@ -718,7 +802,7 @@ def do_pianoroll(event='event'):
     # draw note events
     for note in Score['events']['note']:
         note['id'] = 'note%i'%new_id
-        draw_note_pianoroll(note, 
+        if note['staff'] == int(staffselect_variable.get())-1: draw_note_pianoroll(note,
             False, 
             editor, 
             hbar, 
@@ -747,19 +831,20 @@ def do_pianoroll(event='event'):
     # draw countline events
     for cl in Score['events']['count-line']:
         cl['id'] = 'countline%i'%new_id
-        draw_countline_editor(cl,
-            editor,
-            hbar,
-            y_scale_percent,
-            x_scale_quarter_mm,
-            MM,
-            color_notation_editor)
+        if cl['staff'] == int(staffselect_variable.get())-1: 
+            draw_countline_editor(cl,
+                editor,
+                hbar,
+                y_scale_percent,
+                x_scale_quarter_mm,
+                MM,
+                color_notation_editor)
         new_id += 1
 
     # draw text events
     for txt in Score['events']['text']:
         txt['id'] = 'text%i'%new_id
-        draw_text_editor(txt,
+        if txt['staff'] == int(staffselect_variable.get())-1: draw_text_editor(txt,
             editor, hbar, y_scale_percent, 
             x_scale_quarter_mm, MM)
         new_id += 1
@@ -767,12 +852,12 @@ def do_pianoroll(event='event'):
     # draw staffsizer events
     for ss in Score['events']['staff-sizer']:
         ss['id'] = 'staffsizer%i'%new_id
-        draw_staffsizer_editor(ss,
+        if ss['staff'] == int(staffselect_variable.get())-1: draw_staffsizer_editor(ss,
             editor, hbar, y_scale_percent, 
             x_scale_quarter_mm, MM)
         new_id += 1
 
-    # draw staffsizer events
+    # draw start repeat events
     for sr in Score['events']['start-repeat']:
         sr['id'] = 'startrepeat%i'%new_id
         draw_startrepeat_editor(sr,
@@ -780,7 +865,7 @@ def do_pianoroll(event='event'):
             x_scale_quarter_mm, MM)
         new_id += 1
 
-    # draw staffsizer events
+    # draw end repeat events
     for er in Score['events']['end-repeat']:
         er['id'] = 'endrepeat%i'%new_id
         draw_endrepeat_editor(er,
@@ -791,9 +876,10 @@ def do_pianoroll(event='event'):
     # draw beam events
     for bm in Score['events']['beam']:
         bm['id'] = 'beam%i'%new_id
-        draw_beam_editor(bm,
-            editor, hbar, y_scale_percent, 
-            x_scale_quarter_mm, MM)
+        if bm['staff'] == int(staffselect_variable.get())-1: 
+            draw_beam_editor(bm,
+                editor, hbar, y_scale_percent, 
+                x_scale_quarter_mm, MM)
         new_id += 1
         
 
@@ -812,7 +898,11 @@ def do_pianoroll(event='event'):
 
 
 
+def staffselect_variable_callback():
+    '''This function runs if you select another staff in the staff selector'''
+    do_pianoroll()
 
+staffselect_spin.configure(command=staffselect_variable_callback)
 
 
 
@@ -848,9 +938,6 @@ def mouse_handling(event, event_type):
     ex = x2tick_editor(mx, editor, hbar, y_scale_percent, x_scale_quarter_mm, last_pianotick, edit_grid, MM)
     ey = y2pitch_editor(my, editor, hbar, y_scale_percent)
 
-    # if event_type == 'shiftbtn1click':
-    #     shiftbutton1click = True
-    #     print('default-draw-scale')
     if event_type == 'shiftbtn1release':
         shiftbutton1click = False
 
@@ -882,11 +969,9 @@ def mouse_handling(event, event_type):
                 if 'note' in tags[0]:
                     editing = True
                     hold_id = tags[0]
-
+            add_ctrl_z()
             if not editing:
                 # create a new note in Score
-
-                add_ctrl_z()#experimental
 
                 new_note = {
                     "id": 'note%i'%new_id,
@@ -896,8 +981,12 @@ def mouse_handling(event, event_type):
                     "hand": hand,
                     "x-offset": 0,
                     "y-offset": 0,
-                    "stem-visible": stem_visible
+                    "stem-visible": stem_visible,
+                    "accidental":0,
+                    "type":'note',
+                    "staff":int(staffselect_variable.get()) - 1
                 }
+
                 draw_note_pianoroll(new_note, 
                     False, 
                     editor, 
@@ -981,7 +1070,9 @@ def mouse_handling(event, event_type):
                     "hand": hand,
                     "x-offset": 0,
                     "y-offset": 0,
-                    "stem-visible": True
+                    "stem-visible": True,
+                    "accidental":0,
+                    "staff":int(staffselect_variable.get())-1
                 }
                 draw_note_pianoroll(cursor, 
                     True, 
@@ -1011,7 +1102,9 @@ def mouse_handling(event, event_type):
                 "hand": hand,
                 "x-offset": 0,
                 "y-offset": 0,
-                "stem-visible": True
+                "stem-visible": True,
+                "accidental":0,
+                "staff":int(staffselect_variable.get())-1
             }
             draw_note_pianoroll(cursor, 
                 True, 
@@ -1096,6 +1189,7 @@ def mouse_handling(event, event_type):
             "id":'timeselector',
             "time":ex
         }
+
         if input_mode == 'beamtool':
 
             # draw a arrow on the cursor to give the user feedback
@@ -1115,6 +1209,7 @@ def mouse_handling(event, event_type):
             MM,
             color_highlight,
             beam)
+        Score['cursor'] = cursor
 
         editor.tag_lower(cursor['id'])
 
@@ -1164,11 +1259,11 @@ def mouse_handling(event, event_type):
                     selection_tags.append(tags[0])
             editor.dtag('selected')
             selection_tags = list(dict.fromkeys(selection_tags))
-            # making the selected note(s) blue:
+            # making the selected note(s) blue and adding to selection_buffer:
             for s in selection_tags:    
                 for n in Score['events']['note']:
                     if n['id'] == s:
-                        draw_note_pianoroll(n, 
+                        draw_note_pianoroll(n,
                             False, 
                             editor, 
                             hbar, 
@@ -1192,6 +1287,12 @@ def mouse_handling(event, event_type):
             in 'linebreak-adding-mode'.
         '''
 
+        if event_type == 'ctl-click-btn1':
+            # run add quick linebreaks when we ctl+click and return after that to prevent
+            # double edits.
+            add_quick_linebreaks()
+            return
+
         if event_type == 'btn1click':
 
             # it's not alowed to create a linebreak >= latest pianotick; we ignore this case
@@ -1209,26 +1310,7 @@ def mouse_handling(event, event_type):
             if ex >= last_pianotick or ex <= 0:
                 if ex <= 0:
                     # edit the margins (after this scope break/return)
-                    while True:
-                        user_input = AskString(root, 'set margins for current line...', 
-                            "Set the upper and lower margin of the line in mm.\n(starting at pianotick: 0)",
-                            initialvalue=str(Score['events']['line-break'][0]['margin-up-left']) + ' ' + str(Score['events']['line-break'][0]['margin-down-right']))
-                        if user_input.result is not None:
-                            try:
-                                user_input = user_input.result.split()
-                                for idx, ui in enumerate(user_input):
-                                    user_input[idx] = int(ui)
-                                if len(user_input) < 2:
-                                    raise Exception
-                                break
-                            except:
-                                print('ERROR in set_margins; please provide two floats or integers seperated by space.')
-                        else: 
-                            hold_id = ''
-                            file_changed = True
-                            return
-                    Score['events']['line-break'][0]['margin-up-left'] = user_input[0]
-                    Score['events']['line-break'][0]['margin-down-right'] = user_input[1]
+                    Score['events']['line-break'][0] = LinebreakDialog(root,Score['events']['line-break'][0]).result
                     hold_id = ''
                     file_changed = True
                     do_engrave()
@@ -1248,37 +1330,15 @@ def mouse_handling(event, event_type):
                         diff_oldnew_lb = ex - old_lb_time
                         break
                 for lb in Score['events']['line-break'][old_lb_idx:]:
-                    
 
                     if lb['id'] == hold_id:
                         # edit current linebreak time in Score
                         lb['time'] = ex
                         if old_lb_time == lb['time']:
-                            # edit the margins (after this scope break/return)
-                            while True:
-                                user_input = AskString(root, 'set margins for current line...', 
-                                    f"Set the upper and lower margin of the line in mm.\n(starting at tick: {lb['time']})",
-                                    initialvalue=str(lb['margin-up-left']) + ' ' + str(lb['margin-down-right']))
-                                if user_input.result is not None:
-                                    try:
-                                        user_input = user_input.result.split()
-                                        for idx, ui in enumerate(user_input):
-                                            user_input[idx] = float(ui)
-                                        if len(user_input) < 2:
-                                            raise Exception
-                                        break
-                                    except:
-                                        print('ERROR in set_margins; please provide two floats or integers seperated by space.')
-                                else: 
-                                    hold_id = ''
-                                    file_changed = True
-                                    return
-                            lb['margin-up-left'] = user_input[0]
-                            lb['margin-down-right'] = user_input[1]
+                            lb = LinebreakDialog(root,lb).result
                             hold_id = ''
                             file_changed = True
                             break#/return
-
 
                         # edit all next linebreaks
                         for lb2 in Score['events']['line-break'][old_lb_idx:]:
@@ -1314,8 +1374,15 @@ def mouse_handling(event, event_type):
                 new_linebreak = {
                     "id":'linebreak%i'%new_id,
                     "time":ex,
-                    "margin-up-left":10,
-                    "margin-down-right":10
+                    "margin-staff1-left":10,
+                    "margin-staff1-right":10,
+                    "margin-staff2-left":10,
+                    "margin-staff2-right":10,
+                    "margin-staff3-left":10,
+                    "margin-staff3-right":10,
+                    "margin-staff4-left":10,
+                    "margin-staff4-right":10,
+                    "type":'linebreak'
                 }
                 new_id += 1
                 draw_linebreak_editor(new_linebreak,
@@ -1382,16 +1449,15 @@ def mouse_handling(event, event_type):
 
             else:
                 # adding new text
-                user_input = AskTextEditor(root,'New text...',
-                        'Please provide the text you want to add:',
-                        'Text...')
-                if user_input.result == None: return
+                user_input = AskTextEditor(root)
+                # if user_input.text == None: return
                 new = {
                     "id":'text%i'%new_id,
                     "time":ex,
                     "pitch":ey,
-                    "text":user_input.result,
-                    "vert":user_input.vert
+                    "text":user_input.text,
+                    "angle":user_input.angle,
+                    "staff":int(staffselect_variable.get())
                 }
                 new_id += 1
 
@@ -1447,14 +1513,11 @@ def mouse_handling(event, event_type):
                 if 'text' in tags[0]:
                     for t in Score['events']['text']:
                         if t['id'] == tags[0]:
-                            print(t)
                             # Edit existing text
-                            user_input = AskTextEditor(root,'Edit text...',
-                                    'Please provide the text you want to edit:',
-                                    t['text'],t['vert'])
-                            if user_input.result == None: return
-                            t['text'] = user_input.result
-                            t['vert'] = user_input.vert
+                            user_input = AskTextEditor(root,t)
+                            if user_input.textmsg == None: return
+                            t['text'] = user_input.text
+                            t['angle'] = user_input.angle
                             # redraw in editor
                             draw_text_editor(t,
                                 editor, hbar, y_scale_percent, 
@@ -1472,7 +1535,6 @@ def mouse_handling(event, event_type):
 
             # there are two options; editing or adding
             tags = editor.gettags('current')
-            print(tags)
             edit = False
             try:
                 if 'countline' in tags[0]:
@@ -1490,7 +1552,8 @@ def mouse_handling(event, event_type):
                     "id":'countline%i'%new_id,
                     "time":ex,
                     "pitch1":ey,
-                    "pitch2":ey
+                    "pitch2":ey,
+                    "staff":int(staffselect_variable.get())-1
                 }
                 new_id += 1
 
@@ -1556,33 +1619,35 @@ def mouse_handling(event, event_type):
             new_slur = {
                 "id":'slur%i'%new_id,
                 "bezier-points":[[0,0],[0,0],[0,0],[0,0]],
-                "width":7.5
+                "width":7.5,
+                "staff":int(staffselect_variable.get())-1
             }
             new_id += 1
             
             # draw slur
+            # slur_editor(editor,
+            #     new_slur['bezier-points'],
+            #     new_slur['id'],
+            #     Score['properties']['draw-scale'],
+            #     new_slur['width'], 
+            #     100, 
+            #     False)
             slur_editor(editor,
-                new_slur['bezier-points'],
-                new_slur['id'],
-                Score['properties']['draw-scale'],
-                new_slur['width'], 
-                100, 
-                False)
+                new_slur,
+                Score['properties']['draw-scale'])
 
         if event_type == 'motion':
 
             if ms_xy[0]:
                 # define middle two control points
-                point1 = [ms_xy[0]+((mx-ms_xy[0])/10), ms_xy[1]+40]#((my-ms_xy[1])/10)]
-                point2 = [ms_xy[0]+((mx-ms_xy[0])/10*9), ms_xy[1]+40]#((my-ms_xy[1])/10*9)]
+                point1 = [ms_xy[0]+((mx-ms_xy[0])/10), ms_xy[1]+40] #((my-ms_xy[1])/10)]
+                point2 = [ms_xy[0]+((mx-ms_xy[0])/10*9), ms_xy[1]+40] #((my-ms_xy[1])/10*9)]
+                new_slur['bezier-points'] = [[mx,my],point2,point1,ms_xy]
+                print(new_slur['bezier-points'])
                 # draw slur
                 slur_editor(editor,
-                    [[ms_xy[0],ms_xy[1]],point1,point2,[mx,my]],
-                    new_slur['id'],
-                    Score['properties']['draw-scale'],
-                    new_slur['width'],
-                    100,
-                    False)
+                            new_slur,
+                            Score['properties']['draw-scale'])
 
         if event_type == 'btn1release':
 
@@ -1605,33 +1670,65 @@ def mouse_handling(event, event_type):
     if input_mode == 'staffsizer':
 
         if event_type == 'btn1click':
+            # there are two options; editing or adding
+            tags = editor.gettags('current')
+            edit = False
+            try:
+                if 'staffsizer' in tags[0]:
+                    edit = True
+            except IndexError: ...
 
-            # adding sizer
-            new = {
-                "id":'staffsizer%i'%new_id,
-                "time":ex,
-                "pitch":ey
-            }
-            new_id += 1
+            if edit:
+                # editing
+                cl_handle = tags[1]
+                hold_id = tags[0]
 
-            draw_staffsizer_editor(new,editor,hbar,y_scale_percent,
-                x_scale_quarter_mm,MM)
+            else:
+                # adding
+                new = {
+                    "id":'staffsizer%i'%new_id,
+                    "time":ex,
+                    "pitch1":ey,
+                    "pitch2":ey,
+                    "staff":int(staffselect_variable.get()) - 1
+                }
+                new_id += 1
+                hold_id = new['id']
+                draw_staffsizer_editor(new,editor,hbar,y_scale_percent,
+                    x_scale_quarter_mm,MM)
+                Score['events']['staff-sizer'].append(new)
+                do_engrave()
 
-            # add to Score
-            Score['events']['staff-sizer'].append(new)
+        if event_type == 'motion':
 
-            do_engrave()
+            if 'staffsizer' in hold_id:
+                for ss in Score['events']['staff-sizer']:
+                    if ss['id'] == hold_id:
+                        if cl_handle == 'pitch1':
+                            ss['pitch1'] = ey
+                        else:
+                            ss['pitch2'] = ey
+                        draw_staffsizer_editor(ss,editor,hbar,y_scale_percent,
+                                                x_scale_quarter_mm,MM)
+
+        if event_type == 'btn1release':
+
+            if 'staffsizer' in hold_id:
+
+                hold_id = ''
+                do_engrave()
 
         if event_type == 'btn3click':
 
             # removing sizer
             tags = editor.gettags('current')
-            if 'staffsizer' in tags[0]: editor.delete(tags[0])
-            else: return
-            for r in Score['events']['staff-sizer']:
-                if r['id'] == tags[0]:
-                    Score['events']['staff-sizer'].remove(r)
-                    do_engrave()
+            if tags:
+                if 'staffsizer' in tags[0]: editor.delete(tags[0])
+                else: return
+                for r in Score['events']['staff-sizer']:
+                    if r['id'] == tags[0]:
+                        Score['events']['staff-sizer'].remove(r)
+                        do_engrave()
 
 
     if input_mode == 'repeats':
@@ -1686,7 +1783,6 @@ def mouse_handling(event, event_type):
                 if abs(ex - er['time']) <= 1:
                     # remove end repeat from file
                     Score['events']['end-repeat'].remove(er)
-                    print(er['id'])
                     # remove end repeat from editor
                     editor.delete(er['id'])
                     do_engrave()
@@ -1720,7 +1816,8 @@ def mouse_handling(event, event_type):
                     "id": 'beam%i'%new_id,
                     "time": ex,
                     "duration": 0,
-                    "hand":h
+                    "hand":h,
+                    "staff":int(staffselect_variable.get()) - 1
                 }
                 new_id += 1
                 draw_beam_editor(new,
@@ -1776,7 +1873,8 @@ def mouse_handling(event, event_type):
                         "id": 'beam%i'%new_id,
                         "time": pt_cursor,
                         "duration": pt,
-                        "hand":h
+                        "hand":h,
+                        "staff":int(staffselect_variable.get())-1
                     }
                     new_id += 1
                     # write to Score
@@ -1829,6 +1927,97 @@ def mouse_handling(event, event_type):
                         editor.delete(bm['id'])
                         do_engrave()
                         file_changed = True
+
+    if input_mode == 'accidental':
+
+        if event_type == 'btn1click':
+
+            # detect note
+            tags = editor.gettags(editor.find_withtag('current'))
+            if tags:
+                if 'note' in tags[0]:
+                    tags = tags[0]
+            
+            for evt in Score['events']['note']:
+                if evt['id'] == tags:
+                    evt['accidental'] = 1
+
+                    # redraw note
+                    draw_note_pianoroll(evt,
+                            False, 
+                            editor,
+                            hbar, 
+                            y_scale_percent, 
+                            x_scale_quarter_mm, 
+                            MM, 
+                            color_notation_editor, 
+                            BLACK, 
+                            color_editor_canvas, 
+                            Score,
+                            False)
+                    update_drawing_order_editor(editor)
+        
+        if event_type == 'btn2click':
+
+            # detect note
+            tags = editor.gettags(editor.find_withtag('current'))
+            if tags:
+                if 'note' in tags[0]:
+                    tags = tags[0]
+            
+            for evt in Score['events']['note']:
+                if evt['id'] == tags:
+                    evt['accidental'] = 0
+
+                    # redraw note
+                    draw_note_pianoroll(evt,
+                            False, 
+                            editor,
+                            hbar, 
+                            y_scale_percent, 
+                            x_scale_quarter_mm, 
+                            MM, 
+                            color_notation_editor, 
+                            BLACK, 
+                            color_editor_canvas, 
+                            Score,
+                            False)
+                    update_drawing_order_editor(editor)
+
+        if event_type == 'btn3click':
+
+            # detect note
+            tags = editor.gettags(editor.find_withtag('current'))
+            if tags:
+                if 'note' in tags[0]:
+                    tags = tags[0]
+            
+            for evt in Score['events']['note']:
+                if evt['id'] == tags:
+                    evt['accidental'] = -1
+
+                    # redraw note
+                    draw_note_pianoroll(evt,
+                            False, 
+                            editor,
+                            hbar, 
+                            y_scale_percent, 
+                            x_scale_quarter_mm, 
+                            MM, 
+                            color_notation_editor, 
+                            BLACK, 
+                            color_editor_canvas, 
+                            Score,
+                            False)
+                    update_drawing_order_editor(editor)
+
+        if not event_type == 'motion': do_engrave()
+
+
+            
+
+            
+
                     
 
 
@@ -1862,7 +2051,7 @@ def keyboard_handling(event):
 
 
 def midi_import():
-    global file_changed
+    global   file_changed, Score
 
     # asking for save since we are creating a new file with the midifile in it.
     if file_changed == True:
@@ -1919,8 +2108,9 @@ def midi_import():
         index = 0
         for i in mesgs:
             if i['type'] == 'note_on':
-                for n in mesgs[index:]:
+                for n in mesgs[index:]:         
                     if n['type'] == 'note_off' and i['note'] == n['note']:
+                        print(n['time'], ' - ', i['time'], ' = ', n['time']-i['time'])
                         i['duration'] = n['time'] - i['time']
                         break
 
@@ -1930,6 +2120,12 @@ def midi_import():
                         i['duration'] = t['time'] - i['time']
                         break
             index += 1
+
+        # check for messages without duration:
+        for i in mesgs:
+            if i['type'] == 'note_on':
+                if not 'duration' in i:
+                    i['duration'] = 0
 
         # write time_signatures:
         count = 0
@@ -1948,24 +2144,58 @@ def midi_import():
                 count += 1
 
         # write notes
+        # we calculate the average of the notes, if we have more than 2 channels, the lowest is called p(edal), the 2nd lowest l(eft), the 
+        # 3rd r(ight). If there are more than 3 channels, they are directed to 'l' and 'r' 
+        channelsum={}
+        notes_in_channel={}
+        channelmax={}
+        channelmin={}
+        channelmean={}
         for i in mesgs:
-            if i['type'] == 'note_on' and i['channel'] == 0:
-                Score['events']['note'].append({'time': round(i['time']), 
+            if i['type'] == 'note_on':
+                c=i['channel']
+                if c not in channelsum:
+                    channelsum[c]=0
+                    notes_in_channel[c]=0
+                    channelmax[c]=-99
+                    channelmin[c]=99
+
+                channelsum[c]+=i['note']
+                notes_in_channel[c]+=1
+                if i['note'] < channelmin[c]:
+                    channelmin[c]=i['note']
+                if i['note'] > channelmax[c]:
+                    channelmax[c]=i['note']
+
+        for c in channelsum:
+            channelmean[c]=channelsum[c]/notes_in_channel[c]
+
+        xx=dict(sorted(channelmean.items(), key=lambda item: item[1]))
+        hand={}
+        name=['p','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l']
+        if len(xx) > 2:
+            for i,x in enumerate(xx):
+                hand[x]=name[i]
+        else:
+            for i,x in enumerate(xx):
+                hand[x]=name[i+1]
+
+        for i in mesgs:
+            if i['type'] == 'note_on':
+                print(i)
+                Score['events']['note'].append({'time': i['time'], 
                                                 'duration': i['duration'], 
                                                 'pitch': i['note'] - 20, 
-                                                'hand': 'l', 
+                                                'hand': hand[i['channel']], 
                                                 'id':new_id,
-                                                'stem-visible':True})
-                new_id += 1
-            if i['type'] == 'note_on' and i['channel'] >= 1:
-                Score['events']['note'].append({'time': round(i['time']), 
-                                                'duration': i['duration'], 
-                                                'pitch': i['note'] - 20, 
-                                                'hand': 'r', 
-                                                'id':new_id,
-                                                'stem-visible':True})
+                                                'stem-visible':True,
+                                                'accidental':0,
+                                                'staff':0})
                 new_id += 1
 
+        add_quick_linebreaks()
+
+        # engraving and drawing the pianoroll
         threading.Thread(target=do_pianoroll).start()
         do_engrave()
 
@@ -1988,7 +2218,7 @@ def midi_import():
 # ------------------
 # export
 # ------------------
-def exportPDF(event=''):
+def exportPDF(event=''):    
     def is_tool(name):
         """Check whether `name` is on PATH and marked as executable."""
         return which(name) is not None
@@ -2090,10 +2320,10 @@ def exportPDF(event=''):
                         fontmap='-*-Courier-Bold-R-Normal--*-120-*')
                     pslist.append(str('"' + str(f.name) + str(counter) + '.ps' + '"'))
                 try:
-                    do_pianoroll = subprocess.Popen(
+                    do_rend = subprocess.Popen(
                         f'''"C:/Program Files/gs/gs10.01.1/bin/gswin64c.exe" -dQUIET -dBATCH -dNOPAUSE -dFIXEDMEDIA -sPAPERSIZE=a4 -dEPSFitPage -sDEVICE=pdfwrite -sOutputFile="{f.name}.pdf" {' '.join(pslist)}''', shell=True)
-                    do_pianoroll.wait()
-                    do_pianoroll.terminate()    
+                    do_rend.wait()
+                    do_rend.terminate()    
                     for i in pslist:
                         os.remove(i.strip('"'))
                     f.close()
@@ -2126,10 +2356,10 @@ def exportPDF(event=''):
                         fontmap='-*-Courier-Bold-R-Normal--*-120-*')
                     pslist.append(str('"' + str(f.name) + str(counter) + '.ps' + '"'))
                 try:
-                    do_pianoroll = subprocess.Popen(
+                    do_rend = subprocess.Popen(
                         f'''"C:/Program Files/gs/gs10.01.1/bin/gswin64c.exe" -dQUIET -dBATCH -dNOPAUSE -dFIXEDMEDIA -sPAPERSIZE=a4 -dEPSFitPage -sDEVICE=pdfwrite -sOutputFile="{f.name}.pdf" {' '.join(pslist)}''', shell=True)
-                    do_pianoroll.wait()
-                    do_pianoroll.terminate()    
+                    do_rend.wait()
+                    do_rend.terminate()    
                     for i in pslist:
                         os.remove(i.strip('"'))
                     f.close()
@@ -2137,6 +2367,70 @@ def exportPDF(event=''):
                 except:
                     messagebox.showinfo(title="Can't export PDF!",
                                         message='''Be sure you have selected a valid path to "gswin64c.exe" in the gspath.json file that is located in the same folder as PianoScript program. You have to set the path+gswin64c.exe. example: "gspath":"C:/Program Files/gs/gs9.54.0/bin/gswin64c.exe". Then, restart PianoScript app.''')
+    
+    elif platform.system() == 'Darwin':
+        f = filedialog.asksaveasfile(mode='w', parent=root, 
+                                     filetypes=[("pdf Score", "*.pdf")], 
+                                     initialfile=Score['header']['title']['text'],
+                                     initialdir='~/Desktop')
+        if f:
+            pslist = []
+            if Score['properties']['engraver'] == 'pianoscript':
+                numofpages = range(engrave_pianoscript('export',
+                    renderpageno,
+                    Score,
+                    MM,
+                    last_pianotick,
+                    color_notation_editor,
+                    color_editor_canvas,
+                    pview,root,
+                    BLACK))
+                for rend in numofpages:
+                    pview.postscript(file=f"/tmp/tmp{rend}.ps", 
+                        x=10000,
+                        y=rend * (Score['properties']['page-height'] * MM), 
+                        width=Score['properties']['page-width'] * MM,
+                        height=Score['properties']['page-height'] * MM, 
+                        rotate=False,
+                        fontmap='-*-Courier-Bold-R-Normal--*-120-*')
+                    process = subprocess.Popen(
+                        ["ps2pdfwr", "-sPAPERSIZE=a4", "-dFIXEDMEDIA", "-dEPSFitPage", "/tmp/tmp%s.ps" % rend,
+                         "/tmp/tmp%s.pdf" % rend])
+                    process.wait()
+                    os.remove("/tmp/tmp%s.ps" % rend)
+                    pslist.append("/tmp/tmp%s.pdf" % rend)
+            else:
+                numofpages = range(engrave_pianoscript_vertical('export',
+                    renderpageno,
+                    Score,
+                    MM,
+                    last_pianotick,
+                    color_notation_editor,
+                    color_editor_canvas,
+                    pview,root,
+                    BLACK))
+                for rend in numofpages:
+                    pview.postscript(file=f"tmp{rend}.ps",
+                        x=rend * (Score['properties']['page-width'] * MM),
+                        y=10000, 
+                        width=Score['properties']['page-width'] * MM,
+                        height=Score['properties']['page-height'] * MM, 
+                        rotate=False,
+                        fontmap='-*-Courier-Bold-R-Normal--*-120-*')
+                    process = subprocess.Popen(
+                        f'''pstopdf tmp{rend}.ps''', shell=True)
+                    process.wait()
+                    os.remove(f"tmp{rend}.ps")
+                    pslist.append(f"tmp{rend}.pdf")
+            cmd = 'pdfunite '
+            for i in range(len(pslist)):
+                cmd += pslist[i] + ' '
+            cmd += '"%s"' % f.name
+            process = subprocess.Popen(cmd, shell=True)
+            process.wait()
+            # remove temporary pdf page files
+            for rend in numofpages:
+                os.remove(f"tmp{rend}.pdf")
     do_engrave()
 
 
@@ -2315,138 +2609,6 @@ check_resize()
 # --------------
 # editor tools |
 # --------------
-def set_value(t):
-    global Score, Settings, file_changed
-
-    # Score settings
-    if t == 'title':
-        user_input = AskString(root, 
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['header'][t]['text'])
-        if user_input.result is not None: 
-            Score['header'][t]['text'] = user_input.result
-            file_changed = True
-    elif t == 'composer':
-        user_input = AskString(root, 
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['header'][t]['text'])
-        if user_input.result is not None: 
-            Score['header'][t]['text'] = user_input.result
-            file_changed = True
-    elif t == 'copyright':
-        user_input = AskString(root, 
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['header'][t]['text'])
-        if user_input.result is not None: 
-            Score['header'][t]['text'] = user_input.result
-            file_changed = True
-    elif t == 'page-width':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None:
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-height':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-margin-left':
-        user_input = AskFloat(root,
-            f'Set {t}...', f'Please provide the {t} for the document:', initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-margin-right':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-margin-up':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'page-margin-down':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'draw-scale':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t}(1=default, 2=twice as big so from .5 to 1.5 is reasonable) for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'header-height':
-        user_input = AskFloat(root,
-            f'Set {t}...', f'Please provide the {t} in mm for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'footer-height':
-        user_input = AskFloat(root,
-            f'Set {t}...', 
-            f'Please provide the {t} in mm for the document:', 
-            initialvalue=Score['properties'][t])
-        if user_input.result is not None: 
-            Score['properties'][t] = user_input.result
-            file_changed = True
-    elif t == 'color-right-hand-midinote':
-        user_input = GreyscalePicker(root, 
-            "Every printer prints a different shade of grey. \nSo you can set a custom greyscale color here \nthat looks readable on your printouts.", 
-            int(Score['properties'][t][5:], 16)).color
-        if user_input: 
-            Score['properties'][t] = user_input
-            file_changed = True
-            do_pianoroll()
-    elif t == 'color-left-hand-midinote':
-        user_input = GreyscalePicker(root, 
-            "Every printer prints a different shade of grey. \nSo you can set a custom greyscale color here \nthat looks readable on your printouts.", 
-            int(Score['properties'][t][5:], 16)).color
-        if user_input: 
-            Score['properties'][t] = user_input
-            file_changed = True
-            do_pianoroll()
-
-    
-    # editor Settings
-    elif t == 'editor-x-zoom':
-        user_input = AskFloat(root,f'Set {t}...', f'Please provide the {t} from 0 to 100(or more) for the editor:', 
-            initialvalue=Score['properties'][t]).result
-        if user_input:
-            print(user_input)
-            Score['properties'][t] = user_input
-            do_pianoroll()
-    elif t == 'editor-y-zoom':
-        user_input = AskFloat(root,f'Set {t}...', f'Please provide the {t} (50 will make the staff height 50% of the editor view) for the editor:', 
-            initialvalue=Score['properties'][t]).result
-        if user_input: 
-            Score['properties'][t] = user_input
-            do_pianoroll()
-    
-    do_engrave()
-
 listbox_value = 8
 def grid_selector(event='event'):
     global edit_grid, listbox_value
@@ -2458,7 +2620,7 @@ def grid_selector(event='event'):
     #     list_dur.select_set(int(event.keysym)-1)# implementing shortcuts in progress
 
     lengthdict = {1: 1024, 2: 512, 4: 256, 8: 128, 16: 64, 32: 32, 64: 16, 128: 8}
-    edit_grid = ((lengthdict[int(listbox_value)] / int(div_spin.get())) * int(tim_spin.get()))
+    edit_grid = ((lengthdict[int(listbox_value)] / int(divide_variable.get())) * int(times_variable.get()))
 
     root.focus()
 
@@ -2473,40 +2635,6 @@ def grideditor(event=''):
     last_pianotick = edit.last_pianotick
     do_pianoroll()
     do_engrave()
-    # t = GridEditor(root, Score)
-    # Score['events']['grid'] = []
-    # for ts in t:
-    #     numerator = None
-    #     denominator = None
-    #     amount = None
-    #     grid = None
-    #     visible = None
-    #     if ts:
-    #         try:
-    #             numerator = int(ts.split()[0].split('/')[0])
-    #             denominator = int(ts.split()[0].split('/')[1])
-    #             amount = int(ts.split()[1])
-    #             grid = int(ts.split()[2])
-    #             visible = int(ts.split()[3])
-    #         except:
-    #             print(
-    #                 '''Please read the documentation about how to provide the grid mapping correctly.
-    #                 a correct gridmap:
-    #                 4/4 16 4 1''')
-    #             return
-    #     else:
-    #         continue
-    #     # gridmap add to Score
-    #     Score['events']['grid'].append(
-    #         {'amount': amount, 'numerator': numerator, 'denominator': denominator,
-    #          'grid': grid, 'visible': visible})
-    # # remove linebreaks from Score that are >= then last_pianotick
-    # last_pianotick = 0
-    # for grid in Score['events']['grid']:
-    #     last_pianotick += (grid['amount'] * measure_length((grid['numerator'], grid['denominator'])))
-    # for lb in reversed(Score['events']['line-break']):
-    #     if lb['time'] >= last_pianotick:
-    #         Score['events']['line-break'].remove(lb)
 
 
 def update_textbox():
@@ -2626,8 +2754,14 @@ def add_quick_linebreaks(e=''):
     new_linebreak = {
         "id":'linebreak',
         "time":0,
-        "margin-up-left":10,
-        "margin-down-right":10
+        "margin-staff1-left":10,
+        "margin-staff1-right":10,
+        "margin-staff2-left":10,
+        "margin-staff2-right":10,
+        "margin-staff3-left":10,
+        "margin-staff3-right":10,
+        "margin-staff4-left":10,
+        "margin-staff4-right":10
     }
     draw_linebreak_editor(new_linebreak,
         editor,
@@ -2651,8 +2785,14 @@ def add_quick_linebreaks(e=''):
             new_linebreak = {
                 "id":'linebreak%i'%new_id,
                 "time":bl,
-                "margin-up-left":10,
-                "margin-down-right":10
+                "margin-staff1-left":10,
+                "margin-staff1-right":10,
+                "margin-staff2-left":10,
+                "margin-staff2-right":10,
+                "margin-staff3-left":10,
+                "margin-staff3-right":10,
+                "margin-staff4-left":10,
+                "margin-staff4-right":10
             }
             new_id += 1
             draw_linebreak_editor(new_linebreak,
@@ -2671,7 +2811,7 @@ def add_quick_linebreaks(e=''):
 
     do_engrave()
 
-def switch_hand_selection(direction):
+def switch_hand_selection(e, direction):
 
     global Score
 
@@ -2728,7 +2868,8 @@ def mode_select(mode,i_mode):
     slur_button,
     staffsizer_button,
     repeats_button,
-    beam_button
+    beam_button,
+    accidental_button
     ]
 
     for i,conf in enumerate(modes):
@@ -2746,7 +2887,9 @@ def mode_select(mode,i_mode):
             "hand": 'r',
             "x-offset": 0,
             "y-offset": 0,
-            "stem-visible": True
+            "stem-visible": True,
+            "accidental":0,
+            "staff":0
         }
         draw_note_pianoroll(cursor, 
             True, 
@@ -2768,7 +2911,9 @@ def mode_select(mode,i_mode):
             "hand": 'l',
             "x-offset": 0,
             "y-offset": 0,
-            "stem-visible": True
+            "stem-visible": True,
+            "accidental":0,
+            "staff":0
         }
         draw_note_pianoroll(cursor, 
             True, 
@@ -2793,25 +2938,30 @@ slur_button.configure(command=lambda: [mode_select(5,'slur'), noteinput_label.fo
 staffsizer_button.configure(command=lambda: [mode_select(6,'staffsizer'), noteinput_label.focus_force()])
 repeats_button.configure(command=lambda: [mode_select(7,'repeats'), noteinput_label.focus_force()])
 beam_button.configure(command=lambda: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
+accidental_button.configure(command=lambda: [mode_select(9,'accidental'), noteinput_label.focus_force()])
+
+root.bind('1', lambda e: [mode_select(0,'right'), noteinput_label.focus_force()])
+root.bind('2', lambda e: [mode_select(1,'left'), noteinput_label.focus_force()])
+root.bind('3', lambda e: [mode_select(2,'linebreak'), noteinput_label.focus_force()])
+root.bind('4', lambda e: [mode_select(3,'countline'), noteinput_label.focus_force()])
+root.bind('5', lambda e: [mode_select(4,'text'), noteinput_label.focus_force()])
+root.bind('6', lambda e: [mode_select(5,'slur'), noteinput_label.focus_force()])
+root.bind('7', lambda e: [mode_select(6,'staffsizer'), noteinput_label.focus_force()])
+root.bind('8', lambda e: [mode_select(7,'repeats'), noteinput_label.focus_force()])
+root.bind('9', lambda e: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
+root.bind('0', lambda e: [mode_select(9,'accidental'), noteinput_label.focus_force()])
 
 def space_shift(event):
     '''
         This is a switch for mode 1 & 2 (right and left)
     '''
-    if input_mode in ['linebreak', 'select', 'text', 'countline']:
+    if input_mode in ['linebreak', 'select', 'text', 'countline', 'text', 'slur', 'staffsizer', 'repeats', 'beamtool', 'accidental']:
         mode_select(0,'right')
         return
     if input_mode == 'right':
         mode_select(1,'left')
     elif input_mode == 'left':
         mode_select(0,'right')
-
-
-
-
-# ----------------
-# Engraver switch
-# ----------------
 
 
 
@@ -2831,40 +2981,32 @@ def space_shift(event):
 '''
 CtlZ = [Score]
 levels_of_undo = 100
-current_undo_index = -1
+current_undo_index = 0
+current_undo_levels = 0
 
 def undo(event=''):
-    print('undo...')
-    
     global Score,current_undo_index
-    succeed = False
-    
-    # first we try to do the undo
-    try: 
-        Score = CtlZ[current_undo_index]
-        current_undo_index -= 1
-        succeed = True
-    except IndexError: 
-        return
+    print('undo...',current_undo_levels)
+    if CtlZ:
 
-    # if the undo succeeded we redraw the editor and do_render()
-    if succeed:
+        try: 
+            Score = CtlZ[-2]
+        except IndexError:
+            Score = CtlZ[-1]
+            print('default')
+
         do_engrave()
         threading.Thread(target=do_pianoroll()).start()
 
 def redo(event=''):
-    print('redo...')
-    
     global Score,current_undo_index
     succeed = False
+    print('redo...',current_undo_index)
     
     # first we try to do the redo
-    try:
-        #current_undo_index += 1
-        Score = CtlZ[current_undo_index]
-        succeed = True
-    except IndexError:
-        return
+    # first we try to do the undo
+    current_undo_index += 1
+    Score = CtlZ[current_undo_index%len(CtlZ)]
 
     # if the undo succeeded we redraw the editor and do_render()
     if succeed:
@@ -2874,26 +3016,34 @@ def redo(event=''):
 def add_ctrl_z():
     #print('add_ctrl_z')
     
-    global CtlZ,current_undo_index
+    global CtlZ,current_undo_levels,current_undo_index
 
-    # delete all redo
-    try:
-        rm = False
-        for z in reversed(CtlZ[current_undo_index:]):
-            CtlZ.remove(z)#check if it works delete current
-            rm = True
-        if rm:
-            current_undo_index = -1
-    except IndexError:
-        ...
-
-    # add ctrl-z
     CtlZ.append(Score)
+    current_undo_levels += 1
+    current_undo_index += 1
+    for i in Score['events']['note']:
+        print(i)
+    
+    
 
 def empty_ctrl_z():
     
     global CtlZ
     CtlZ = []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2934,6 +3084,32 @@ def cycle_trough_pages_button(event=''):
     do_engrave()
 nextpage_button.configure(command=lambda: cycle_trough_pages_button(':)'))
 prevpage_button.configure(command=cycle_trough_pages_button)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2982,7 +3158,9 @@ def copy_selection(e=''):
                 "hand":note['hand'],
                 "stem-visible":note['stem-visible'],
                 "type":note['type'],
-                "notestop":note['notestop']
+                "notestop":note['notestop'],
+                "accidental":note['accidental'],
+                "staff":int(staffselect_variable.get())
             }
             copycut_buffer.append(new)
 
@@ -3000,7 +3178,9 @@ def paste_selection(e=''):
                 "hand":e['hand'],
                 "stem-visible":e['stem-visible'],
                 "type":e['type'],
-                "notestop":e['notestop']
+                "notestop":e['notestop'],
+                "accidental":e['accidental'],
+                "staff":int(staffselect_variable.get())-1
             }
             new_id += 1
             Score['events']['note'].append(new)
@@ -3018,17 +3198,48 @@ def paste_selection(e=''):
             update_drawing_order_editor(editor)
     do_engrave()
 
-def select_all(e=''):
+def select_all(event=''):
     
     ...
 
-def transpose_up(e=''):
-    print('transpose_up')
-    global new_id, copycut_buffer
-    mt = mouse_time
-    for e in copycut_buffer:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def transpose_up(event=''):
+    global new_id, selection_buffer
+    for e in selection_buffer:
         if 'note' in e['id']:
             e['pitch'] += 1
+            if e['pitch'] > 88:
+                e['pitch'] = 88
             draw_note_pianoroll(e,
                 False, 
                 editor, 
@@ -3044,6 +3255,101 @@ def transpose_up(e=''):
                 True)
             update_drawing_order_editor(editor)
     do_engrave()
+
+def transpose_down(event=''):
+    global new_id, selection_buffer
+    for e in selection_buffer:
+        if 'note' in e['id']:
+            e['pitch'] -= 1
+            if e['pitch'] < 1:
+                e['pitch'] = 1
+            draw_note_pianoroll(e,
+                False, 
+                editor, 
+                hbar, 
+                y_scale_percent, 
+                x_scale_quarter_mm, 
+                MM, 
+                color_notation_editor, 
+                BLACK, 
+                color_editor_canvas, 
+                Score,
+                False,
+                True)
+            update_drawing_order_editor(editor)
+    do_engrave()
+
+
+def move_selection_left(event=''):
+    global new_id, selection_buffer
+    for e in selection_buffer:
+        if 'note' in e['id']:
+            e['time'] -= edit_grid
+            if e['time'] < 0:
+                e['time'] = 0
+            draw_note_pianoroll(e,
+                False, 
+                editor, 
+                hbar, 
+                y_scale_percent, 
+                x_scale_quarter_mm, 
+                MM, 
+                color_notation_editor, 
+                BLACK, 
+                color_editor_canvas, 
+                Score,
+                False,
+                True)
+            update_drawing_order_editor(editor)
+    do_engrave()
+
+def move_selection_right(event=''):
+    global new_id, selection_buffer
+    for e in selection_buffer:
+        if 'note' in e['id']:
+            e['time'] += edit_grid
+            if e['time'] > last_pianotick:
+                e['time'] = last_pianotick
+            draw_note_pianoroll(e,
+                False, 
+                editor, 
+                hbar, 
+                y_scale_percent, 
+                x_scale_quarter_mm, 
+                MM, 
+                color_notation_editor, 
+                BLACK, 
+                color_editor_canvas, 
+                Score,
+                False,
+                True)
+            update_drawing_order_editor(editor)
+    do_engrave()
+
+
+def quantize_selection(e=''):
+    
+    global Score
+
+    for s in selection_buffer:
+
+        for n in Score['events']['note']:
+            if n['id'] == s['id']:
+                start = n['time']
+                end = n['time'] + n['duration']
+                n['time'] = round(start / edit_grid) * edit_grid
+                n['duration'] = end - n['time']
+
+        for n in Score['events']['note']:
+            if n['id'] == s['id']:
+                start = n['time']
+                end = n['time'] + n['duration']
+                end = round(end / edit_grid) * edit_grid
+                n['duration'] = end - n['time']
+
+    do_engrave()
+    do_pianoroll()
+
 
 
 def quantize(Score):
@@ -3078,6 +3384,14 @@ def quantize(Score):
     do_pianoroll()
 
 
+def staff_editor():
+    
+    global Score
+
+    Score = StaffDialog(root,Score).score
+    do_engrave()
+
+
 # --------------------------------------------------------
 # MENU
 # --------------------------------------------------------
@@ -3106,31 +3420,12 @@ selectionMenu.add_command(label="Paste [ctl+v]", underline=None, command=paste_s
 selectionMenu.add_separator()
 selectionMenu.add_command(label="Select all [ctl+a]", underline=None, command=select_all)
 menubar.add_cascade(label="Selection", underline=None, menu=selectionMenu)
-setMenu = Menu(menubar, tearoff=1)
-setMenu.add_command(label='Title (string)', command=lambda: set_value('title'))
-setMenu.add_command(label='Composer (string)', command=lambda: set_value('composer'))
-setMenu.add_command(label='Copyright (string)', command=lambda: set_value('copyright'))
-setMenu.add_separator()
-setMenu.add_command(label='Draw scale (0.3-2.5)', command=lambda: set_value('draw-scale'))
-setMenu.add_command(label='Page width (mm)', command=lambda: set_value('page-width'))
-setMenu.add_command(label='Page height (mm)', command=lambda: set_value('page-height'))
-setMenu.add_command(label='Header height (mm)', command=lambda: set_value('header-height'))
-setMenu.add_command(label='Footer height (mm)', command=lambda: set_value('footer-height'))
-setMenu.add_command(label='Page margin left (mm)', command=lambda: set_value('page-margin-left'))
-setMenu.add_command(label='Page margin right (mm)', command=lambda: set_value('page-margin-right'))
-setMenu.add_command(label='Page margin up (mm)', command=lambda: set_value('page-margin-up'))
-setMenu.add_command(label='Page margin down (mm)', command=lambda: set_value('page-margin-down'))
-setMenu.add_command(label='Color right hand midinote', command=lambda: set_value('color-right-hand-midinote'))
-setMenu.add_command(label='Color left hand midinote', command=lambda: set_value('color-left-hand-midinote'))
-setMenu.add_separator()
-setMenu.add_command(label='Editor x zoom (0-100 or more)', command=lambda: set_value('editor-x-zoom'))
-setMenu.add_command(label='Editor y zoom (0-100)', command=lambda: set_value('editor-y-zoom'))
-menubar.add_cascade(label="Settings", underline=None, menu=setMenu)
 toolsMenu = Menu(menubar, tearoff=1)
 toolsMenu.add_command(label='Redraw editor', command=lambda: do_pianoroll())
 toolsMenu.add_command(label='Quantize', command=lambda: quantize(Score))
 toolsMenu.add_command(label='Add quick line breaks', command=lambda: add_quick_linebreaks())
 toolsMenu.add_command(label='Transpose', command=lambda: transpose())
+toolsMenu.add_command(label='Staff editor', command=lambda: staff_editor())
 menubar.add_cascade(label="Tools", underline=None, menu=toolsMenu)
 
 
@@ -3151,14 +3446,15 @@ def engraver_switch(event=''):
         engraver_button.configure(text='V')
     do_engrave()
 
-engraver_button.configure(command=engraver_switch)
+# engraver_button.configure(command=engraver_switch)
 
 
 
-
-
-
-
+def options_editor():
+    global Score
+    Score = OptionsDialog(root, Score).score
+    do_engrave()
+options_button.configure(command=options_editor)
 
 
 # --------------------------------------------------------
@@ -3179,6 +3475,7 @@ if platform.system() == 'Linux' or platform.system() == 'Windows':
     pview.bind('<Button-1>', lambda e: cycle_trough_pages(e))
     pview.bind('<Button-3>', lambda e: cycle_trough_pages(e))
 if platform.system() == 'Darwin':
+    editor.bind('<Control-Button-1>', lambda event: mouse_handling(event, 'ctl-click-btn1'))
     editor.bind('<Double-Button-1>', lambda event: mouse_handling(event, 'double-btn1'))
     editor.bind('<Button-3>', lambda event: mouse_handling(event, 'btn2click'))
     editor.bind('<ButtonRelease-3>', lambda event: mouse_handling(event, 'btn2release'))
@@ -3224,8 +3521,8 @@ editor.bind('<Key-5>', grid_selector)
 editor.bind('<Key-6>', grid_selector)
 editor.bind('<Key-7>', grid_selector)
 editor.bind('<Key-8>', grid_selector)
-root.bind('<Control-z>', undo)
-root.bind('<Control-Z>', redo)
+#root.bind('<Control-z>', undo)
+#root.bind('<Control-Z>', redo)
 root.bind('<Control-x>', cut_selection)
 root.bind('<Control-c>', copy_selection)
 root.bind('<Control-v>', paste_selection)
@@ -3238,10 +3535,66 @@ root.bind('<Control-r>', do_pianoroll)
 root.bind('<Control-q>', add_quick_linebreaks)
 root.bind('<Control-e>', exportPDF)
 root.bind('<Up>', transpose_up)
+root.bind('<Down>', transpose_down)
 root.bind('<Key-g>', grideditor)
-root.bind('<Key-q>', lambda e: quantize(Score))
-root.bind('[', lambda e: switch_hand_selection('l'))
-root.bind(']', lambda e: switch_hand_selection('r'))
+root.bind('<Key-q>', lambda e: quantize_selection(Score))
+root.bind(',', lambda e: switch_hand_selection(e,'l'))
+root.bind('.', lambda e: switch_hand_selection(e,'r'))
+root.bind('p', lambda e: play_midi(e, Score, 'test2.mid', root))
+root.bind('s', lambda e: options_editor())
+root.bind('<Left>', move_selection_left)
+root.bind('<Right>', move_selection_right)
+
+# spinbox on scroll + or -
+def spin_scroll_linux(ev_type, spinvariable, range):
+
+    # set value
+    value = int(spinvariable.get())
+    if ev_type == 'up':
+        spinvariable.set(value + 1)
+    else:
+        spinvariable.set(value - 1)
+
+    # check if value is in range
+    value = int(spinvariable.get())
+    if value < range[0]:
+        spinvariable.set(range[0])
+    elif value > range[1]:
+        spinvariable.set(range[1])
+
+    # update functions
+    if range == (1,99):
+        grid_selector()
+    if range == (1,4):
+        do_pianoroll()
+
+def spin_scroll_macos(event, spinvariable, range):
+    
+    # update spin
+    value = int(spinvariable.get())
+    if event.delta > 0 and not value >= range[1]:
+        spinvariable.set(value + 1)
+    elif event.delta < 0 and not value <= range[0]:
+        spinvariable.set(value - 1)
+
+    # update functions
+    if range == (1,99): 
+        grid_selector()
+    if range == (1,4):
+        do_pianoroll()
+
+
+if platform.system() == 'Linux':
+    staffselect_spin.bind('<4>', lambda e: spin_scroll_linux('up',staffselect_variable,(1,4)))
+    staffselect_spin.bind('<5>', lambda e: spin_scroll_linux('down',staffselect_variable,(1,4)))
+    divide_spin.bind('<4>', lambda e: spin_scroll_linux('up',divide_variable,(1,99)))
+    divide_spin.bind('<5>', lambda e: spin_scroll_linux('down',divide_variable,(1,99)))
+    times_spin.bind('<4>', lambda e: spin_scroll_linux('up',times_variable,(1,99)))
+    times_spin.bind('<5>', lambda e: spin_scroll_linux('down',times_variable,(1,99)))
+if platform.system() == 'Darwin' or platform.system() == 'Windows':
+    staffselect_spin.bind('<MouseWheel>', lambda e: spin_scroll_macos(e,staffselect_variable,(1,4)))
+    divide_spin.bind('<MouseWheel>', lambda e: spin_scroll_macos(e,divide_variable,(1,99)))
+    times_spin.bind('<MouseWheel>', lambda e: spin_scroll_macos(e,times_variable,(1,99)))
 
 
 

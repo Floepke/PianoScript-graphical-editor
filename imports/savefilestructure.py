@@ -66,6 +66,142 @@ Score = {
     "header-height":10,
     "footer-height":10,
     "minipiano":True,
+    "engraver":'pianoscript vertical',
+    "color-right-hand-midinote":'#c8c8c8',
+    "color-left-hand-midinote":'#c8c8c8',
+    "printview-width(procents-froms-creen)":33,
+    "editor-x-zoom":35,
+    "editor-y-zoom":80,
+    "staffonoff":True,
+    "stemonoff":True,
+    "beamonoff":True,
+    "noteonoff":True,
+    "midinoteonoff":True,
+    "notestoponoff":True,
+    "pagenumberingonoff":True,
+    "barlinesonoff":True,
+    "basegridonoff":True,
+    "countlineonoff":True,
+    "measurenumberingonoff":True,
+    "accidentalonoff":True,
+    "staff":[
+      {
+        "onoff":True,
+        "name":"Staff 1",
+        "staff-number":0,
+        "staff-scale":1.0,
+        "margin-up-left":5.0,
+        "margin-down-right":5.0
+      },
+      {
+        "onoff":False,
+        "name":"Staff 2",
+        "staff-number":1,
+        "staff-scale":1.0,
+        "margin-up-left":5.0,
+        "margin-down-right":5.0
+      },
+      {
+        "onoff":False,
+        "name":"Staff 3",
+        "staff-number":2,
+        "staff-scale":1.0,
+        "margin-up-left":5.0,
+        "margin-down-right":5.0
+      },
+      {
+        "onoff":False,
+        "name":"Staff 4",
+        "staff-number":3,
+        "staff-scale":1.0,
+        "margin-up-left":5.0,
+        "margin-down-right":5.0
+      }
+    ],
+    "soundingdotonoff":False,
+    "black-note-style":"PianoScript"
+  },
+  "events": {
+    "grid": [
+      {
+        "amount": 8,
+        "numerator": 4,
+        "denominator": 4,
+        "grid": 4,
+        "visible": True
+      }
+    ],
+    "note": [],
+    "text": [],
+    "beam": [],
+    "bpm":[],
+    "slur": [],
+    "pedal": [],
+    "line-break":[
+      {
+        "id":"linebreak",
+        "time":0,
+        "margin-staff1-left":10,
+        "margin-staff1-right":10,
+        "margin-staff2-left":10,
+        "margin-staff2-right":10,
+        "margin-staff3-left":10,
+        "margin-staff3-right":10,
+        "margin-staff4-left":10,
+        "margin-staff4-right":10,
+        "staff":0
+      }
+    ],
+    "count-line":[],
+    "staff-sizer":[],
+    "start-repeat":[],
+    "end-repeat":[],
+    "start-hook":[],
+    "end-hook":[]
+  }
+}
+try:
+    with open('template.pianoscript', 'r') as f:
+        Score = json.load(f)
+except:
+    with open('template.pianoscript', 'w') as f:
+        f.write(json.dumps(Score, separators=(',', ':'), indent=2))
+
+
+OrginalScore = {
+  "header": {
+    "title": {
+      "text": "Untitled",
+      "x-offset": 0,
+      "y-offset": 0,
+      "visible": True
+    },
+    "composer": {
+      "text": "PianoScript",
+      "x-offset": 0,
+      "y-offset": 0,
+      "visible": True
+    },
+    "copyright": {
+      "text": "© PianoScript 2023",
+      "x-offset": 0,
+      "y-offset": 0,
+      "visible": True
+    },
+    "app-name": "pianoscript",
+    "app-version": 1.0
+  },
+  "properties": {
+    "page-width": 210,
+    "page-height": 297,
+    "page-margin-left": 10,
+    "page-margin-right": 10,
+    "page-margin-up": 10,
+    "page-margin-down": 10,
+    "draw-scale": 1,
+    "header-height":10,
+    "footer-height":10,
+    "minipiano":True,
     "engraver":'pianoscript',
     "color-right-hand-midinote":'#c8c8c8',
     "color-left-hand-midinote":'#c8c8c8',
@@ -102,12 +238,20 @@ Score = {
     "start-repeat":[],
     "end-repeat":[],
     "start-hook":[],
-    "end-hook":[]
+    "end-hook":[],
+    "beam":[]
   }
 }
-try:
-    with open('template.pianoscript', 'r') as f:
-        Score = json.load(f)
-except:
-    with open('template.pianoscript', 'w') as f:
-        f.write(json.dumps(Score, separators=(',', ':'), indent=2))
+
+def converter(filepath, Score):
+
+    '''This function converts previous version pianoscript 
+    files into compitable file. It spits out a Score object 
+    and compares all elements from the template.'''
+
+    for key, value in zip(list(OrginalScore.items())[0],list(OrginalScore.items())[1]):   
+        print(key, value)
+        for key2, value2 in zip(list(Score.items())[0],list(Score.items())[1]):
+            if not key in key2:
+                Score[key] = OrginalScore[key2][value2]
+    return Score

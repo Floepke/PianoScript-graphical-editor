@@ -67,13 +67,13 @@ class GridEditor:
         # example label
         self.example_frame = Frame(self.main_frame, bg='#eee8d5')
         self.example_frame.pack(fill='both', padx=10)
-        self.example = Label(self.example_frame, wraplength=self.window.winfo_screenwidth(), text='1.time-signature(example: "4/4")\n2.amount of measures(Example: "22")\n3.grid-division(Example: "4")\n4.visible(set to "1" or "0")\nOn each line you can enter these \nfour values to form the grid.', font=('Courier', 14), bg='#eee8d5', justify='left')
+        self.example = Label(self.example_frame, wraplength=self.window.winfo_screenwidth(), text='1.time-signature(example: "4/4")\n2.amount of measures(Example: "22")\n3.grid-division(Example: "4")\nOn each line you can enter these \nthree values to form the grid.', font=('Courier', 14), bg='#eee8d5', justify='left')
         self.example.pack(side='left')
 
         # text widget
         self.text_frame = Frame(self.main_frame, bg='#eee8d5')
         self.text_frame.pack(fill='both', expand=True)
-        self.text = Text(self.text_frame, font=('Courier', 14))
+        self.text = Text(self.text_frame, font=('Courier', 16))
         self.text.pack(padx=10,pady=10,fill='both',expand=True)
         self.text.focus_set()
 
@@ -93,9 +93,9 @@ class GridEditor:
             if visible: visible = 1
 
             if not idx == len(self.Score['events']['grid'])-1:
-                txt += str(numerator) + '/' + str(denominator) + ' ' + str(amount) + ' ' + str(grid_div) + ' ' + str(visible) + '\n'
+                txt += str(numerator) + '/' + str(denominator) + ' ' + str(amount) + ' ' + str(grid_div) + '\n'
             else:
-                txt += str(numerator) + '/' + str(denominator) + ' ' + str(amount) + ' ' + str(grid_div) + ' ' + str(visible)
+                txt += str(numerator) + '/' + str(denominator) + ' ' + str(amount) + ' ' + str(grid_div)
         self.text.insert('1.0', txt)
 
     def _apply(self):
@@ -113,7 +113,6 @@ class GridEditor:
                     denominator = int(ts.split()[0].split('/')[1])
                     amount = int(ts.split()[1])
                     grid = int(ts.split()[2])
-                    visible = int(ts.split()[3])
                 except:
                     print(
                         '''Please read the documentation about how to provide the grid mapping correctly.
@@ -124,8 +123,11 @@ class GridEditor:
                 continue
             # gridmap add to Score
             self.Score['events']['grid'].append(
-                {'amount': amount, 'numerator': numerator, 'denominator': denominator,
-                 'grid': grid, 'visible': visible})
+                {'amount': amount, 
+                'numerator': numerator, 
+                'denominator': denominator,
+                 'grid': grid, 
+                 'visible': 1})
         
         # calculate last pianotick
         for grid in self.Score['events']['grid']:
