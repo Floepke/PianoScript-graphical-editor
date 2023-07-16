@@ -602,7 +602,7 @@ selection_buffer = []
 mouse_time = 0
 ms_xy = [0,0]
 new_slur = 0
-cl_handle = ''
+handle = ''
 
 # mouse edit
 btn1_click = False
@@ -881,7 +881,18 @@ def do_pianoroll(event='event'):
                 editor, hbar, y_scale_percent, 
                 x_scale_quarter_mm, MM)
         new_id += 1
-        
+
+    # draw slur events
+    for sl in Score['events']['slur']:
+        sl['id'] = 'slur%i'%new_id
+        if sl['staff'] == int(staffselect_variable.get())-1:
+            slur_editor(sl,
+                editor,
+                hbar,
+                y_scale_percent,
+                x_scale_quarter_mm,
+                MM)
+        new_id += 1
 
     update_drawing_order_editor(editor)
 
@@ -928,7 +939,7 @@ def mouse_handling(event, event_type):
         'btn2release', 'btn3click', 'btn3release' or 'motion'.
     '''
     global hold_id, hand, new_id, cursor_note, cursor_time, edit_cursor, file_changed, new_slur, selection_buffer
-    global selection, shiftbutton1click, selection_tags, mouse_time, active_selection, ms_xy, cl_handle
+    global selection, shiftbutton1click, selection_tags, mouse_time, active_selection, ms_xy, handle
 
     editor.tag_lower('cursor')
 
@@ -1543,7 +1554,7 @@ def mouse_handling(event, event_type):
 
             if edit:
                 # editing
-                cl_handle = tags[1]
+                handle = tags[1]
                 hold_id = tags[0]
 
             else:
@@ -1572,7 +1583,7 @@ def mouse_handling(event, event_type):
 
                 for cl in Score['events']['count-line']:
                     if cl['id'] == hold_id:
-                        if cl_handle == 'handle1':
+                        if handle == 'handle1':
                             cl['pitch1'] = ey
                         else:
                             cl['pitch2'] = ey
@@ -1585,7 +1596,7 @@ def mouse_handling(event, event_type):
 
                 for cl in Score['events']['count-line']:
                     if cl['id'] == hold_id:
-                        if cl_handle == 'handle1':
+                        if handle == 'handle1':
                             cl['pitch1'] = ey
                         else:
                             cl['pitch2'] = ey
@@ -1613,46 +1624,93 @@ def mouse_handling(event, event_type):
 
         if event_type == 'btn1click':
 
-            # xy points 
-            ms_xy = [mx,my]
-
-            new_slur = {
-                "id":'slur%i'%new_id,
-                "bezier-points":[[0,0],[0,0],[0,0],[0,0]],
-                "width":7.5,
-                "staff":int(staffselect_variable.get())-1
-            }
-            new_id += 1
+            # Detecting if we are clicking a slur/handle
+            tags = editor.gettags(editor.find_withtag('current'))
+            editing = False
+            if tags:    
+                if 'slur' in tags[0]:
+                    editing = True
+                    hold_id = tags[0]
             
-            # draw slur
-            # slur_editor(editor,
-            #     new_slur['bezier-points'],
-            #     new_slur['id'],
-            #     Score['properties']['draw-scale'],
-            #     new_slur['width'], 
-            #     100, 
-            #     False)
-            slur_editor(editor,
-                new_slur,
-                Score['properties']['draw-scale'])
+            if editing:
+                handle = tags[1]
+                print(tags)
+            else:
+                # adding a new slur
+                new_slur = {
+                    'id':'slur%i'%new_id,
+                    'time':ex,
+                    'points':[[ex,ey],[ex,ey],[ex,ey],[ex,ey]],
+                    'staff':int(staffselect_variable.get())-1,
+                    'type':'slur'
+                }
+                new_id += 1
+                hold_id = new_slur['id']
+                
+                # draw slur on editor
+                slur_editor(new_slur,
+                    editor,
+                    hbar,
+                    y_scale_percent,
+                    x_scale_quarter_mm,
+                    MM)
+
+                handle = 'new'
+            
+                # write new event to Score
+                Score['events']['slur'].append(new_slur)
 
         if event_type == 'motion':
 
-            if ms_xy[0]:
-                # define middle two control points
-                point1 = [ms_xy[0]+((mx-ms_xy[0])/10), ms_xy[1]+40] #((my-ms_xy[1])/10)]
-                point2 = [ms_xy[0]+((mx-ms_xy[0])/10*9), ms_xy[1]+40] #((my-ms_xy[1])/10*9)]
-                new_slur['bezier-points'] = [[mx,my],point2,point1,ms_xy]
-                print(new_slur['bezier-points'])
-                # draw slur
-                slur_editor(editor,
-                            new_slur,
-                            Score['properties']['draw-scale'])
+            if hold_id and handle == 'new':
+                
+                for sl in Score['events']['slur']:
+                    if sl['id'] == hold_id:
+                        sl['points'][1][0] = sl['time'] + ((sl['points'][3][0] - sl['points'][0][0])*0.25)
+                        sl['points'][2][0] = sl['time'] + ((sl['points'][3][0] - sl['points'][0][0])*0.75)
+                        sl['points'][3][0] = ex
+                        sl['points'][3][1] = ey
+                        
+                        slur_editor(sl,
+                            editor,
+                            hbar,
+                            y_scale_percent,
+                            x_scale_quarter_mm,
+                            MM,
+                            True)
+            if hold_id and handle:
+                for sl in Score['events']['slur']:
+                    if sl['id'] == hold_id:
+                        # change selected ctl point
+                        if handle == 'ctl1':
+                            sl['time'] = ex
+                            sl['points'][0][0] = ex
+                            sl['points'][0][1] = ey
+                        if handle == 'ctl2':
+                            sl['points'][1][0] = ex
+                            sl['points'][1][1] = ey
+                        if handle == 'ctl3':
+                            sl['points'][2][0] = ex
+                            sl['points'][2][1] = ey
+                        if handle == 'ctl4':
+                            sl['points'][3][0] = ex
+                            sl['points'][3][1] = ey
+                        print(handle)
+                        slur_editor(sl,
+                            editor,
+                            hbar,
+                            y_scale_percent,
+                            x_scale_quarter_mm,
+                            MM,
+                            True)
+
 
         if event_type == 'btn1release':
 
             # save the slur to Score
-            ms_xy = [0,0]
+            hold_id = ''
+            editor.delete('selectionline')
+            do_engrave()
 
         if event_type == 'shiftbutton1click':
 
@@ -1665,7 +1723,14 @@ def mouse_handling(event, event_type):
         if event_type == 'btn3click':
 
             # delete slur we clicked on from editor
-            ...
+            tags = editor.gettags('current')
+            if tags:
+                if 'slur' in tags[0]: editor.delete(tags[0])
+                else: return
+                for sl in Score['events']['slur']:
+                    if sl['id'] == tags[0]:
+                        Score['events']['slur'].remove(sl)
+                        do_engrave()
 
     if input_mode == 'staffsizer':
 
@@ -1680,7 +1745,7 @@ def mouse_handling(event, event_type):
 
             if edit:
                 # editing
-                cl_handle = tags[1]
+                handle = tags[1]
                 hold_id = tags[0]
 
             else:
@@ -1704,7 +1769,7 @@ def mouse_handling(event, event_type):
             if 'staffsizer' in hold_id:
                 for ss in Score['events']['staff-sizer']:
                     if ss['id'] == hold_id:
-                        if cl_handle == 'pitch1':
+                        if handle == 'pitch1':
                             ss['pitch1'] = ey
                         else:
                             ss['pitch2'] = ey
@@ -3384,14 +3449,6 @@ def quantize(Score):
     do_pianoroll()
 
 
-def staff_editor():
-    
-    global Score
-
-    Score = StaffDialog(root,Score).score
-    do_engrave()
-
-
 # --------------------------------------------------------
 # MENU
 # --------------------------------------------------------
@@ -3425,7 +3482,6 @@ toolsMenu.add_command(label='Redraw editor', command=lambda: do_pianoroll())
 toolsMenu.add_command(label='Quantize', command=lambda: quantize(Score))
 toolsMenu.add_command(label='Add quick line breaks', command=lambda: add_quick_linebreaks())
 toolsMenu.add_command(label='Transpose', command=lambda: transpose())
-toolsMenu.add_command(label='Staff editor', command=lambda: staff_editor())
 menubar.add_cascade(label="Tools", underline=None, menu=toolsMenu)
 
 
@@ -3471,7 +3527,7 @@ if platform.system() == 'Linux' or platform.system() == 'Windows':
     editor.bind('<ButtonRelease-2>', lambda event: mouse_handling(event, 'btn2release'))
     editor.bind('<Button-3>', lambda event: mouse_handling(event, 'btn3click'))
     editor.bind('<ButtonRelease-3>', lambda event: mouse_handling(event, 'btn3release'))
-    toolbarpanel.bind('<Button-3>', lambda e: do_popup(e, setMenu))
+    #toolbarpanel.bind('<Button-3>', lambda e: do_popup(e, setMenu))
     pview.bind('<Button-1>', lambda e: cycle_trough_pages(e))
     pview.bind('<Button-3>', lambda e: cycle_trough_pages(e))
 if platform.system() == 'Darwin':
@@ -3481,7 +3537,7 @@ if platform.system() == 'Darwin':
     editor.bind('<ButtonRelease-3>', lambda event: mouse_handling(event, 'btn2release'))
     editor.bind('<Button-2>', lambda event: mouse_handling(event, 'btn3click'))
     editor.bind('<ButtonRelease-2>', lambda event: mouse_handling(event, 'btn3release'))
-    toolbarpanel.bind('<Button-2>', lambda e: do_popup(e, setMenu))
+    #toolbarpanel.bind('<Button-2>', lambda e: do_popup(e, setMenu))
     # mac scroll
     editor.bind("<MouseWheel>", lambda event: editor.xview_scroll(-1 * event.delta, 'units'))
     pview.bind("<MouseWheel>", lambda event: pview.yview_scroll(-1 * event.delta, 'units'))
@@ -3540,7 +3596,7 @@ root.bind('<Key-g>', grideditor)
 root.bind('<Key-q>', lambda e: quantize_selection(Score))
 root.bind(',', lambda e: switch_hand_selection(e,'l'))
 root.bind('.', lambda e: switch_hand_selection(e,'r'))
-root.bind('p', lambda e: play_midi(e, Score, 'test2.mid', root))
+#root.bind('p', lambda e: play_midi(e, Score, 'test2.mid', root))
 root.bind('s', lambda e: options_editor())
 root.bind('<Left>', move_selection_left)
 root.bind('<Right>', move_selection_right)
@@ -3612,7 +3668,7 @@ root.bind('<F11>', fullscreen)
 
 
 if __name__ == '__main__':
+    
     new_file()
     #test_file()
     root.mainloop()
-

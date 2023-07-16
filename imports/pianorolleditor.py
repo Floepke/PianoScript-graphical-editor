@@ -398,8 +398,10 @@ def update_drawing_order_editor(canvas):
     canvas.tag_raise('texttext')
     canvas.tag_raise('startrepeat')
     canvas.tag_raise('endrepeat')
-    canvas.tag_raise('staffsizer')
     canvas.tag_raise('linebreak')
+    canvas.tag_raise('staffsizer')
+    canvas.tag_raise('slur')
+    
 
 
 def draw_linebreak_editor(linebreak,
@@ -675,7 +677,7 @@ def draw_staffsizer_editor(sizer,
     p1 = pitch2y_editor(sizer['pitch1'], editor, hbar, y_scale_percent)
     p2 = pitch2y_editor(sizer['pitch2'], editor, hbar, y_scale_percent)
     
-    editor.create_line(t,p1,t,p2,tag=(sizer['id'],'staffsizer'),fill='red')
+    editor.create_line(t,p1,t,p2,tag=(sizer['id'],'staffsizer'),fill='red',width=2)
     editor.create_rectangle(t-5,p1-5,t+5,p1+5,fill='red',tag=(sizer['id'],'pitch1','staffsizer'))
     editor.create_rectangle(t-5,p2-5,t+5,p2+5,fill='red',tag=(sizer['id'],'pitch2','staffsizer'))
 
@@ -778,3 +780,63 @@ def draw_beam_editor(beam,
                         capstyle='round',
                         tag=(beam['id'],'beam'),
                         smooth=1)
+
+
+def slur_editor(slur,editor, hbar, y_scale_percent, 
+    x_scale_quarter_mm, MM, edit=False, color_notation_editor='#002b66',
+    steps=100):
+
+    editor.delete(slur['id'])
+    
+    # unpack ctl points
+    ctl1,ctl2,ctl3,ctl4 = slur['points']
+    t1 = time2x_editor(ctl1[0], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    t2 = time2x_editor(ctl2[0], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    t3 = time2x_editor(ctl3[0], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    t4 = time2x_editor(ctl4[0], editor, hbar, y_scale_percent, x_scale_quarter_mm, MM)
+    p1 = pitch2y_editor(ctl1[1], editor, hbar, y_scale_percent)
+    p2 = pitch2y_editor(ctl2[1], editor, hbar, y_scale_percent)
+    p3 = pitch2y_editor(ctl3[1], editor, hbar, y_scale_percent)
+    p4 = pitch2y_editor(ctl4[1], editor, hbar, y_scale_percent)
+
+    # calculate slur
+    slur_points = []
+    for t in range(steps):
+        x, y = evaluate_cubic_bezier(t / steps, [[t1,p1],[t2,p2],[t3,p3],[t4,p4]])
+        slur_points.append([x, y])
+
+    # draw slur
+    editor.create_line(slur_points, fill='black', tag=(slur['id'],'slur'), width=4)
+    
+    # draw handles
+    r = 10
+    editor.create_oval(t1-r,
+    	p1-r,
+    	t1+r,
+    	p1+r,
+    	tag=(slur['id'],'ctl1','slur'),
+    	fill='yellow')
+    editor.create_oval(t2-r,
+    	p2-r,
+    	t2+r,
+    	p2+r,
+    	tag=(slur['id'],'ctl2','slur'),
+    	fill='yellow')
+    editor.create_oval(t3-r,
+    	p3-r,
+    	t3+r,
+    	p3+r,
+    	tag=(slur['id'],'ctl3','slur'),
+    	fill='yellow')
+    editor.create_oval(t4-r,
+    	p4-r,
+    	t4+r,
+    	p4+r,
+    	tag=(slur['id'],'ctl4','slur'),
+    	fill='yellow')
+
+    # draw connection lines
+    if edit:
+        editor.create_line(t1,p1,t2,p2,t3,p3,t4,p4,
+            dash=(6,6),
+            tag=(slur['id'],'selectionline'))

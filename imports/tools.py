@@ -251,6 +251,20 @@ def set_pview_width(root,master_paned):
         master_paned.configure(width=i)
         time.sleep(1000)
 
+def get_first_available_staff(Score):
+    
+    staffs = Score['properties']['staff']
+    for st in staffs:
+        if st['onoff']:
+            return st['staff-number']
+    return -1
+
+def evaluate_cubic_bezier(t, control_points):
+    p0, p1, p2, p3 = control_points
+    x = (1 - t) ** 3 * p0[0] + 3 * t * (1 - t) ** 2 * p1[0] + 3 * t ** 2 * (1 - t) * p2[0] + t ** 3 * p3[0]
+    y = (1 - t) ** 3 * p0[1] + 3 * t * (1 - t) ** 2 * p1[1] + 3 * t ** 2 * (1 - t) * p2[1] + t ** 3 * p3[1]
+    return x, y
+
 
 # def make_event_backwards_compitable(event):
     

@@ -40,7 +40,8 @@ def draw_staff(x_cursor,
     color_black,
     pview,
     st_width,
-    scale,
+    staff_scale,
+    line_scale,
     minipiano=True):
 
     print_height = page_height - p_marg_u - p_marg_d
@@ -54,15 +55,15 @@ def draw_staff(x_cursor,
                 x,
                 page_height - p_marg_d - footer_h - (20 * global_scale),
                 fill=color_black,
-                width=5*global_scale*scale,
+                width=5*global_scale*staff_scale,
                 capstyle='round')
             pview.create_line(
-                x+(10*global_scale*scale),
+                x+(10*global_scale*staff_scale),
                 y2,
-                x+(10*global_scale*scale),
+                x+(10*global_scale*staff_scale),
                 page_height - p_marg_d - footer_h - (20 * global_scale),
                 fill=color_black,
-                width=5*global_scale*scale,
+                width=5*global_scale*staff_scale,
                 capstyle='round')
         else:
             y2 = page_height - p_marg_d - footer_h
@@ -72,15 +73,15 @@ def draw_staff(x_cursor,
             x,
             y2,
             fill=color_black,
-            width=1*global_scale*scale,
+            width=1*global_scale*staff_scale,
             capstyle='round')
         pview.create_line(
-            x+(10*global_scale*scale),
+            x+(10*global_scale*staff_scale),
             p_marg_u + header_h,
-            x+(10*global_scale*scale),
+            x+(10*global_scale*staff_scale),
             y2,
             fill=color_black,
-            width=1*global_scale*scale,
+            width=1*global_scale*staff_scale,
             capstyle='round')
     
     def three(x):
@@ -92,23 +93,23 @@ def draw_staff(x_cursor,
                 x,
                 page_height - p_marg_d - footer_h - (20 * global_scale),
                 fill=color_black,
-                width=5*global_scale*scale,
+                width=5*global_scale*staff_scale,
                 capstyle='round')
             pview.create_line(
-                x+(10*global_scale*scale),
+                x+(10*global_scale*staff_scale),
                 y2,
-                x+(10*global_scale*scale),
+                x+(10*global_scale*staff_scale),
                 page_height - p_marg_d - footer_h - (20 * global_scale),
                 fill=color_black,
-                width=5*global_scale*scale,
+                width=5*global_scale*staff_scale,
                 capstyle='round')
             pview.create_line(
-                x+(20*global_scale*scale),
+                x+(20*global_scale*staff_scale),
                 y2,
-                x+(20*global_scale*scale),
+                x+(20*global_scale*staff_scale),
                 page_height - p_marg_d - footer_h - (20 * global_scale),
                 fill=color_black,
-                width=5*global_scale*scale,
+                width=5*global_scale*staff_scale,
                 capstyle='round')
         else:
             y2 = page_height - p_marg_d - footer_h
@@ -118,23 +119,23 @@ def draw_staff(x_cursor,
             x,
             y2,
             fill=color_black,
-            width=1.5*global_scale*scale,
+            width=1.5*global_scale*staff_scale*line_scale,
             capstyle='round')
         pview.create_line(
-            x+(10*global_scale*scale),
+            x+(10*global_scale*staff_scale),
             p_marg_u + header_h,
-            x+(10*global_scale*scale),
+            x+(10*global_scale*staff_scale),
             y2,
             fill=color_black,
-            width=1.5*global_scale*scale,
+            width=1.5*global_scale*staff_scale*line_scale,
             capstyle='round')
         pview.create_line(
-            x+(20*global_scale*scale),
+            x+(20*global_scale*staff_scale),
             p_marg_u + header_h,
-            x+(20*global_scale*scale),
+            x+(20*global_scale*staff_scale),
             y2,
             fill=color_black,
-            width=1.5*global_scale*scale,
+            width=1.5*global_scale*staff_scale*line_scale,
             capstyle='round')
         
     def clef(x):
@@ -146,15 +147,15 @@ def draw_staff(x_cursor,
                 x,
                 page_height - p_marg_d - footer_h - (20 * global_scale),
                 fill=color_black,
-                width=5*global_scale*scale,
+                width=5*global_scale*staff_scale,
                 capstyle='round')
             pview.create_line(
-                x+(10*global_scale*scale),
+                x+(10*global_scale*staff_scale),
                 y2,
-                x+(10*global_scale*scale),
+                x+(10*global_scale*staff_scale),
                 page_height - p_marg_d - footer_h - (20 * global_scale),
                 fill=color_black,
-                width=5*global_scale*scale,
+                width=5*global_scale*staff_scale,
                 capstyle='round')
         else:
             y2 = page_height - p_marg_d - footer_h
@@ -164,16 +165,16 @@ def draw_staff(x_cursor,
             x,
             y2,
             fill=color_black,
-            width=1*global_scale*scale,
+            width=1*global_scale*staff_scale,
             capstyle='round',
             dash=(6,6))
         pview.create_line(
-            x+(10*global_scale*scale),
+            x+(10*global_scale*staff_scale),
             p_marg_u + header_h,
-            x+(10*global_scale*scale),
+            x+(10*global_scale*staff_scale),
             y2,
             fill=color_black,
-            width=1*global_scale*scale,
+            width=1*global_scale*staff_scale,
             capstyle='round',
             dash=(6,6))
 
@@ -185,7 +186,7 @@ def draw_staff(x_cursor,
                 p_marg_u + header_h,
                 x_cursor,
                 page_height - p_marg_d - footer_h,
-                width=2*global_scale*scale,
+                width=2*global_scale*staff_scale,
                 fill=color_black,
                 capstyle='round')
         else:
@@ -203,82 +204,82 @@ def draw_staff(x_cursor,
                 width=5*global_scale,
                 fill=color_black,
                 capstyle='round')
-        two(x_cursor + (20*global_scale*scale))
-        three(x_cursor + (50*global_scale*scale))
-        two(x_cursor + (90*global_scale*scale))
-        three(x_cursor + (120*global_scale*scale))
-        two(x_cursor + (160*global_scale*scale))
-        three(x_cursor + (190*global_scale*scale))
-        clefline = 230 * global_scale*scale
+        two(x_cursor + (20*global_scale*staff_scale))
+        three(x_cursor + (50*global_scale*staff_scale))
+        two(x_cursor + (90*global_scale*staff_scale))
+        three(x_cursor + (120*global_scale*staff_scale))
+        two(x_cursor + (160*global_scale*staff_scale))
+        three(x_cursor + (190*global_scale*staff_scale))
+        clefline = 230 * global_scale*staff_scale
     if mn >= 4 and mn <= 8:
         two(x_cursor)
-        three(x_cursor + (30*global_scale*scale))
-        two(x_cursor + (70*global_scale*scale))
-        three(x_cursor + (100*global_scale*scale))
-        two(x_cursor + (140*global_scale*scale))
-        three(x_cursor + (170*global_scale*scale))
-        clefline = 210 * global_scale*scale
+        three(x_cursor + (30*global_scale*staff_scale))
+        two(x_cursor + (70*global_scale*staff_scale))
+        three(x_cursor + (100*global_scale*staff_scale))
+        two(x_cursor + (140*global_scale*staff_scale))
+        three(x_cursor + (170*global_scale*staff_scale))
+        clefline = 210 * global_scale*staff_scale
     if mn >= 9 and mn <= 15:
         three(x_cursor)
-        two(x_cursor + (40*global_scale*scale))
-        three(x_cursor + (70*global_scale*scale))
-        two(x_cursor + (110*global_scale*scale))
-        three(x_cursor + (140*global_scale*scale))
-        clefline = 180 * global_scale*scale
+        two(x_cursor + (40*global_scale*staff_scale))
+        three(x_cursor + (70*global_scale*staff_scale))
+        two(x_cursor + (110*global_scale*staff_scale))
+        three(x_cursor + (140*global_scale*staff_scale))
+        clefline = 180 * global_scale*staff_scale
     if mn >= 16 and mn <= 20:
         two(x_cursor)
-        three(x_cursor + (30*global_scale*scale))
-        two(x_cursor + (70*global_scale*scale))
-        three(x_cursor + (100*global_scale*scale))
-        clefline = 140 * global_scale*scale
+        three(x_cursor + (30*global_scale*staff_scale))
+        two(x_cursor + (70*global_scale*staff_scale))
+        three(x_cursor + (100*global_scale*staff_scale))
+        clefline = 140 * global_scale*staff_scale
     if mn >= 21 and mn <= 27:
         three(x_cursor)
-        two(x_cursor + (40*global_scale*scale))
-        three(x_cursor + (70*global_scale*scale))
-        clefline = 110 * global_scale*scale
+        two(x_cursor + (40*global_scale*staff_scale))
+        three(x_cursor + (70*global_scale*staff_scale))
+        clefline = 110 * global_scale*staff_scale
     if mn >= 28 and mn <= 32:
         two(x_cursor)
-        three(x_cursor + (30*global_scale*scale))
-        clefline = 70 * global_scale*scale
+        three(x_cursor + (30*global_scale*staff_scale))
+        clefline = 70 * global_scale*staff_scale
     if mn >= 33 and mn <= 39:
         three(x_cursor)
-        clefline = 40 * global_scale*scale
+        clefline = 40 * global_scale*staff_scale
     clef(x_cursor + (clefline))
     if mx >= 45 and mx <= 51:
-        three(x_cursor + clefline + (30*global_scale*scale))
+        three(x_cursor + clefline + (30*global_scale*staff_scale))
     if mx >= 52 and mx <= 56:
-        three(x_cursor + clefline + (30*global_scale*scale))
-        two(x_cursor + clefline + (70*global_scale*scale))
+        three(x_cursor + clefline + (30*global_scale*staff_scale))
+        two(x_cursor + clefline + (70*global_scale*staff_scale))
     if mx >= 57 and mx <= 63:
-        three(x_cursor + clefline + (30*global_scale*scale))
-        two(x_cursor + clefline + (70*global_scale*scale))
-        three(x_cursor + clefline + (100*global_scale*scale))
+        three(x_cursor + clefline + (30*global_scale*staff_scale))
+        two(x_cursor + clefline + (70*global_scale*staff_scale))
+        three(x_cursor + clefline + (100*global_scale*staff_scale))
     if mx >= 64 and mx <= 68:
-        three(x_cursor + clefline + (30*global_scale*scale))
-        two(x_cursor + clefline + (70*global_scale*scale))
-        three(x_cursor + clefline + (100*global_scale*scale))
-        two(x_cursor + clefline + (140*global_scale*scale))
+        three(x_cursor + clefline + (30*global_scale*staff_scale))
+        two(x_cursor + clefline + (70*global_scale*staff_scale))
+        three(x_cursor + clefline + (100*global_scale*staff_scale))
+        two(x_cursor + clefline + (140*global_scale*staff_scale))
     if mx >= 69 and mx <= 75:
-        three(x_cursor + clefline + (30*global_scale*scale))
-        two(x_cursor + clefline + (70*global_scale*scale))
-        three(x_cursor + clefline + (100*global_scale*scale))
-        two(x_cursor + clefline + (140*global_scale*scale))
-        three(x_cursor + clefline + (170*global_scale*scale))
+        three(x_cursor + clefline + (30*global_scale*staff_scale))
+        two(x_cursor + clefline + (70*global_scale*staff_scale))
+        three(x_cursor + clefline + (100*global_scale*staff_scale))
+        two(x_cursor + clefline + (140*global_scale*staff_scale))
+        three(x_cursor + clefline + (170*global_scale*staff_scale))
     if mx >= 76 and mx <= 80:
-        three(x_cursor + clefline + (30*global_scale*scale))
-        two(x_cursor + clefline + (70*global_scale*scale))
-        three(x_cursor + clefline + (100*global_scale*scale))
-        two(x_cursor + clefline + (140*global_scale*scale))
-        three(x_cursor + clefline + (170*global_scale*scale))
-        two(x_cursor + clefline + (210*global_scale*scale))
+        three(x_cursor + clefline + (30*global_scale*staff_scale))
+        two(x_cursor + clefline + (70*global_scale*staff_scale))
+        three(x_cursor + clefline + (100*global_scale*staff_scale))
+        two(x_cursor + clefline + (140*global_scale*staff_scale))
+        three(x_cursor + clefline + (170*global_scale*staff_scale))
+        two(x_cursor + clefline + (210*global_scale*staff_scale))
     if mx >= 81:
-        three(x_cursor + clefline + (30*global_scale*scale))
-        two(x_cursor + clefline + (70*global_scale*scale))
-        three(x_cursor + clefline + (100*global_scale*scale))
-        two(x_cursor + clefline + (140*global_scale*scale))
-        three(x_cursor + clefline + (170*global_scale*scale))
-        two(x_cursor + clefline + (210*global_scale*scale))
-        three(x_cursor + clefline + (240*global_scale*scale))
+        three(x_cursor + clefline + (30*global_scale*staff_scale))
+        two(x_cursor + clefline + (70*global_scale*staff_scale))
+        three(x_cursor + clefline + (100*global_scale*staff_scale))
+        two(x_cursor + clefline + (140*global_scale*staff_scale))
+        three(x_cursor + clefline + (170*global_scale*staff_scale))
+        two(x_cursor + clefline + (210*global_scale*staff_scale))
+        three(x_cursor + clefline + (240*global_scale*staff_scale))
 
     # draw minipiano border
     if minipiano:
@@ -287,31 +288,31 @@ def draw_staff(x_cursor,
             x_cursor+st_width+(20*global_scale),
             page_height - p_marg_d - footer_h - (40*global_scale),
             fill=color_black,
-            width=1*global_scale*scale)
+            width=1*global_scale*staff_scale)
         pview.create_line(x_cursor,
             page_height - p_marg_d - footer_h - (40*global_scale),
             x_cursor-(20*global_scale),
             page_height - p_marg_d - footer_h - (40*global_scale),
             fill=color_black,
-            width=1*global_scale*scale)
+            width=1*global_scale*staff_scale)
         pview.create_line(x_cursor-(20*global_scale),
             page_height - p_marg_d - footer_h - (40*global_scale),
             x_cursor-(20*global_scale),
             page_height - p_marg_d - footer_h,
             fill=color_black,
-            width=1*global_scale*scale)
+            width=1*global_scale*staff_scale)
         pview.create_line(x_cursor+st_width+(20*global_scale),
             page_height - p_marg_d - footer_h - (40*global_scale),
             x_cursor+st_width+(20*global_scale),
             page_height - p_marg_d - footer_h,
             fill=color_black,
-            width=1*global_scale*scale)
+            width=1*global_scale*staff_scale)
         pview.create_line(x_cursor-(20*global_scale),
             page_height - p_marg_d - footer_h,
             x_cursor+st_width+(20*global_scale),
             page_height - p_marg_d - footer_h,
             fill=color_black,
-            width=1*global_scale*scale)
+            width=1*global_scale*staff_scale)
 
 
 
@@ -406,6 +407,8 @@ def engrave_pianoscript_vertical(render_type,
     measurenumberingonoff = Score['properties']['measurenumberingonoff']
     accidentalonoff = Score['properties']['accidentalonoff']
     soundingdotonoff = Score['properties']['soundingdotonoff']
+    three_line_scale = Score['properties']['threelinescale']
+    leftdotonoff = Score['properties']['leftdotonoff']
 
     # staffs
     staff1properties = Score['properties']['staff'][0]
@@ -535,7 +538,6 @@ def engrave_pianoscript_vertical(render_type,
             for staff in [staff1properties, staff2properties, staff3properties, staff4properties]:
                 pitches = []
                 for ev in line:
-                    #print(ev)
                     if ev['type'] == 'staffsizer':
                         if ev['staff'] == staff['staff-number']:
                             pitches.append(ev['pitch1'])
@@ -691,7 +693,7 @@ def engrave_pianoscript_vertical(render_type,
             sub = 190
         if mn >= 40:
             sub = 230
-        return x_cursor + (xlist[note - 1] * scale * staffscale) - (sub * scale * staffscale)
+        return x_cursor + (xlist[int(note) - 1] * scale * staffscale) - (sub * scale * staffscale)
 
     def draw():
         '''
@@ -743,8 +745,6 @@ def engrave_pianoscript_vertical(render_type,
                     width=2,
                     dash=(6,4,5,2,3))
 
-            #pview.create_line(0,100,page_spacing[idx_p],100,width=3,fill='red')
-
             # draw footer (page numbering, title and copyright notice
             if pagenumberingonoff: pview.create_text(x_cursor + p_marg_l,
                                     page_height - p_marg_d,
@@ -777,7 +777,8 @@ def engrave_pianoscript_vertical(render_type,
                 # calculate for every enabled staff the highest and lowest note for drawing the needed stafflines
                 for idx_st, sw in enumerate(staff_widths[idx_l]):
 
-                    if not idx_st: draw_barline_and_numbering = True
+                    # True on the first enabled staff:
+                    if idx_st == get_first_available_staff(Score): draw_barline_and_numbering = True
                     else: draw_barline_and_numbering = False
 
                     # staff scale from current staff
@@ -845,11 +846,12 @@ def engrave_pianoscript_vertical(render_type,
                             pview,
                             sw,
                             staff_scale,
+                            three_line_scale,
                             mp)
 
                     sys_width = 0
-                    if not idx_st:
-                        # calculate the width of the whole system for drawing the correct bar lines:??????????
+                    if idx_st == get_first_available_staff(Score):
+                        # calculate the width of the whole system for drawing the correct bar lines:
                         
                         def get_system_width(st_marg,staff_width, scale, staffscale, mm):
 
@@ -884,7 +886,7 @@ def engrave_pianoscript_vertical(render_type,
                     
                     for idx_o, obj in enumerate(line):
                         
-                        if not idx_st:
+                        if idx_st == get_first_available_staff(Score):
 
                             # barline and numbering
                             if obj['type'] == 'barline' and draw_barline_and_numbering:
@@ -989,11 +991,21 @@ def engrave_pianoscript_vertical(render_type,
 
                             # notestop
                             if obj['notestop']:
-                                if notestoponoff: pview.create_line(x0,
+                                if notestoponoff:
+                                    # if needed to draw???????????
+                                    if Score['properties']['stop-sign-style'] == 'PianoScript':
+                                        pview.create_line(x0,
                                                   y1, 
                                                   x1,
                                                   y1,
                                                   width=1.5 * global_scale*staff_scale,
+                                                  fill=color_black,
+                                                  tag=('midi_note','notestop'))
+                                    elif Score['properties']['stop-sign-style'] == 'Klavarskribo':
+                                        pview.create_line(x0,y1 - (10 * global_scale * staff_scale),
+                                                  xx,y1,
+                                                  x1,y1 - (10 * global_scale * staff_scale),
+                                                  width=2 * global_scale*staff_scale,
                                                   fill=color_black,
                                                   tag=('midi_note','notestop'))
                                 
@@ -1010,6 +1022,37 @@ def engrave_pianoscript_vertical(render_type,
                                 tag='accidental',
                                 fill=color_black,
                                 capstyle='round')
+
+                            # sounding dot
+                            if soundingdotonoff:
+                                for note in Score['events']['note']:
+                                    if note['hand'] == obj['hand'] and note != obj and note['time'] < obj['time'] and note['time']+note['duration'] > obj['time'] and note['staff'] == obj['staff']:
+                                        xxx = note_x_pos(note['pitch'], mn, mx, x_cursor, global_scale,staff_scale)
+                                        pview.create_oval(xxx-(2*global_scale*staff_scale),
+                                                  y0 + (3 * global_scale*staff_scale),
+                                                  xxx+(2*global_scale*staff_scale),
+                                                  y0 + (7 * global_scale*staff_scale),
+                                                  tag='black_notestart',
+                                                  fill=color_black,
+                                                  outline=color_black,
+                                                  width=2 * global_scale*staff_scale)
+                                    
+                                    if note['hand'] == obj['hand'] and note != obj and obj['time']+obj['duration'] < note['time']+note['duration'] and note['staff'] == obj['staff'] and not obj['time'] < note['time']:
+                                        xxx = note_x_pos(note['pitch'], mn, mx, x_cursor, global_scale,staff_scale)
+                                        if not idx_l and not idx_p:
+                                            yy1 = event_y_pos_engrave(obj['time'] + obj['duration'], split_times[idx_l], split_times[idx_l + 1],True,minipiano)
+                                        elif not idx_p:
+                                            yy1 = event_y_pos_engrave(obj['time'] + obj['duration'], split_times[idx_l], split_times[idx_l + 1],True,False)
+                                        else:
+                                            yy1 = event_y_pos_engrave(obj['time'] + obj['duration'], split_times[idx_l],split_times[idx_l + 1],False,False)
+                                        pview.create_oval(xxx-(2*global_scale*staff_scale),
+                                                  yy1 + (3 * global_scale*staff_scale),
+                                                  xxx+(2*global_scale*staff_scale),
+                                                  yy1 + (7 * global_scale*staff_scale),
+                                                  tag='black_notestart',
+                                                  fill=color_black,
+                                                  outline=color_black,
+                                                  width=2 * global_scale*staff_scale)
 
                             # left hand
                             if obj['hand'] == 'l':
@@ -1047,12 +1090,8 @@ def engrave_pianoscript_vertical(render_type,
                                         #                           width=2 * global_scale,
                                         #                           tag='white_space',
                                         #                           fill=color_white)
-                                    
-                                    # sounding dot#????????????????
-                                    if soundingdotonoff:
-                                        ...
 
-                                    # notehead
+                                    # note head
                                     if obj['pitch'] in BLACK:
 
                                         if noteonoff and Score['properties']['black-note-style'] == 'PianoScript': 
@@ -1065,7 +1104,7 @@ def engrave_pianoscript_vertical(render_type,
                                                           outline=color_black,
                                                           width=2 * global_scale*staff_scale)
                                             # left dot black
-                                            pview.create_oval(xx - (1*global_scale*staff_scale),
+                                            if leftdotonoff: pview.create_oval(xx - (1*global_scale*staff_scale),
                                                           y0 + (4 * global_scale*staff_scale),
                                                           xx + (1*global_scale*staff_scale),
                                                           y0 + (6 * global_scale*staff_scale),
@@ -1082,7 +1121,7 @@ def engrave_pianoscript_vertical(render_type,
                                                           outline=color_black,
                                                           width=2 * global_scale*staff_scale)
                                             # left dot black
-                                            pview.create_oval(xx + (1*global_scale*staff_scale),
+                                            if leftdotonoff: pview.create_oval(xx + (1*global_scale*staff_scale),
                                                           y0 - (4 * global_scale*staff_scale),
                                                           xx - (1*global_scale*staff_scale),
                                                           y0 - (6 * global_scale*staff_scale),
@@ -1099,7 +1138,7 @@ def engrave_pianoscript_vertical(render_type,
                                                           outline=color_black,
                                                           width=2 * global_scale*staff_scale)
                                         # left dot white
-                                        if noteonoff: pview.create_oval(xx + (1*global_scale*staff_scale),
+                                        if noteonoff and leftdotonoff: pview.create_oval(xx + (1*global_scale*staff_scale),
                                                           y0 + (((10 / 2) - 1) * global_scale*staff_scale),
                                                           xx - (1*global_scale),
                                                           y0 + (((10 / 2) + 1) * global_scale*staff_scale),
@@ -1430,6 +1469,36 @@ def engrave_pianoscript_vertical(render_type,
                                                         width=3*global_scale*staff_scale,
                                                         capstyle='round',
                                                         fill=color_black)
+
+                        # slur
+                        if obj['type'] == 'slur':
+                            if not idx_l and not idx_p:
+                                p1 = event_y_pos_engrave(obj['points'][0][0], split_times[idx_l], split_times[idx_l + 1],True,minipiano)
+                                p2 = event_y_pos_engrave(obj['points'][1][0], split_times[idx_l], split_times[idx_l + 1],True,minipiano)
+                                p3 = event_y_pos_engrave(obj['points'][2][0], split_times[idx_l], split_times[idx_l + 1],True,minipiano)
+                                p4 = event_y_pos_engrave(obj['points'][3][0], split_times[idx_l], split_times[idx_l + 1],True,minipiano)
+                            elif not idx_p:
+                                p1 = event_y_pos_engrave(obj['points'][0][0], split_times[idx_l], split_times[idx_l + 1],True,False)
+                                p2 = event_y_pos_engrave(obj['points'][1][0], split_times[idx_l], split_times[idx_l + 1],True,False)
+                                p3 = event_y_pos_engrave(obj['points'][2][0], split_times[idx_l], split_times[idx_l + 1],True,False)
+                                p4 = event_y_pos_engrave(obj['points'][3][0], split_times[idx_l], split_times[idx_l + 1],True,False)
+                            else:
+                                p1 = event_y_pos_engrave(obj['points'][0][0], split_times[idx_l], split_times[idx_l + 1],False,False)
+                                p2 = event_y_pos_engrave(obj['points'][1][0], split_times[idx_l], split_times[idx_l + 1],False,False)
+                                p3 = event_y_pos_engrave(obj['points'][2][0], split_times[idx_l], split_times[idx_l + 1],False,False)
+                                p4 = event_y_pos_engrave(obj['points'][3][0], split_times[idx_l], split_times[idx_l + 1],False,False)
+                            t1 = note_x_pos(obj['points'][0][1], mn, mx, x_cursor, global_scale,staff_scale)
+                            t2 = note_x_pos(obj['points'][1][1], mn, mx, x_cursor, global_scale,staff_scale)
+                            t3 = note_x_pos(obj['points'][2][1], mn, mx, x_cursor, global_scale,staff_scale)
+                            t4 = note_x_pos(obj['points'][3][1], mn, mx, x_cursor, global_scale,staff_scale)
+
+                            # calculate slur
+                            slur_points = []
+                            for t in range(100):
+                                x, y = evaluate_cubic_bezier(t / 100, [[t1,p1],[t2,p2],[t3,p3],[t4,p4]])
+                                slur_points.append([x, y])
+                            # draw slur
+                            pview.create_line(slur_points, fill='black', tag='slur', width=4*global_scale*staff_scale,capstyle='round')
 
                         # end for obj ----------------------------------------
 

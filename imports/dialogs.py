@@ -565,42 +565,46 @@ class OptionsDialog:
         #tab 2; layout
         self.tab2 = ttk.Frame(self.notebook)
         self.notebook.add(self.tab2, text='Layout')
-        self.drawscale_label = Label(self.tab2, text='Draw scale:', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.drawscale_label.grid(row=0, column=0, ipadx=10, sticky='e')
+        self.threelinescale_label = Label(self.tab2, text='Three line thickness/scale:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.threelinescale_label.grid(row=0, column=0, ipadx=10, sticky='e')
+        self.threelinescale_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
+        self.threelinescale_entry.grid(row=0, column=1, ipadx=10)
+        self.drawscale_label = Label(self.tab2, text='Global scale:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.drawscale_label.grid(row=1, column=0, ipadx=10, sticky='e')
         self.drawscale_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
-        self.drawscale_entry.grid(row=0, column=1, ipadx=10)
+        self.drawscale_entry.grid(row=1, column=1, ipadx=10)
         self.pagewidth_label = Label(self.tab2, text='Page width(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.pagewidth_label.grid(row=1, column=0, ipadx=10, sticky='e')
+        self.pagewidth_label.grid(row=2, column=0, ipadx=10, sticky='e')
         self.pagewidth_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
-        self.pagewidth_entry.grid(row=1, column=1, ipadx=10)
+        self.pagewidth_entry.grid(row=2, column=1, ipadx=10)
         self.pageheight_label = Label(self.tab2, text='Page height(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.pageheight_label.grid(row=2, column=0, ipadx=10, sticky='e')
+        self.pageheight_label.grid(row=3, column=0, ipadx=10, sticky='e')
         self.pageheight_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
-        self.pageheight_entry.grid(row=2, column=1, ipadx=10)
+        self.pageheight_entry.grid(row=3, column=1, ipadx=10)
         self.headerheight_label = Label(self.tab2, text='Header height(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.headerheight_label.grid(row=3, column=0, ipadx=10, sticky='e')
+        self.headerheight_label.grid(row=4, column=0, ipadx=10, sticky='e')
         self.headerheight_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
-        self.headerheight_entry.grid(row=3, column=1, ipadx=10)
+        self.headerheight_entry.grid(row=4, column=1, ipadx=10)
         self.footerheight_label = Label(self.tab2, text='Footer height(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.footerheight_label.grid(row=4, column=0, ipadx=10, sticky='e')
+        self.footerheight_label.grid(row=5, column=0, ipadx=10, sticky='e')
         self.footerheight_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
-        self.footerheight_entry.grid(row=4, column=1, ipadx=10)
+        self.footerheight_entry.grid(row=5, column=1, ipadx=10)
         self.pagemargl_label = Label(self.tab2, text='Page margin left(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.pagemargl_label.grid(row=5, column=0, ipadx=10, sticky='e')
+        self.pagemargl_label.grid(row=6, column=0, ipadx=10, sticky='e')
         self.pagemargl_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
-        self.pagemargl_entry.grid(row=5, column=1, ipadx=10)
+        self.pagemargl_entry.grid(row=6, column=1, ipadx=10)
         self.pagemargr_label = Label(self.tab2, text='Page margin right(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.pagemargr_label.grid(row=6, column=0, ipadx=10, sticky='e')
+        self.pagemargr_label.grid(row=7, column=0, ipadx=10, sticky='e')
         self.pagemargr_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
-        self.pagemargr_entry.grid(row=6, column=1, ipadx=10)
+        self.pagemargr_entry.grid(row=7, column=1, ipadx=10)
         self.pagemargu_label = Label(self.tab2, text='Page margin up(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.pagemargu_label.grid(row=7, column=0, ipadx=10, sticky='e')
+        self.pagemargu_label.grid(row=8, column=0, ipadx=10, sticky='e')
         self.pagemargu_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
-        self.pagemargu_entry.grid(row=7, column=1, ipadx=10)
+        self.pagemargu_entry.grid(row=8, column=1, ipadx=10)
         self.pagemargd_label = Label(self.tab2, text='Page margin down(mm):', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.pagemargd_label.grid(row=8, column=0, ipadx=10, sticky='e')
+        self.pagemargd_label.grid(row=9, column=0, ipadx=10, sticky='e')
         self.pagemargd_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
-        self.pagemargd_entry.grid(row=8, column=1, ipadx=10)
+        self.pagemargd_entry.grid(row=9, column=1, ipadx=10)
         self.leftcolor_label = Label(self.tab2, text='left hand midinote color:', font=('Courier', 16), bg='#eee8d5', fg='black')
         self.leftcolor_label.grid(row=10, column=0, ipadx=10, sticky='e')
         self.leftcolor_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
@@ -609,6 +613,7 @@ class OptionsDialog:
         self.rightcolor_label.grid(row=11, column=0, ipadx=10, sticky='e')
         self.rightcolor_entry = Entry(self.tab2, font=('Courier', 16), bg='white', fg='black')
         self.rightcolor_entry.grid(row=11, column=1, ipadx=10)
+        
         self.blackstyle_label = Label(self.tab2, text='Black note style:', 
             font=('Courier', 16), bg='#eee8d5', fg='black')
         self.blackstyle_label.grid(row=12, column=0, ipadx=10, sticky='e')
@@ -619,6 +624,17 @@ class OptionsDialog:
             state='readonly', width=self.rightcolor_entry['width']-1)
         self.blackstyle_combo.grid(row=12, column=1, ipadx=10, sticky='e')
         self.blackstyle_combo.current(0)
+
+        self.stopstyle_label = Label(self.tab2, text='Stop sign style:', 
+            font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.stopstyle_label.grid(row=13, column=0, ipadx=10, sticky='e')
+        self.stopstyle_variable = StringVar()
+        self.stopstyle_combo = ttk.Combobox(self.tab2, font=('Courier', 16),
+            textvariable=self.stopstyle_variable, 
+            values=['PianoScript', 'Klavarskribo'], 
+            state='readonly', width=self.rightcolor_entry['width']-1)
+        self.stopstyle_combo.grid(row=13, column=1, ipadx=10, sticky='e')
+        self.stopstyle_combo.current(0)
 
         # tab 3; elements on/off
         self.tab3 = ttk.Frame(self.notebook)
@@ -701,6 +717,18 @@ class OptionsDialog:
         self.accidental_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.accidental_variable)
         self.accidental_checkbutton.grid(row=12, column=1, ipadx=10, sticky='e')
 
+        self.sounding_variable = IntVar()
+        self.sounding_label = Label(self.tab3, text='Sounding-dot:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.sounding_label.grid(row=13, column=0, ipadx=10, sticky='e')
+        self.sounding_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.sounding_variable)
+        self.sounding_checkbutton.grid(row=13, column=1, ipadx=10, sticky='e')
+        
+        self.leftdot_variable = IntVar()
+        self.leftdot_label = Label(self.tab3, text='Left-note-dot:', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.leftdot_label.grid(row=14, column=0, ipadx=10, sticky='e')
+        self.leftdot_checkbutton = Checkbutton(self.tab3, bg='#eee8d5', variable=self.leftdot_variable)
+        self.leftdot_checkbutton.grid(row=14, column=1, ipadx=10, sticky='e')
+
         # tab4; staff editor
         self.tab4 = ttk.Frame(self.notebook)
         self.notebook.add(self.tab4, text='Staff')
@@ -729,10 +757,10 @@ class OptionsDialog:
                                 validatecommand=lambda: self.save_staff(self.score))
         self.name_entry.grid(row=0, column=1, ipadx=10, sticky='e')
         
-        self.scale_label = Label(self.staff_frame, text='Staff scale (number):', font=('Courier', 16), bg='#eee8d5', fg='black')
-        self.scale_label.grid(row=1, column=0, ipadx=10, sticky='e')
-        self.scale_entry = Entry(self.staff_frame, font=('Courier', 16))
-        self.scale_entry.grid(row=1, column=1, ipadx=10, sticky='e')
+        self.staffscale_label = Label(self.staff_frame, text='Staff scale (number):', font=('Courier', 16), bg='#eee8d5', fg='black')
+        self.staffscale_label.grid(row=1, column=0, ipadx=10, sticky='e')
+        self.staffscale_entry = Entry(self.staff_frame, font=('Courier', 16))
+        self.staffscale_entry.grid(row=1, column=1, ipadx=10, sticky='e')
 
 
         # Apply and Close buttons:
@@ -747,6 +775,7 @@ class OptionsDialog:
         self.apply_button.configure(command=lambda: self.evaluate(self.score))
 
         self.popup.bind('<Return>', lambda e: self.evaluate(self.score))
+        self.popup.bind('<Escape>', self._close)
 
         # sugar coating
         self.popup.configure(bg='#002B36')
@@ -760,6 +789,7 @@ class OptionsDialog:
         self.copyright_entry.insert(0,Score['header']['copyright']['text'])
         
         # tab 2
+        self.threelinescale_entry.insert(0,Score['properties']['threelinescale'])
         self.drawscale_entry.insert(0,Score['properties']['draw-scale'])
         self.pagewidth_entry.insert(0,Score['properties']['page-width'])
         self.pageheight_entry.insert(0,Score['properties']['page-height'])
@@ -775,6 +805,10 @@ class OptionsDialog:
             self.blackstyle_combo.set('PianoScript')
         else:
             self.blackstyle_combo.set('Klavarskribo')
+        if Score['properties']['stop-sign-style'] == 'PianoScript':
+            self.stopstyle_combo.set('PianoScript')
+        else:
+            self.stopstyle_combo.set('Klavarskribo')
 
         # tab 3
         if Score['properties']['minipiano'] == True: self.minipiano_checkbutton.select()
@@ -790,6 +824,8 @@ class OptionsDialog:
         if Score['properties']['countlineonoff'] == True: self.countline_checkbutton.select()
         if Score['properties']['measurenumberingonoff'] == True: self.measurenumbering_checkbutton.select()
         if Score['properties']['accidentalonoff'] == True: self.accidental_checkbutton.select()
+        if Score['properties']['soundingdotonoff'] == True: self.sounding_checkbutton.select()
+        if Score['properties']['leftdotonoff'] == True: self.leftdot_checkbutton.select()
 
         # tab 4
         self.read_staff()
@@ -818,13 +854,13 @@ class OptionsDialog:
 
         # read entry:
         staffname = self.name_entry.get()
-        try: staffscale = float(self.scale_entry.get())
-        except: staffscale = 1.0
+        try: staffscale = float(self.staffscale_entry.get())
+        except: staffscale = 1
         blackstyle = self.blackstyle_combo.get()
         try: margupleft = float(self.margl_entry.get())
-        except: margupleft = 10.0
+        except: margupleft = 10
         try: margdownright = float(self.margr_entry.get())
-        except: margdownright = 10.0
+        except: margdownright = 10
 
         # update in Score:
         for st in Score['properties']['staff']:
@@ -836,7 +872,7 @@ class OptionsDialog:
     def read_staff(self):
         # clear input
         self.name_entry.delete(0,'end')
-        self.scale_entry.delete(0,'end')
+        self.staffscale_entry.delete(0,'end')
 
         self.staffno_label.configure(text=str(self.staffno + 1))
 
@@ -845,7 +881,7 @@ class OptionsDialog:
             if st['staff-number'] == self.staffno:
                 self.staff_onoff_variable.set(st['onoff'])
                 self.name_entry.insert(0,st['name'])
-                self.scale_entry.insert(0,st['staff-scale'])
+                self.staffscale_entry.insert(0,st['staff-scale'])
 
 
 
@@ -861,6 +897,7 @@ class OptionsDialog:
 
         # tab 2; properties
         try:
+            Score['properties']['threelinescale'] = float(self.threelinescale_entry.get())
             Score['properties']['draw-scale'] = float(self.drawscale_entry.get())
             Score['properties']['page-width'] = float(self.pagewidth_entry.get())
             Score['properties']['page-height'] = float(self.pageheight_entry.get())
@@ -872,7 +909,8 @@ class OptionsDialog:
             Score['properties']['page-margin-down'] = float(self.pagemargd_entry.get())
             Score['properties']['color-left-hand-midinote'] = self.leftcolor_entry.get()
             Score['properties']['color-right-hand-midinote'] = self.rightcolor_entry.get()
-            Score['properties']['black-note-style'] = self.blackstyle_variable.get() 
+            Score['properties']['black-note-style'] = self.blackstyle_variable.get()
+            Score['properties']['stop-sign-style'] = self.stopstyle_variable.get()
         except:
             return
 
@@ -890,6 +928,8 @@ class OptionsDialog:
         Score['properties']['countlineonoff'] = self.countline_variable.get()
         Score['properties']['measurenumberingonoff'] = self.measurenumbering_variable.get()
         Score['properties']['accidentalonoff'] = self.accidental_variable.get()
+        Score['properties']['soundingdotonoff'] = self.sounding_variable.get()
+        Score['properties']['leftdotonoff'] = self.leftdot_variable.get()
 
         # tab 4; staff editor
         self.save_staff(self.score)

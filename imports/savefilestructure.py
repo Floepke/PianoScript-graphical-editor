@@ -67,8 +67,8 @@ Score = {
     "footer-height":10,
     "minipiano":True,
     "engraver":'pianoscript vertical',
-    "color-right-hand-midinote":'#c8c8c8',
-    "color-left-hand-midinote":'#c8c8c8',
+    "color-right-hand-midinote":'#888888',
+    "color-left-hand-midinote":'#888888',
     "printview-width(procents-froms-creen)":33,
     "editor-x-zoom":35,
     "editor-y-zoom":80,
@@ -89,37 +89,32 @@ Score = {
         "onoff":True,
         "name":"Staff 1",
         "staff-number":0,
-        "staff-scale":1.0,
-        "margin-up-left":5.0,
-        "margin-down-right":5.0
+        "staff-scale":1.0
       },
       {
         "onoff":False,
         "name":"Staff 2",
         "staff-number":1,
-        "staff-scale":1.0,
-        "margin-up-left":5.0,
-        "margin-down-right":5.0
+        "staff-scale":1.0
       },
       {
         "onoff":False,
         "name":"Staff 3",
         "staff-number":2,
-        "staff-scale":1.0,
-        "margin-up-left":5.0,
-        "margin-down-right":5.0
+        "staff-scale":1.0
       },
       {
         "onoff":False,
         "name":"Staff 4",
         "staff-number":3,
-        "staff-scale":1.0,
-        "margin-up-left":5.0,
-        "margin-down-right":5.0
+        "staff-scale":1.0
       }
     ],
-    "soundingdotonoff":False,
-    "black-note-style":"PianoScript"
+    "soundingdotonoff":True,
+    "black-note-style":"PianoScript",
+    "threelinescale":1,
+    "stop-sign-style":'PianoScript',
+    "leftdotonoff":True
   },
   "events": {
     "grid": [
