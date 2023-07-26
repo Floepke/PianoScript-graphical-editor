@@ -19,7 +19,10 @@
       "visible":true
     },
     "app-name":"pianoscript",
-    "app-version":1.0
+    "app-version":1.0,
+    "date":"26-07-2023",
+    "genre":"",
+    "comment":""
   },
   "properties":{
     "page-width":210,
@@ -32,9 +35,9 @@
     "header-height":10,
     "footer-height":10,
     "minipiano":true,
-    "engraver":"pianoscript",
-    "color-right-hand-midinote":"#c8c8c8",
-    "color-left-hand-midinote":"#c8c8c8",
+    "engraver":"pianoscript vertical",
+    "color-right-hand-midinote":"#888888",
+    "color-left-hand-midinote":"#888888",
     "printview-width(procents-froms-creen)":33,
     "editor-x-zoom":35,
     "editor-y-zoom":80,
@@ -49,7 +52,38 @@
     "basegridonoff":true,
     "countlineonoff":true,
     "measurenumberingonoff":true,
-    "accidentalonoff":true
+    "accidentalonoff":true,
+    "staff":[
+      {
+        "onoff":true,
+        "name":"Staff 1",
+        "staff-number":0,
+        "staff-scale":1.0
+      },
+      {
+        "onoff":false,
+        "name":"Staff 2",
+        "staff-number":1,
+        "staff-scale":1.0
+      },
+      {
+        "onoff":false,
+        "name":"Staff 3",
+        "staff-number":2,
+        "staff-scale":1.0
+      },
+      {
+        "onoff":false,
+        "name":"Staff 4",
+        "staff-number":3,
+        "staff-scale":1.0
+      }
+    ],
+    "soundingdotonoff":true,
+    "black-note-style":"PianoScript",
+    "threelinescale":1,
+    "stop-sign-style":"PianoScript",
+    "leftdotonoff":true
   },
   "events":{
     "grid":[
@@ -71,8 +105,15 @@
       {
         "id":"linebreak",
         "time":0,
-        "margin-up-left":10,
-        "margin-down-right":10
+        "margin-staff1-left":10,
+        "margin-staff1-right":10,
+        "margin-staff2-left":10,
+        "margin-staff2-right":10,
+        "margin-staff3-left":10,
+        "margin-staff3-right":10,
+        "margin-staff4-left":10,
+        "margin-staff4-right":10,
+        "staff":0
       }
     ],
     "count-line":[],
@@ -80,17 +121,6 @@
     "start-repeat":[],
     "end-repeat":[],
     "start-hook":[],
-    "end-hook":[],
-    "staff":[
-      {
-        "type":"staff",
-        "id":"staff",
-        "staff-number":0,
-        "margin-left":10,
-        "margin-right":10,
-        "visible":true,
-        "staff-scale":1
-      }
-    ]
+    "end-hook":[]
   }
 }

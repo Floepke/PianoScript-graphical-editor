@@ -656,17 +656,25 @@ def draw_text_editor(text,
         text=text['text'],
         tag=(text['id'], 'textfg', 'texttext'),
         angle=(text['angle'] + 90) % 360,
-        anchor='w')
+        anchor='c')
+
     bb = editor.bbox(mytext)
     w = bb[2]-bb[0]
     h = bb[3]-bb[1]
-    editor.create_rectangle(t,p-(h/2),
-            t+w,p+(h/2),
-            fill='#eee8d5',
-            outline='#268bd2',
-            tag=(text['id'],'textbg', 'texttext'))
+    create_rotated_rectangle(editor, t,p-(h/2),
+        t+w,p+(h/2),
+        angle=text['angle'],
+        fill='#eee8d5',
+        outline='#268bd2',
+        tag=(text['id'],'textbg', 'texttext'))
+    # editor.create_rectangle(t,p-(h/2),
+    #         t+w,p+(h/2),
+    #         fill='#eee8d5',
+    #         outline='#268bd2',
+    #         tag=(text['id'],'textbg', 'texttext'))
     editor.tag_raise('textbg')
     editor.tag_raise('textfg')
+
 
 def draw_staffsizer_editor(sizer, 
     editor, hbar, y_scale_percent, 

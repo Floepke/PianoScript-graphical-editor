@@ -45,8 +45,10 @@ print('--------------------------------------------------')
 print('')
 print('--------------------------------------------------')
 print('| PianoScript Version: 1.0                       |')
-print('| Code by Philip Bergwerf                        |')
-print('| and Henk van den Brink                         |')
+print('| Code by:                                       |')
+print('| Philip Bergwerf                                |')
+print('| Henk van den Brink                             |')
+print('| Harm Salomons                                  |')
 print('--------------------------------------------------')
 print('')
 
@@ -87,7 +89,7 @@ line-breaks in terms of measures:'''
 from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, PhotoImage
 from tkinter import filedialog, Label, Spinbox, StringVar, Listbox, ttk
 from tkinter import simpledialog
-import platform, subprocess, os, threading, json, traceback
+import platform, subprocess, os, threading, json, traceback, ctypes
 from mido import MidiFile
 from shutil import which
 import tkinter.ttk as ttk
@@ -107,6 +109,7 @@ from imports.engraver_pianoscript import *
 from imports.grideditor import *
 from imports.dialogs import *
 from imports.slur import *
+from imports.file_compitability import *
 
 # --------------------
 # GUI
@@ -157,6 +160,15 @@ ttk.Style(root).theme_use("pianoscript")
 scrwidth = root.winfo_screenwidth()
 scrheight = root.winfo_screenheight()
 root.geometry("%sx%s+0+0" % (int(scrwidth), int(scrheight)))
+
+# set dpi for different systems:
+if platform.system() == 'Windows':  
+    try: # >= win 8.1
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+    except: # win 8.0 or less
+        ctypes.windll.user32.SetProcessDPIAware()
+# if platform.system() == 'Linux':
+#     root.tk.call('tk', 'scaling', 2.0)
 
 # rootframe
 rootframe = Frame(root, bg='#333333')
@@ -387,7 +399,7 @@ file_path = 'New'
 
 def test_file():
     print('test_file...')
-    with open('test.pianoscript', 'r') as f:
+    with open('test2.pianoscript', 'r') as f:
         global Score
         Score = json.load(f)
         # run the piano-roll and print-view
@@ -460,10 +472,10 @@ def load_file(e=''):
         f = subprocess.check_output(["zenity", "--file-selection", "--title=Open file..."]).decode("utf-8").strip()
     except:
         f = filedialog.askopenfile(parent=root, 
-            mode='Ur', 
+            mode='r',
             title='Open', 
             filetypes=[("PianoScript files", "*.pianoscript")])
-        f = f.name
+        if f: f = f.name
     if f:
         # update file_path
         file_path = f
@@ -480,7 +492,7 @@ def load_file(e=''):
                 print('ERROR: file is not a pianoscript file or is damaged.')
 
         # converter(filepath)
-        # Score = converter(file_path, Score)
+        Score = compatibility_checker(Score)
 
         # run the piano-roll and print-view
         do_pianoroll()
@@ -1468,7 +1480,7 @@ def mouse_handling(event, event_type):
                     "pitch":ey,
                     "text":user_input.text,
                     "angle":user_input.angle,
-                    "staff":int(staffselect_variable.get())
+                    "staff":int(staffselect_variable.get())-1
                 }
                 new_id += 1
 
@@ -1686,6 +1698,8 @@ def mouse_handling(event, event_type):
                             sl['time'] = ex
                             sl['points'][0][0] = ex
                             sl['points'][0][1] = ey
+                            sl['points'][1][0] = sl['time'] + ((sl['points'][3][0] - sl['points'][0][0])*0.25)
+                            sl['points'][2][0] = sl['time'] + ((sl['points'][3][0] - sl['points'][0][0])*0.75)
                         if handle == 'ctl2':
                             sl['points'][1][0] = ex
                             sl['points'][1][1] = ey
@@ -1695,6 +1709,8 @@ def mouse_handling(event, event_type):
                         if handle == 'ctl4':
                             sl['points'][3][0] = ex
                             sl['points'][3][1] = ey
+                            sl['points'][1][0] = sl['time'] + ((sl['points'][3][0] - sl['points'][0][0])*0.25)
+                            sl['points'][2][0] = sl['time'] + ((sl['points'][3][0] - sl['points'][0][0])*0.75)
                         print(handle)
                         slur_editor(sl,
                             editor,
@@ -2116,7 +2132,7 @@ def keyboard_handling(event):
 
 
 def midi_import():
-    global   file_changed, Score
+    global file_changed, Score
 
     # asking for save since we are creating a new file with the midifile in it.
     if file_changed == True:
@@ -2237,7 +2253,7 @@ def midi_import():
 
         xx=dict(sorted(channelmean.items(), key=lambda item: item[1]))
         hand={}
-        name=['p','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l']
+        name=['r','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l','r','l']
         if len(xx) > 2:
             for i,x in enumerate(xx):
                 hand[x]=name[i]
@@ -2255,7 +2271,8 @@ def midi_import():
                                                 'id':new_id,
                                                 'stem-visible':True,
                                                 'accidental':0,
-                                                'staff':0})
+                                                'staff':0,
+                                                'notestop':True})
                 new_id += 1
 
         add_quick_linebreaks()
@@ -2603,7 +2620,7 @@ class ThreadAutoRender(threading.Thread):
                     raise QuitThread
             self.needs_to_render = False
         try:
-            # on this scope we call the render function based on engraver:
+            # on this scope we call the engrave function based on engraver:
             if Score['properties']['engraver'] == 'pianoscript':
                 engrave_pianoscript('',
                     renderpageno,
@@ -3086,8 +3103,6 @@ def add_ctrl_z():
     CtlZ.append(Score)
     current_undo_levels += 1
     current_undo_index += 1
-    for i in Score['events']['note']:
-        print(i)
     
     
 
@@ -3398,22 +3413,39 @@ def quantize_selection(e=''):
 
     for s in selection_buffer:
 
+        
         for n in Score['events']['note']:
+            # quantize start in savefile
             if n['id'] == s['id']:
                 start = n['time']
                 end = n['time'] + n['duration']
                 n['time'] = round(start / edit_grid) * edit_grid
                 n['duration'] = end - n['time']
-
-        for n in Score['events']['note']:
+            # quantize end in savefile
             if n['id'] == s['id']:
                 start = n['time']
                 end = n['time'] + n['duration']
                 end = round(end / edit_grid) * edit_grid
                 n['duration'] = end - n['time']
 
+            # redraw the quantized note
+            if n['id'] == s['id']:
+                draw_note_pianoroll(n,
+                False, 
+                editor, 
+                hbar, 
+                y_scale_percent, 
+                x_scale_quarter_mm, 
+                MM, 
+                color_notation_editor, 
+                BLACK, 
+                color_editor_canvas, 
+                Score,
+                False,
+                True)
+
     do_engrave()
-    do_pianoroll()
+    update_drawing_order_editor(editor)
 
 
 
@@ -3580,15 +3612,21 @@ editor.bind('<Key-8>', grid_selector)
 #root.bind('<Control-z>', undo)
 #root.bind('<Control-Z>', redo)
 root.bind('<Control-x>', cut_selection)
+root.bind('<Control-X>', cut_selection)
 root.bind('<Control-c>', copy_selection)
+root.bind('<Control-C>', copy_selection)
 root.bind('<Control-v>', paste_selection)
+root.bind('<Control-V>', paste_selection)
 root.bind('<Control-a>', select_all)
+root.bind('<Control-A>', select_all)
 root.bind('<Control-n>', new_file)
+root.bind('<Control-N>', new_file)
 root.bind('<Control-o>', load_file)
+root.bind('<Control-O>', load_file)
 root.bind('<Control-s>', save)
 root.bind('<Control-S>', save_as)
 root.bind('<Control-r>', do_pianoroll)
-root.bind('<Control-q>', add_quick_linebreaks)
+root.bind('<Control-R>', do_pianoroll)
 root.bind('<Control-e>', exportPDF)
 root.bind('<Up>', transpose_up)
 root.bind('<Down>', transpose_down)
@@ -3599,7 +3637,7 @@ root.bind('.', lambda e: switch_hand_selection(e,'r'))
 #root.bind('p', lambda e: play_midi(e, Score, 'test2.mid', root))
 root.bind('s', lambda e: options_editor())
 root.bind('<Left>', move_selection_left)
-root.bind('<Right>', move_selection_right)
+root.bind('<Right>', move_selection_right)  
 
 # spinbox on scroll + or -
 def spin_scroll_linux(ev_type, spinvariable, range):

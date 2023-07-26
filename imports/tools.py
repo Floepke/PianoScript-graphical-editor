@@ -266,6 +266,41 @@ def evaluate_cubic_bezier(t, control_points):
     return x, y
 
 
+import math
+
+import tkinter as tk
+import math
+
+def create_rotated_rectangle(canvas, x1, y1, x2, y2, angle=0, **kwargs):
+    # Calculate the center of the rectangle
+    center_x = (x1 + x2) / 2
+    center_y = (y1 + y2) / 2
+
+    # Negate the angle to reverse the rotation direction
+    angle = -angle
+
+    # Convert the angle to radians
+    angle_rad = math.radians(angle)
+
+    # Calculate the sine and cosine of the angle
+    cos_val = math.cos(angle_rad)
+    sin_val = math.sin(angle_rad)
+
+    # Calculate the rotated coordinates for the four corners
+    x1_rot = center_x + cos_val * (x1 - center_x) - sin_val * (y1 - center_y)
+    y1_rot = center_y + sin_val * (x1 - center_x) + cos_val * (y1 - center_y)
+    x2_rot = center_x + cos_val * (x1 - center_x) - sin_val * (y2 - center_y)
+    y2_rot = center_y + sin_val * (x1 - center_x) + cos_val * (y2 - center_y)
+    x3_rot = center_x + cos_val * (x2 - center_x) - sin_val * (y2 - center_y)
+    y3_rot = center_y + sin_val * (x2 - center_x) + cos_val * (y2 - center_y)
+    x4_rot = center_x + cos_val * (x2 - center_x) - sin_val * (y1 - center_y)
+    y4_rot = center_y + sin_val * (x2 - center_x) + cos_val * (y1 - center_y)
+
+    # Draw the rotated rectangle on the canvas
+    canvas.create_polygon(x1_rot, y1_rot, x2_rot, y2_rot, x3_rot, y3_rot, x4_rot, y4_rot, **kwargs)
+
+
+
 # def make_event_backwards_compitable(event):
     
 #     if event['type'] == 'note':

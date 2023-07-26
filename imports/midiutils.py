@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 from midiutil.MidiFile import MIDIFile
 from tkinter import filedialog
-from imports.tools import *
+#from imports.tools import *
 from mido import Message, MetaMessage, MidiFile, MidiTrack, bpm2tempo, second2tick, open_output, get_output_names
-import time
+import time, json
 
 
 def midiexport(root,Score):
@@ -87,13 +87,49 @@ def midiexport(root,Score):
         d = int(note['duration']/256*ticks_per_quarternote)
         c = 0
         if note['hand'] == 'r': c = 1# l or r?? first fix the midi import
-        MyMIDI.addNote(track=note['staff']+1, channel=c, pitch=int(note['pitch']+20), time=t, duration=d,volume=80,annotation=None)
+        MyMIDI.addNote(track=0, channel=c, pitch=int(note['pitch']+20), time=t, duration=d,volume=80,annotation=None)
 
     # saving the midi file
     with open(f.name, "wb") as output_file:
         MyMIDI.writeFile(output_file)
 
 
+def pianoscript_sync(Score, grid1, grid2):
+    '''
+        This function attempts to sync a the note start and duration
+        data from a .pianoscript file to two seperate 'grids'. 
+        I want to try if you can quantize both eights and quarter 
+        triplets for example...
+    '''
+    print('before:')
+    for i in Score['events']['note']:
+        print(i['time'], i['duration'])
+
+    def find_closest(value):
+        g1 = grid1 % value
+        g2 = grid2 % value
+        print(g1,g2)
+        if g1 < g2: return grid1
+        else: return grid2
+
+    for n in Score['events']['note']:
+        
+        start = n['time']
+        end = n['time'] + n['duration']
+
+        # quantize start
+        n['time'] = round(start / find_closest(start)) * find_closest(start)
+        n['duration'] = end - n['time']
+        # quantize end
+        end = round(end / find_closest(end)) * find_closest(end)
+        n['duration'] = end - n['time']
+
+    print('after:')
+    for i in Score['events']['note']:
+        print(i['time'], i['duration'])
+
+file = json.load(open('test.pianoscript', 'r'))
+pianoscript_sync(file, 128, 256/3)# eight and quarter triplet
 ##### Backup
 # def midiexport(root,Score):
 

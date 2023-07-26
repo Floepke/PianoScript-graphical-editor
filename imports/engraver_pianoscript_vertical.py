@@ -1,23 +1,23 @@
 '''
 This file is part of the pianoscript project: http://www.pianoscript.org/
 
-Permission is hereby granted, free of charge, to any person obtaining 
-a copy of this software and associated documentation files 
-(the “Software”), to deal in the Software without restriction, including 
-without limitation the rights to use, copy, modify, merge, publish, 
-distribute, sublicense, and/or sell copies of the Software, and to permit 
-persons to whom the Software is furnished to do so, subject to the 
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files
+(the “Software”), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the
 following conditions:
 
-The above copyright notice and this permission notice shall be included 
+The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, 
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
@@ -45,7 +45,7 @@ def draw_staff(x_cursor,
     minipiano=True):
 
     print_height = page_height - p_marg_u - p_marg_d
-    
+
     def two(x):
         if minipiano:
             y2 = page_height - p_marg_d - footer_h - (40 * global_scale)
@@ -83,7 +83,7 @@ def draw_staff(x_cursor,
             fill=color_black,
             width=1*global_scale*staff_scale,
             capstyle='round')
-    
+
     def three(x):
         if minipiano:
             y2 = page_height - p_marg_d - footer_h - (40 * global_scale)
@@ -137,7 +137,7 @@ def draw_staff(x_cursor,
             fill=color_black,
             width=1.5*global_scale*staff_scale*line_scale,
             capstyle='round')
-        
+
     def clef(x):
         if minipiano:
             y2 = page_height - p_marg_d - footer_h - (40 * global_scale)
@@ -317,31 +317,6 @@ def draw_staff(x_cursor,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def engrave_pianoscript_vertical(render_type,
     pageno,
     Score,
@@ -391,7 +366,7 @@ def engrave_pianoscript_vertical(render_type,
     title = Score['header']['title']
     composer = Score['header']['composer']
     copyright = Score['header']['copyright']
-    
+
     # elements on/off
     minipiano = Score['properties']['minipiano']
     staffonoff = Score['properties']['staffonoff']
@@ -406,7 +381,7 @@ def engrave_pianoscript_vertical(render_type,
     countlineonoff = Score['properties']['countlineonoff']
     measurenumberingonoff = Score['properties']['measurenumberingonoff']
     accidentalonoff = Score['properties']['accidentalonoff']
-    soundingdotonoff = Score['properties']['soundingdotonoff']
+    continuationdotonoff = Score['properties']['soundingdotonoff']
     three_line_scale = Score['properties']['threelinescale']
     leftdotonoff = Score['properties']['leftdotonoff']
 
@@ -415,7 +390,6 @@ def engrave_pianoscript_vertical(render_type,
     staff2properties = Score['properties']['staff'][1]
     staff3properties = Score['properties']['staff'][2]
     staff4properties = Score['properties']['staff'][3]
-    
 
     def read():
         '''
@@ -501,16 +475,16 @@ def engrave_pianoscript_vertical(render_type,
 
         # Now we organize the DOC object into a list of lines
         # We use the measure_line_division list to do that
-        
+
         # we first need to get the split times from Score
         bl_times = barline_times(Score['events']['grid'])
-        
+
         split_times = [0]
         for spl in Score['events']['line-break']:
             if spl['time'] > 0 and not spl['time'] > total_pianoticks:
                 split_times.append(spl['time'])
         split_times.append(total_pianoticks)
-        
+
         # now we split the DOC list into parts of lines
         doc = DOC
         DOC = []
@@ -526,7 +500,7 @@ def engrave_pianoscript_vertical(render_type,
         DOC.pop(-1)
 
         # now we have to calculate the amount of lines
-        # that will fit on every page. We need to know 
+        # that will fit on every page. We need to know
         # the height of the staffs, and from linebreak objects
         # the margin around every staff.
 
@@ -589,7 +563,7 @@ def engrave_pianoscript_vertical(render_type,
             total_system_width.append(total_sys_width)
 
             x_cursor += total_sys_width
-            
+
             # if the line fits on paper:
             if x_cursor <= printarea_width:
                 page.append(line)
@@ -606,7 +580,7 @@ def engrave_pianoscript_vertical(render_type,
             if c == len(doc)-1:
                 DOC.append(page)
                 page_spacing.append(remaining_space)
-                    
+
         return DOC, page_spacing, staff_widths, split_times, bl_times, total_system_width
 
     DOC, page_spacing, staff_widths, split_times, bl_times, total_system_width = read()
@@ -626,7 +600,6 @@ def engrave_pianoscript_vertical(render_type,
     #             ...
     #         idxl += 1
     #------------------
-    
 
 
 
@@ -651,7 +624,8 @@ def engrave_pianoscript_vertical(render_type,
 
 
 
-    
+
+
     def event_y_pos_engrave(pos,start_line_tick,end_line_tick, include_header=False, minipiano=False):
         '''
         returns the yy position on the paper.
@@ -674,7 +648,7 @@ def engrave_pianoscript_vertical(render_type,
         85,90,95,100,105,115,120,125,130,135,140,145,
         155,160,165,170,175,185,190,195,200,205,210,215,
         225,230,235,240,245,255,260,265,270,275,280,285,
-        295,300,305,310,315,325,330,335,340,345,350,355, 
+        295,300,305,310,315,325,330,335,340,345,350,355,
         365,370,375,380,385,395,400,405,410,415,420,425,
         435,440,445,450,455,465,470,475,480,485,490,495,
         505]
@@ -714,16 +688,55 @@ def engrave_pianoscript_vertical(render_type,
             #pview.configure(bg='#cccccc')
             color_black = color_notation_editor
             color_white = color_editor_canvas
-            
-
-
-
 
         x_cursor = 0
         idx_l = 0
         len_doc = len(DOC)
         b_counter = update_bcounter(DOC,pageno % len_doc)
         draw_barline_and_numbering = True
+
+        #find out where a continuation dot and/or an end-of-note symbol has to be placed
+        if Score['properties']['stop-sign-style'] == 'Klavarskribo':
+            timelist=[]
+            handlist=[]
+            stafflist=[]
+            epsilon=0.01
+            #store for every not the staff, the hand and the (start)time:
+            for page in DOC:
+                for line in page:
+                    for obj in line:
+                        if obj['type'] == 'note':
+                            stafflist.append(obj['staff'])
+                            timelist.append(obj['time'])
+                            handlist.append(obj['hand'])
+
+            #number of notes:
+            nn=len(timelist)
+            n=0
+            for page in DOC:
+                for line in page:
+                    for obj in line:
+                        if obj['type'] == 'note':
+                            endtime=obj['time']+obj['duration']
+                            #continuation_dot:
+                            #loop over all later notes; if the staff and hand are similar to the current note, but
+                            # the endtime of the current note is larger than the starttime of the later note: add a continuation dot
+                            obj['continuation_dot']=""
+                            for i in range(n,nn):
+                                if stafflist[i] == obj['staff'] and handlist[i] == obj['hand'] and endtime > float(timelist[i]) and obj['time'] < float(timelist[i]):
+                                    obj['continuation_dot']=f"{obj['continuation_dot']} {timelist[i]}"
+
+                            #end-of-note:
+                            #start with 'True', set to False if a new note starts on the same moment as the old one ends (within a difference of epsilon):
+                            #(conditional on the same staff and the same hand)
+                            obj['end-of-note']=True
+                            for i in range(n,nn):
+                                if stafflist[i] == obj['staff'] and handlist[i] == obj['hand']:
+                                    if abs(endtime - float(timelist[i])) < epsilon:
+                                        obj['end-of-note']=False
+                                        break
+                            n+=1
+
         for idx_p, page in enumerate(DOC):
 
             # render only one page
@@ -734,7 +747,7 @@ def engrave_pianoscript_vertical(render_type,
                     for l in page:
                         idx_l += 1
                     continue
-            
+
             # draw paper
             if not render_type:
                 pview.create_line(0,
@@ -769,7 +782,7 @@ def engrave_pianoscript_vertical(render_type,
                     fill=color_black)
 
             x_cursor += p_marg_l
-            
+
             for idx_ll, line in enumerate(page):
 
                 x_cursor += (page_spacing[idx_p] / (len(DOC[idx_p]) + 1))
@@ -812,12 +825,12 @@ def engrave_pianoscript_vertical(render_type,
                                     mn = obj['pitch']
                                 if mx <= obj['pitch']:
                                     mx = obj['pitch']
-                    
+
                     # overwriting mn mx in case of a staff sizer
                     for obj in line:
                         if obj['type'] == 'staffsizer':
                             if obj['staff'] == idx_st:
-                                if obj['pitch1'] >= obj['pitch2']:    
+                                if obj['pitch1'] >= obj['pitch2']:
                                     mn = obj['pitch2']
                                     mx = obj['pitch1']
                                 else:
@@ -829,7 +842,7 @@ def engrave_pianoscript_vertical(render_type,
                     else: mp = False
                     if not idx_p: hh = header_h
                     else: hh = 0
-                    if staffonoff: 
+                    if staffonoff:
                         draw_staff(x_cursor,
                             mn,
                             mx,
@@ -852,7 +865,7 @@ def engrave_pianoscript_vertical(render_type,
                     sys_width = 0
                     if idx_st == get_first_available_staff(Score):
                         # calculate the width of the whole system for drawing the correct bar lines:
-                        
+
                         def get_system_width(st_marg,staff_width, scale, staffscale, mm):
 
                             out = 0
@@ -883,9 +896,9 @@ def engrave_pianoscript_vertical(render_type,
                             return out
 
                         sys_width = get_system_width(st_marg,staff_widths[idx_l], global_scale, staff_scale, MM)
-                    
+
                     for idx_o, obj in enumerate(line):
-                        
+
                         if idx_st == get_first_available_staff(Score):
 
                             # barline and numbering
@@ -896,7 +909,7 @@ def engrave_pianoscript_vertical(render_type,
                                     yy = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True,False)
                                 else:
                                     yy = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
-                                if barlinesonoff: 
+                                if barlinesonoff:
                                     pview.create_line(x_cursor,
                                                   yy,
                                                   x_cursor+sys_width, #+ (35 * global_scale * staff_scale),
@@ -905,7 +918,7 @@ def engrave_pianoscript_vertical(render_type,
                                                   capstyle='round',
                                                   tag='grid',
                                                   fill=color_black)
-                                if measurenumberingonoff and draw_barline_and_numbering: 
+                                if measurenumberingonoff and draw_barline_and_numbering:
                                     pview.create_text(x_cursor+sys_width+(10*global_scale * staff_scale),
                                                   yy+(3*global_scale),
                                                   text=b_counter,
@@ -970,7 +983,7 @@ def engrave_pianoscript_vertical(render_type,
 
                         # draw notes left and right; TODO:
                         #       * based on black-note-style property draw black notes above or under the stem.
-                        #       * based on soundingdotonoff property draw soundingdot
+                        #       * based on continuationdotonoff property draw soundingdot
                         if obj['type'] in ['note', 'split'] and obj['staff'] == idx_st:
                             if not idx_l and not idx_p:
                                 y0 = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True,minipiano)
@@ -992,23 +1005,49 @@ def engrave_pianoscript_vertical(render_type,
                             # notestop
                             if obj['notestop']:
                                 if notestoponoff:
-                                    # if needed to draw???????????
                                     if Score['properties']['stop-sign-style'] == 'PianoScript':
                                         pview.create_line(x0,
-                                                  y1, 
+                                                  y1,
                                                   x1,
                                                   y1,
                                                   width=1.5 * global_scale*staff_scale,
                                                   fill=color_black,
                                                   tag=('midi_note','notestop'))
                                     elif Score['properties']['stop-sign-style'] == 'Klavarskribo':
-                                        pview.create_line(x0,y1 - (10 * global_scale * staff_scale),
-                                                  xx,y1,
-                                                  x1,y1 - (10 * global_scale * staff_scale),
-                                                  width=2 * global_scale*staff_scale,
-                                                  fill=color_black,
-                                                  tag=('midi_note','notestop'))
-                                
+                                        # end-of-note symbol:
+                                        try:
+                                            if obj['end-of-note']:
+                                                pview.create_line(x0,y1 - (10 * global_scale * staff_scale),
+                                                      xx,y1,
+                                                      x1,y1 - (10 * global_scale * staff_scale),
+                                                      width=2 * global_scale*staff_scale,
+                                                      fill=color_black,
+                                                      tag=('end-of-note'))
+                                        except:
+                                            ...
+                                        # continuation dot:
+                                        if continuationdotonoff:
+                                          try:
+                                              times=obj['continuation_dot'].split()
+                                          except:
+                                              times="".split()
+                                          if len(times) > 0:
+                                              for time in times:
+                                                  if not idx_l and not idx_p:
+                                                      y2 = event_y_pos_engrave(float(time), split_times[idx_l], split_times[idx_l + 1],True,minipiano)
+                                                  elif not idx_p:
+                                                      y2 = event_y_pos_engrave(float(time), split_times[idx_l], split_times[idx_l + 1],True,False)
+                                                  else:
+                                                      y2 = event_y_pos_engrave(float(time), split_times[idx_l],split_times[idx_l + 1],False,False)
+                                                  pview.create_oval(xx-(2*global_scale*staff_scale),
+                                                              y2 + (3 * global_scale*staff_scale),
+                                                              xx+(2*global_scale*staff_scale),
+                                                              y2 + (7 * global_scale*staff_scale),
+                                                              tag='continuation_dot',
+                                                              fill=color_black,
+                                                              outline=color_black,
+                                                              width=2 * global_scale*staff_scale)
+
                             # accidental
                             if obj['accidental'] == 1:
                                 if accidentalonoff: pview.create_line(xx,y0+(10*global_scale*staff_scale), x0,y0+(15*global_scale*staff_scale),
@@ -1022,37 +1061,6 @@ def engrave_pianoscript_vertical(render_type,
                                 tag='accidental',
                                 fill=color_black,
                                 capstyle='round')
-
-                            # sounding dot
-                            if soundingdotonoff:
-                                for note in Score['events']['note']:
-                                    if note['hand'] == obj['hand'] and note != obj and note['time'] < obj['time'] and note['time']+note['duration'] > obj['time'] and note['staff'] == obj['staff']:
-                                        xxx = note_x_pos(note['pitch'], mn, mx, x_cursor, global_scale,staff_scale)
-                                        pview.create_oval(xxx-(2*global_scale*staff_scale),
-                                                  y0 + (3 * global_scale*staff_scale),
-                                                  xxx+(2*global_scale*staff_scale),
-                                                  y0 + (7 * global_scale*staff_scale),
-                                                  tag='black_notestart',
-                                                  fill=color_black,
-                                                  outline=color_black,
-                                                  width=2 * global_scale*staff_scale)
-                                    
-                                    if note['hand'] == obj['hand'] and note != obj and obj['time']+obj['duration'] < note['time']+note['duration'] and note['staff'] == obj['staff'] and not obj['time'] < note['time']:
-                                        xxx = note_x_pos(note['pitch'], mn, mx, x_cursor, global_scale,staff_scale)
-                                        if not idx_l and not idx_p:
-                                            yy1 = event_y_pos_engrave(obj['time'] + obj['duration'], split_times[idx_l], split_times[idx_l + 1],True,minipiano)
-                                        elif not idx_p:
-                                            yy1 = event_y_pos_engrave(obj['time'] + obj['duration'], split_times[idx_l], split_times[idx_l + 1],True,False)
-                                        else:
-                                            yy1 = event_y_pos_engrave(obj['time'] + obj['duration'], split_times[idx_l],split_times[idx_l + 1],False,False)
-                                        pview.create_oval(xxx-(2*global_scale*staff_scale),
-                                                  yy1 + (3 * global_scale*staff_scale),
-                                                  xxx+(2*global_scale*staff_scale),
-                                                  yy1 + (7 * global_scale*staff_scale),
-                                                  tag='black_notestart',
-                                                  fill=color_black,
-                                                  outline=color_black,
-                                                  width=2 * global_scale*staff_scale)
 
                             # left hand
                             if obj['hand'] == 'l':
@@ -1094,7 +1102,7 @@ def engrave_pianoscript_vertical(render_type,
                                     # note head
                                     if obj['pitch'] in BLACK:
 
-                                        if noteonoff and Score['properties']['black-note-style'] == 'PianoScript': 
+                                        if noteonoff and Score['properties']['black-note-style'] == 'PianoScript' or Score['properties']['black-note-style'] == 'PianoScript' and noteonoff and not obj['stem-visible']:
                                             pview.create_oval(xx-(2.5*global_scale*staff_scale),
                                                           y0,
                                                           xx+(2.5*global_scale*staff_scale),
@@ -1111,10 +1119,10 @@ def engrave_pianoscript_vertical(render_type,
                                                           tag='left_dot',
                                                           fill=color_white,
                                                           outline='')
-                                        if noteonoff and Score['properties']['black-note-style'] == 'Klavarskribo': 
-                                            pview.create_oval(xx-(2.5*global_scale*staff_scale),
+                                        if noteonoff and Score['properties']['black-note-style'] == 'Klavarskribo':
+                                            pview.create_oval(xx-(5*global_scale*staff_scale),
                                                           y0,
-                                                          xx+(2.5*global_scale*staff_scale),
+                                                          xx+(5*global_scale*staff_scale),
                                                           y0 - (10 * global_scale*staff_scale),
                                                           tag='black_notestart',
                                                           fill=color_black,
@@ -1182,7 +1190,7 @@ def engrave_pianoscript_vertical(render_type,
                                         #                           fill=color_white)
                                     # notehead
                                     if obj['pitch'] in BLACK:
-                                        if noteonoff and Score['properties']['black-note-style'] == 'PianoScript': 
+                                        if noteonoff and Score['properties']['black-note-style'] == 'PianoScript':
                                             pview.create_oval(xx-(2.5*global_scale*staff_scale),
                                                           y0,
                                                           xx+(2.5*global_scale*staff_scale),
@@ -1191,10 +1199,10 @@ def engrave_pianoscript_vertical(render_type,
                                                           fill=color_black,
                                                           outline=color_black,
                                                           width=2 * global_scale*staff_scale)
-                                        if noteonoff and Score['properties']['black-note-style'] == 'Klavarskribo': 
-                                            pview.create_oval(xx-(2.5*global_scale*staff_scale),
+                                        if noteonoff and Score['properties']['black-note-style'] == 'Klavarskribo':
+                                            pview.create_oval(xx-(5*global_scale*staff_scale),
                                                           y0,
-                                                          xx+(2.5*global_scale*staff_scale),
+                                                          xx+(5*global_scale*staff_scale),
                                                           y0 - (10 * global_scale*staff_scale),
                                                           tag='black_notestart',
                                                           fill=color_black,
@@ -1239,7 +1247,7 @@ def engrave_pianoscript_vertical(render_type,
                                 yy = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],True,False)
                             else:
                                 yy = event_y_pos_engrave(obj['time'], split_times[idx_l], split_times[idx_l + 1],False,False)
-                            pview.create_text(x_cursor - (20 * global_scale*staff_scale), 
+                            pview.create_text(x_cursor - (20 * global_scale*staff_scale),
                                               yy + (3 * global_scale*staff_scale),
                                               text=obj['text'],
                                               tag='tsigtext',
@@ -1261,7 +1269,7 @@ def engrave_pianoscript_vertical(render_type,
                                                   yy,
                                                   text=obj['text'],
                                                   tag='text',
-                                                  anchor='nw',
+                                                  anchor='c',
                                                   angle=obj['angle'],
                                                   font=('Courier', 10, 'normal'),
                                                   fill=color_black)
@@ -1293,7 +1301,7 @@ def engrave_pianoscript_vertical(render_type,
                                               tag='countline',
                                               fill=color_black,
                                               width=1*global_scale*staff_scale)
-                        
+
                         # start repeat
                         if obj['type'] == 'startrepeat':
                             if not idx_l and not idx_p:
@@ -1343,10 +1351,10 @@ def engrave_pianoscript_vertical(render_type,
                                 fill=color_black,
                                 width=2*global_scale*staff_scale,
                                 outline=color_black)
-                        
+
                         # beam grouping
                         if obj['type'] == 'beam' and beamonoff and obj['staff'] == idx_st:
-                        
+
                             # beam right hand
                             if obj['hand'] == 'r' and obj['staff'] == idx_st:
                                 beamnotelist = []
@@ -1497,8 +1505,12 @@ def engrave_pianoscript_vertical(render_type,
                             for t in range(100):
                                 x, y = evaluate_cubic_bezier(t / 100, [[t1,p1],[t2,p2],[t3,p3],[t4,p4]])
                                 slur_points.append([x, y])
+                            for t in reversed(range(100)):
+                                x, y = evaluate_cubic_bezier(t / 100, [[t1,p1],[t2+5,p2],[t3+5,p3],[t4,p4]])
+                                slur_points.append([x, y])
                             # draw slur
-                            pview.create_line(slur_points, fill='black', tag='slur', width=4*global_scale*staff_scale,capstyle='round')
+                            pview.create_polygon(slur_points, fill='black', tag='slur')
+                            # pview.create_line(slur_points, fill='black', tag='slur', width=4*global_scale*staff_scale,capstyle='round')
 
                         # end for obj ----------------------------------------
 
@@ -1540,10 +1552,12 @@ def engrave_pianoscript_vertical(render_type,
         pview.tag_raise('tie_dot')
         pview.tag_raise('textbg')
         pview.tag_raise('text')
+        pview.tag_raise('continuation_dot')
+        pview.tag_raise('end-of-note')
         pview.tag_lower('midi_note')
-        
+
         # make the new render update fluently(without blinking) and scale
-        if not render_type == 'export':   
+        if not render_type == 'export':
             root.update()
             s = pview.winfo_width() / page_width
             pview.scale("all", 0, 0, s, s)
