@@ -97,6 +97,7 @@ if platform.system() == 'Darwin':
     from tkmacosx import Button
 else:
     from tkinter import Button
+from PIL import ImageTk, Image
 
 # imports from my own code :)
 from imports.midiutils import *
@@ -108,16 +109,15 @@ from imports.engraver_pianoscript_vertical import *
 from imports.engraver_pianoscript import *
 from imports.grideditor import *
 from imports.dialogs import *
-from imports.slur import *
-from imports.file_compitability import *
+from imports.modetree import Tree
 
 # --------------------
 # GUI
 # --------------------
 # colors
 color_basic_gui = '#002B36'
-color_right_midinote = Score['properties']['color-right-hand-midinote']
-color_left_midinote = Score['properties']['color-left-hand-midinote']
+color_right_midinote = '#c8c8c8'
+color_left_midinote = '#c8c8c8'
 color_editor_canvas = '#eee8d5'#eee8d5'#d9d9d9 #fdffd1
 color_highlight = '#268bd2'#a6a832
 color_notation_editor = '#002b66'
@@ -127,30 +127,44 @@ root = Tk()
 root.configure(bg=color_basic_gui)
 MM = root.winfo_fpixels('1m')
 root.title('PianoScript')
+img_pianoscript = PhotoImage(file = 'pscript.png')
+root.iconphoto(False, img_pianoscript)
 # Create an instance of ttk style
 ttkstyle = ttk.Style()
 ttkstyle.theme_create('pianoscript', settings={
     ".": {
         "configure": {
-            "background": '#eee8d5', # All except tabs
-            "foreground": '#002b66',
-            "font": 'red'
+            "background": color_editor_canvas, # All except tabs
+            "foreground": color_notation_editor,
+            "font": ('courier', 16)
         }
     },
     "TNotebook": {
         "configure": {
-            "background":'#eee8d5', # Your margin color
+            "background": color_editor_canvas, # Your margin color
             "tabmargins": [2, 5, 0, 0], # margins: left, top, right, separator
         }
     },
     "TNotebook.Tab": {
         "configure": {
-            "background": '#eee8d5', # tab color when not selected
+            "background": color_editor_canvas, # tab color when not selected
             "padding": [10, 2], # [space between text and horizontal tab-button border, space between text and vertical tab_button border]
             "font":["courier", 16]
         },
         "map": {
             "background": [("selected", '#eeeeee')], # Tab color when selected
+            "expand": [("selected", [1, 1, 1, 0])] # text margins
+        }
+    },
+    "Treeview": {
+        "configure": {
+            "background": color_editor_canvas,
+            "foreground": color_notation_editor,
+            "font":("courier", 16),
+            "fieldbackground": color_basic_gui
+        },
+        "map": {
+            "background": [("selected", color_highlight)], # Tab color when selected
             "expand": [("selected", [1, 1, 1, 0])] # text margins
         }
     }
@@ -174,115 +188,21 @@ if platform.system() == 'Windows':
 rootframe = Frame(root, bg='#333333')
 rootframe.pack(fill='both',expand=True)
 
-# toolbar:
-toolbarpanel = Frame(rootframe, bg='#666666', relief='ridge')
-toolbarpanel.pack(fill='x', expand=False, side='top',padx=5,pady=5)
+# # Engraver selector
+# engraver_button = Button(toolbarpanel, text='V')
+# engraver_button.pack(side='right',fill='y')
+# engraver_tooltip = Tooltip(engraver_button, text='horizontal/vertical engraver switch', wraplength=scrwidth)
 
-input_right_button = Button(toolbarpanel, text='Right input', activebackground=color_highlight, bg=color_highlight)
-input_right_button.pack(side='left')
-try:
-    ir_photo = PhotoImage(file = r"icons/noteinput_R.png")
-    input_right_button.configure(image=ir_photo)
-except:
-    ...
-input_right_button_tooltip = Tooltip(input_right_button, text='Right hand input; ctl+click for stemless ornamented note', wraplength=scrwidth)
-
-input_left_button = Button(toolbarpanel, bg='#f0f0f0', activebackground=color_highlight, text='Left input')
-input_left_button.pack(side='left')
-try:
-    il_photo = PhotoImage(file = r"icons/noteinput_L.png")
-    input_left_button.configure(image=il_photo)
-except:
-    ...
-input_left_button_tooltip = Tooltip(input_left_button, text='Left hand input; ctl+click for stemless ornamented note', wraplength=scrwidth)
-
-linebreak_button = Button(toolbarpanel, text='Line-break', activebackground=color_highlight, bg='#f0f0f0')
-linebreak_button.pack(side='left')
-try:
-    lb_photo = PhotoImage(file = r"icons/linebreak.png")
-    linebreak_button.configure(image=lb_photo)
-except:
-    ...
-linebreak_button_tooltip = Tooltip(linebreak_button, text='Line-break tool; \nYou can edit margins for each line by clicking\non a line-break.', wraplength=scrwidth)
-
-countline_button = Button(toolbarpanel, text='Countline*', bg='#f0f0f0', activebackground=color_highlight)
-countline_button.pack(side='left')
-try:
-    cnt_photo = PhotoImage(file = r"icons/countline.png")
-    countline_button.configure(image=cnt_photo)
-except:
-    ...
-countline_button_tooltip = Tooltip(countline_button, text='Countline tool; for highlighting the rhythm', wraplength=scrwidth)
-
-txt_button = Button(toolbarpanel, text='Text', bg='#f0f0f0', activebackground=color_highlight)
-txt_button.pack(side='left')
-try:
-    txt_photo = PhotoImage(file = r"icons/text.png")
-    txt_button.configure(image=txt_photo)
-except:
-    ...
-txt_button_tooltip = Tooltip(txt_button, text='Text tool; Edit text by\nctl+click on a existing text.', wraplength=scrwidth)
-
-slur_button = Button(toolbarpanel, text='Slur', bg='#f0f0f0', activebackground=color_highlight)
-slur_button.pack(side='left')
-try:
-    slr_photo = PhotoImage(file = "icons/slur.png")
-    slur_button.configure(image=slr_photo)
-except:
-    ...
-slur_button_tooltip = Tooltip(slur_button, text='Slur tool*', wraplength=scrwidth)
-
-staffsizer_button = Button(toolbarpanel, text='Staff sizer', bg='#f0f0f0', activebackground=color_highlight)
-staffsizer_button.pack(side='left')
-try:
-    stf_photo = PhotoImage(file = "icons/staffspacer.png")
-    staffsizer_button.configure(image=stf_photo)
-except:
-    ...
-staffspacer_tooltip = Tooltip(staffsizer_button, text='Staff sizer tool; for manually expanding the staff', wraplength=scrwidth)
-
-repeats_button = Button(toolbarpanel, text='Repeats', bg='#f0f0f0', activebackground=color_highlight)
-repeats_button.pack(side='left')
-try:
-    rpts_photo = PhotoImage(file = "icons/repeats.png")
-    repeats_button.configure(image=rpts_photo)
-except:
-    ...
-repeats_tooltip = Tooltip(repeats_button, text='Repeat symbols tool; click to add start repeat, ctl+click to add end repeat', wraplength=scrwidth)
-
-beam_button = Button(toolbarpanel, text='Beam', bg='#f0f0f0', activebackground=color_highlight)
-beam_button.pack(side='left')
-try:
-    beam_photo = PhotoImage(file = "icons/beam.png")
-    beam_button.configure(image=beam_photo)
-except:
-    ...
-beam_tooltip = Tooltip(beam_button, text='Beam tool; for grouping notes (ctl+click to set a default beam grouping)', wraplength=scrwidth)
-
-accidental_button = Button(toolbarpanel, text='Accidental', bg='#f0f0f0', activebackground=color_highlight)
-accidental_button.pack(side='left')
-try:
-    accidental_photo = PhotoImage(file = "icons/accidental.png")
-    accidental_button.configure(image=accidental_photo)
-except:
-    ...
-accidental_tooltip = Tooltip(accidental_button, text='Accidental tool; for writing sharps and flats', wraplength=scrwidth)
-
-# Engraver selector
-engraver_button = Button(toolbarpanel, text='V')
-engraver_button.pack(side='right',fill='y')
-engraver_tooltip = Tooltip(engraver_button, text='horizontal/vertical engraver switch', wraplength=scrwidth)
-
-# nxt prev page buttons
-nextpage_button = Button(toolbarpanel, text='>')
-nextpage_button.pack(side='right',fill='y')
-nextpage_tooltip = Tooltip(nextpage_button, text='next page', wraplength=scrwidth)
-prevpage_button = Button(toolbarpanel, text='<')
-prevpage_button.pack(side='right',fill='y')
-prevpage_tooltip = Tooltip(prevpage_button, text='previous page', wraplength=scrwidth)
-options_button = Button(toolbarpanel, text='=')
-options_button.pack(side='right',fill='y')
-options_tooltip = Tooltip(options_button, text='Score Options', wraplength=scrwidth)
+# # nxt prev page buttons
+# nextpage_button = Button(toolbarpanel, text='>')
+# nextpage_button.pack(side='right',fill='y')
+# nextpage_tooltip = Tooltip(nextpage_button, text='next page', wraplength=scrwidth)
+# prevpage_button = Button(toolbarpanel, text='<')
+# prevpage_button.pack(side='right',fill='y')
+# prevpage_tooltip = Tooltip(prevpage_button, text='previous page', wraplength=scrwidth)
+# options_button = Button(toolbarpanel, text='=')
+# options_button.pack(side='right',fill='y')
+# options_tooltip = Tooltip(options_button, text='Score Options', wraplength=scrwidth)
 
 
 # PanedWindow
@@ -291,11 +211,12 @@ master_paned.pack(padx=2.5,pady=2.5,expand=True,fill='both')
 
 # grid selector
 gridpanel = Frame(master_paned, bg=color_basic_gui)
-master_paned.add(gridpanel, width=45)
-noteinput_label = Label(gridpanel, text='GRID', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
-noteinput_label.pack(fill='x')
+gridpanel.grid_columnconfigure(0,weight=1)
+master_paned.add(gridpanel, width=250)
+noteinput_label = Label(gridpanel, text='GRID', bg=color_basic_gui, fg='white', anchor='w', font=("courier", 16))
+noteinput_label.grid(column=0, row=0, sticky='ew')
 list_dur = Listbox(gridpanel, height=8, bg='grey', selectbackground=color_highlight, fg='black')
-list_dur.pack(fill='x')
+list_dur.grid(column=0, row=1, sticky='ew')
 list_dur.insert(0, "1")
 list_dur.insert(1, "2")
 list_dur.insert(2, "4")
@@ -306,24 +227,46 @@ list_dur.insert(6, "64")
 list_dur.insert(7, "128")
 list_dur.select_set(3)
 divide_label = Label(gridpanel, text='÷', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
-divide_label.pack(fill='x')
+divide_label.grid(column=0, row=2, sticky='ew')
 divide_variable = StringVar(value=1)
 divide_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'), textvariable=divide_variable)
-divide_spin.pack(fill='x')
+divide_spin.grid(column=0, row=3, sticky='ew')
 times_label = Label(gridpanel, text='×', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
-times_label.pack(fill='x')
+times_label.grid(column=0, row=4, sticky='ew')
 times_variable = StringVar(value=1)
 times_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'), textvariable=times_variable)
-times_spin.pack(fill='x')
+times_spin.grid(column=0, row=5, sticky='ew')
 fill_label1 = Label(gridpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
-fill_label1.pack()
-staffselect_label = Label(gridpanel, text='STAFF', bg=color_basic_gui, fg='white')
-staffselect_label.pack(fill='x')
+fill_label1.grid(column=0, row=6, sticky='ew')
+staffselect_label = Label(gridpanel, text='STAFF', bg=color_basic_gui, fg='white', font=("courier", 16), anchor='w')
+staffselect_label.grid(column=0, row=7, sticky='ew')
 staffselect_variable = StringVar(value=1)
 staffselect_spin = Spinbox(gridpanel, from_=1, to=4, bg=color_highlight, font=('', 15, 'normal'), textvariable=staffselect_variable)
-staffselect_spin.pack(fill='x')
+staffselect_spin.grid(column=0, row=8, sticky='ew')
 
-fill_label1.pack(fill='x')
+fill_label1.grid(column=0, row=9, sticky='ew')
+fill_label2 = Label(gridpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+fill_label2.grid(column=0, row=10, sticky='ew')
+mode_label = Label(gridpanel, text='MODE', bg=color_basic_gui, fg='white', anchor='w', font=("courier", 16))
+mode_label.grid(column=0, row=11, sticky='ew')
+modetreeview = Tree(gridpanel)
+modetreeview.grid(column=0, row=12, sticky='ew')
+
+
+# # create a treeview
+# elements_selector = ttk.Treeview(gridpanel, selectmode='browse')
+# elements_selector.heading('#0', text='Mode', anchor='w')
+# # adding data
+# elements_selector.insert('', 'end', text='Note', iid=0, open=False)
+# # adding children of first node
+# lefthand_photo = ImageTk.PhotoImage(Image.open('icons/noteinput_L.png').resize((20, 20), Image.LANCZOS))
+# elements_selector.insert('', 'end', text='Left hand', iid=5, open=False, image=lefthand_photo)
+# righthand_photo = ImageTk.PhotoImage(Image.open('icons/noteinput_R.png').resize((20, 20), Image.LANCZOS))
+# elements_selector.insert('', 'end', text='Right hand', iid=6, open=False, image=righthand_photo)
+# elements_selector.move(5, 0, 0)
+# elements_selector.move(6, 0, 1)
+# # place the Treeview widget on the root window
+# elements_selector.pack(fill='x')
 
 # editor
 root.update()
@@ -954,6 +897,8 @@ def mouse_handling(event, event_type):
     global selection, shiftbutton1click, selection_tags, mouse_time, active_selection, ms_xy, handle
 
     editor.tag_lower('cursor')
+
+    input_mode = modetreeview.get
 
     # define mouse_x and mouse_y, event_x and event_y.
     mx = editor.canvasx(event.x)
@@ -2934,104 +2879,104 @@ def switch_hand_selection(e, direction):
 
 
 
-# -------------
-# MODE TOOLBAR
-# -------------
-def mode_select(mode,i_mode):
+# # -------------
+# # MODE TOOLBAR
+# # -------------
+# def mode_select(mode,i_mode):
     
-    global input_mode
+#     global input_mode
 
-    modes = [
-    input_right_button,
-    input_left_button,
-    linebreak_button,
-    countline_button,
-    txt_button,
-    slur_button,
-    staffsizer_button,
-    repeats_button,
-    beam_button,
-    accidental_button
-    ]
+#     modes = [
+#     input_right_button,
+#     input_left_button,
+#     linebreak_button,
+#     countline_button,
+#     txt_button,
+#     slur_button,
+#     staffsizer_button,
+#     repeats_button,
+#     beam_button,
+#     accidental_button
+#     ]
 
-    for i,conf in enumerate(modes):
-        if i == mode:
-            conf.configure(bg=color_highlight)
-        else:
-            conf.configure(bg='#f0f0f0')
+#     for i,conf in enumerate(modes):
+#         if i == mode:
+#             conf.configure(bg=color_highlight)
+#         else:
+#             conf.configure(bg='#f0f0f0')
 
-    if mode == 0:
-        cursor = {
-            "id": 'cursor',
-            "time": edit_cursor[0],
-            "duration": edit_grid,
-            "pitch": edit_cursor[1],
-            "hand": 'r',
-            "x-offset": 0,
-            "y-offset": 0,
-            "stem-visible": True,
-            "accidental":0,
-            "staff":0
-        }
-        draw_note_pianoroll(cursor, 
-            True, 
-            editor, 
-            hbar, 
-            y_scale_percent, 
-            x_scale_quarter_mm, 
-            MM, 
-            color_notation_editor, 
-            BLACK, 
-            color_editor_canvas, 
-            Score)
-    elif mode == 1:
-        cursor = {
-            "id": 'cursor',
-            "time": edit_cursor[0],
-            "duration": edit_grid,
-            "pitch": edit_cursor[1],
-            "hand": 'l',
-            "x-offset": 0,
-            "y-offset": 0,
-            "stem-visible": True,
-            "accidental":0,
-            "staff":0
-        }
-        draw_note_pianoroll(cursor, 
-            True, 
-            editor, 
-            hbar, 
-            y_scale_percent, 
-            x_scale_quarter_mm, 
-            MM, 
-            color_notation_editor, 
-            BLACK, 
-            color_editor_canvas, 
-            Score)
+#     if mode == 0:
+#         cursor = {
+#             "id": 'cursor',
+#             "time": edit_cursor[0],
+#             "duration": edit_grid,
+#             "pitch": edit_cursor[1],
+#             "hand": 'r',
+#             "x-offset": 0,
+#             "y-offset": 0,
+#             "stem-visible": True,
+#             "accidental":0,
+#             "staff":0
+#         }
+#         draw_note_pianoroll(cursor, 
+#             True, 
+#             editor, 
+#             hbar, 
+#             y_scale_percent, 
+#             x_scale_quarter_mm, 
+#             MM, 
+#             color_notation_editor, 
+#             BLACK, 
+#             color_editor_canvas, 
+#             Score)
+#     elif mode == 1:
+#         cursor = {
+#             "id": 'cursor',
+#             "time": edit_cursor[0],
+#             "duration": edit_grid,
+#             "pitch": edit_cursor[1],
+#             "hand": 'l',
+#             "x-offset": 0,
+#             "y-offset": 0,
+#             "stem-visible": True,
+#             "accidental":0,
+#             "staff":0
+#         }
+#         draw_note_pianoroll(cursor, 
+#             True, 
+#             editor, 
+#             hbar, 
+#             y_scale_percent, 
+#             x_scale_quarter_mm, 
+#             MM, 
+#             color_notation_editor, 
+#             BLACK, 
+#             color_editor_canvas, 
+#             Score)
 
-    input_mode = i_mode
+#     input_mode = i_mode
 
-input_right_button.configure(command=lambda: [mode_select(0,'right'), noteinput_label.focus_force()])
-input_left_button.configure(command=lambda: [mode_select(1,'left'), noteinput_label.focus_force()])
-linebreak_button.configure(command=lambda: [mode_select(2,'linebreak'), noteinput_label.focus_force()])
-countline_button.configure(command=lambda: [mode_select(3,'countline'), noteinput_label.focus_force()])
-txt_button.configure(command=lambda: [mode_select(4,'text'), noteinput_label.focus_force()])
-slur_button.configure(command=lambda: [mode_select(5,'slur'), noteinput_label.focus_force()])
-staffsizer_button.configure(command=lambda: [mode_select(6,'staffsizer'), noteinput_label.focus_force()])
-repeats_button.configure(command=lambda: [mode_select(7,'repeats'), noteinput_label.focus_force()])
-beam_button.configure(command=lambda: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
-accidental_button.configure(command=lambda: [mode_select(9,'accidental'), noteinput_label.focus_force()])
+# input_right_button.configure(command=lambda: [mode_select(0,'right'), noteinput_label.focus_force()])
+# input_left_button.configure(command=lambda: [mode_select(1,'left'), noteinput_label.focus_force()])
+# linebreak_button.configure(command=lambda: [mode_select(2,'linebreak'), noteinput_label.focus_force()])
+# countline_button.configure(command=lambda: [mode_select(3,'countline'), noteinput_label.focus_force()])
+# txt_button.configure(command=lambda: [mode_select(4,'text'), noteinput_label.focus_force()])
+# slur_button.configure(command=lambda: [mode_select(5,'slur'), noteinput_label.focus_force()])
+# staffsizer_button.configure(command=lambda: [mode_select(6,'staffsizer'), noteinput_label.focus_force()])
+# repeats_button.configure(command=lambda: [mode_select(7,'repeats'), noteinput_label.focus_force()])
+# beam_button.configure(command=lambda: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
+# accidental_button.configure(command=lambda: [mode_select(9,'accidental'), noteinput_label.focus_force()])
 
-root.bind('1', lambda e: [mode_select(0,'right'), noteinput_label.focus_force()])
-root.bind('2', lambda e: [mode_select(1,'left'), noteinput_label.focus_force()])
-root.bind('3', lambda e: [mode_select(2,'linebreak'), noteinput_label.focus_force()])
-root.bind('4', lambda e: [mode_select(3,'countline'), noteinput_label.focus_force()])
-root.bind('5', lambda e: [mode_select(4,'text'), noteinput_label.focus_force()])
-root.bind('6', lambda e: [mode_select(5,'slur'), noteinput_label.focus_force()])
-root.bind('7', lambda e: [mode_select(6,'staffsizer'), noteinput_label.focus_force()])
-root.bind('8', lambda e: [mode_select(7,'repeats'), noteinput_label.focus_force()])
-root.bind('9', lambda e: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
-root.bind('0', lambda e: [mode_select(9,'accidental'), noteinput_label.focus_force()])
+# root.bind('1', lambda e: [mode_select(0,'right'), noteinput_label.focus_force()])
+# root.bind('2', lambda e: [mode_select(1,'left'), noteinput_label.focus_force()])
+# root.bind('3', lambda e: [mode_select(2,'linebreak'), noteinput_label.focus_force()])
+# root.bind('4', lambda e: [mode_select(3,'countline'), noteinput_label.focus_force()])
+# root.bind('5', lambda e: [mode_select(4,'text'), noteinput_label.focus_force()])
+# root.bind('6', lambda e: [mode_select(5,'slur'), noteinput_label.focus_force()])
+# root.bind('7', lambda e: [mode_select(6,'staffsizer'), noteinput_label.focus_force()])
+# root.bind('8', lambda e: [mode_select(7,'repeats'), noteinput_label.focus_force()])
+# root.bind('9', lambda e: [mode_select(8,'beamtool'), noteinput_label.focus_force()])
+# root.bind('0', lambda e: [mode_select(9,'accidental'), noteinput_label.focus_force()])
 
 def space_shift(event):
     '''
@@ -3153,17 +3098,17 @@ def cycle_trough_pages(event):
 
     do_engrave()
 
-def cycle_trough_pages_button(event=''):
+# def cycle_trough_pages_button(event=''):
     
-    global renderpageno
+#     global renderpageno
 
-    if event == ':)':
-        renderpageno += 1
-    else:
-        renderpageno -= 1
-    do_engrave()
-nextpage_button.configure(command=lambda: cycle_trough_pages_button(':)'))
-prevpage_button.configure(command=cycle_trough_pages_button)
+#     if event == ':)':
+#         renderpageno += 1
+#     else:
+#         renderpageno -= 1
+#     do_engrave()
+# nextpage_button.configure(command=lambda: cycle_trough_pages_button(':)'))
+# prevpage_button.configure(command=cycle_trough_pages_button)
 
 
 
@@ -3481,6 +3426,28 @@ def quantize(Score):
     do_pianoroll()
 
 
+
+
+def options_editor():
+    global Score
+    Score = OptionsDialog(root, Score).score
+    do_engrave()
+
+
+## engraver switch
+def engraver_switch(event=''):
+    global Score
+
+    if Score['properties']['engraver'] == 'pianoscript':
+        Score['properties']['engraver'] = 'pianoscript vertical'
+        engraver_button.configure(text='H')
+    else:
+        Score['properties']['engraver'] = 'pianoscript'
+        engraver_button.configure(text='V')
+    do_engrave()
+
+
+
 # --------------------------------------------------------
 # MENU
 # --------------------------------------------------------
@@ -3498,7 +3465,8 @@ fileMenu.add_command(label="Export ps", command=exportPostscript)
 fileMenu.add_command(label="Export pdf [ctl+e]", command=exportPDF)
 fileMenu.add_command(label="Export midi*", command=lambda: midiexport(root,Score))
 fileMenu.add_separator()
-fileMenu.add_command(label="Grid editor...", underline=None, command=grideditor)
+fileMenu.add_command(label="Grid editor... [g]", underline=None, command=grideditor)
+fileMenu.add_command(label="Score options... [s]", underline=None, command=options_editor)
 fileMenu.add_separator()
 fileMenu.add_command(label="Exit", underline=None, command=quit_editor)
 menubar.add_cascade(label="File", underline=None, menu=fileMenu)
@@ -3518,31 +3486,6 @@ menubar.add_cascade(label="Tools", underline=None, menu=toolsMenu)
 
 
 
-
-
-
-
-## engraver switch
-def engraver_switch(event=''):
-    global Score
-
-    if Score['properties']['engraver'] == 'pianoscript':
-        Score['properties']['engraver'] = 'pianoscript vertical'
-        engraver_button.configure(text='H')
-    else:
-        Score['properties']['engraver'] = 'pianoscript'
-        engraver_button.configure(text='V')
-    do_engrave()
-
-# engraver_button.configure(command=engraver_switch)
-
-
-
-def options_editor():
-    global Score
-    Score = OptionsDialog(root, Score).score
-    do_engrave()
-options_button.configure(command=options_editor)
 
 
 # --------------------------------------------------------

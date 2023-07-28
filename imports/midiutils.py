@@ -128,8 +128,8 @@ def pianoscript_sync(Score, grid1, grid2):
     for i in Score['events']['note']:
         print(i['time'], i['duration'])
 
-file = json.load(open('test.pianoscript', 'r'))
-pianoscript_sync(file, 128, 256/3)# eight and quarter triplet
+# file = json.load(open('test.pianoscript', 'r'))
+# pianoscript_sync(file, 128, 256/3)# eight and quarter triplet
 ##### Backup
 # def midiexport(root,Score):
 
