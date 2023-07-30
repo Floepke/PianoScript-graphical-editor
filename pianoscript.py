@@ -1,3 +1,6 @@
+#! python3.9.2
+# coding: utf-8
+
 '''
 This file is part of the pianoscript project: http://www.pianoscript.org/
 
@@ -107,64 +110,63 @@ from imports.pianorolleditor import *
 from imports.tooltip import *
 from imports.engraver_pianoscript_vertical import *
 from imports.engraver_pianoscript import *
-from imports.grideditor import *
 from imports.dialogs import *
-from imports.modetree import Tree
+from imports.elementstree import Tree
+from imports.griddialog import GridDialog
+from imports.optionsdialog import OptionsDialog
+from imports.colors import color_light, color_dark, color_gui_base, color_gui_contrast, color_highlight, color_right_midinote, color_left_midinote
+from imports.editor import MainEditor
 
 # --------------------
 # GUI
 # --------------------
-# colors
-color_basic_gui = '#002B36'
-color_right_midinote = '#c8c8c8'
-color_left_midinote = '#c8c8c8'
-color_editor_canvas = '#eee8d5'#eee8d5'#d9d9d9 #fdffd1
-color_highlight = '#268bd2'#a6a832
-color_notation_editor = '#002b66'
+
 
 # root
 root = Tk()
-root.configure(bg=color_basic_gui)
+root.configure(bg=color_gui_base)
 MM = root.winfo_fpixels('1m')
 root.title('PianoScript')
 img_pianoscript = PhotoImage(file = 'pscript.png')
 root.iconphoto(False, img_pianoscript)
+if platform.system() == 'Windows': root.state('zoomed')
 # Create an instance of ttk style
 ttkstyle = ttk.Style()
 ttkstyle.theme_create('pianoscript', settings={
     ".": {
         "configure": {
-            "background": color_editor_canvas, # All except tabs
-            "foreground": color_notation_editor,
+            "background": color_light, # All except tabs
+            "foreground": color_dark,
             "font": ('courier', 16)
         }
     },
     "TNotebook": {
         "configure": {
-            "background": color_editor_canvas, # Your margin color
+            "background": color_light, # Your margin color
             "tabmargins": [2, 5, 0, 0], # margins: left, top, right, separator
         }
     },
     "TNotebook.Tab": {
         "configure": {
-            "background": color_editor_canvas, # tab color when not selected
+            "background": color_light, # tab color when not selected
             "padding": [10, 2], # [space between text and horizontal tab-button border, space between text and vertical tab_button border]
             "font":["courier", 16]
         },
         "map": {
-            "background": [("selected", '#eeeeee')], # Tab color when selected
+            "background": [("selected", color_highlight)], # Tab color when selected
             "expand": [("selected", [1, 1, 1, 0])] # text margins
         }
     },
     "Treeview": {
         "configure": {
-            "background": color_editor_canvas,
-            "foreground": color_notation_editor,
+            "background": color_light,
+            "foreground": color_dark,
             "font":("courier", 16),
-            "fieldbackground": color_basic_gui
+            "fieldbackground": color_gui_base
         },
         "map": {
-            "background": [("selected", color_highlight)], # Tab color when selected
+            "background": [("selected", color_highlight)],
+            "foreground": [("selected", color_dark)], # Tab color when selected
             "expand": [("selected", [1, 1, 1, 0])] # text margins
         }
     }
@@ -188,34 +190,17 @@ if platform.system() == 'Windows':
 rootframe = Frame(root, bg='#333333')
 rootframe.pack(fill='both',expand=True)
 
-# # Engraver selector
-# engraver_button = Button(toolbarpanel, text='V')
-# engraver_button.pack(side='right',fill='y')
-# engraver_tooltip = Tooltip(engraver_button, text='horizontal/vertical engraver switch', wraplength=scrwidth)
-
-# # nxt prev page buttons
-# nextpage_button = Button(toolbarpanel, text='>')
-# nextpage_button.pack(side='right',fill='y')
-# nextpage_tooltip = Tooltip(nextpage_button, text='next page', wraplength=scrwidth)
-# prevpage_button = Button(toolbarpanel, text='<')
-# prevpage_button.pack(side='right',fill='y')
-# prevpage_tooltip = Tooltip(prevpage_button, text='previous page', wraplength=scrwidth)
-# options_button = Button(toolbarpanel, text='=')
-# options_button.pack(side='right',fill='y')
-# options_tooltip = Tooltip(options_button, text='Score Options', wraplength=scrwidth)
-
-
 # PanedWindow
-master_paned = PanedWindow(rootframe, orient='h', sashwidth=7.5, relief='flat', bg='#333333')
+master_paned = PanedWindow(rootframe, orient='h', sashwidth=7.5, relief='flat', bg=color_gui_base)
 master_paned.pack(padx=2.5,pady=2.5,expand=True,fill='both')    
 
 # grid selector
-gridpanel = Frame(master_paned, bg=color_basic_gui)
+gridpanel = Frame(master_paned, bg=color_gui_base)
 gridpanel.grid_columnconfigure(0,weight=1)
 master_paned.add(gridpanel, width=250)
-noteinput_label = Label(gridpanel, text='GRID', bg=color_basic_gui, fg='white', anchor='w', font=("courier", 16))
+noteinput_label = Label(gridpanel, text='GRID:', bg=color_gui_base, fg=color_gui_contrast, anchor='w', font=("courier", 16, 'bold'))
 noteinput_label.grid(column=0, row=0, sticky='ew')
-list_dur = Listbox(gridpanel, height=8, bg='grey', selectbackground=color_highlight, fg='black')
+list_dur = Listbox(gridpanel, height=8, bg=color_light, selectbackground=color_highlight,selectforeground=color_dark, fg=color_dark, font=('courier', 16))
 list_dur.grid(column=0, row=1, sticky='ew')
 list_dur.insert(0, "1")
 list_dur.insert(1, "2")
@@ -226,63 +211,51 @@ list_dur.insert(5, "32")
 list_dur.insert(6, "64")
 list_dur.insert(7, "128")
 list_dur.select_set(3)
-divide_label = Label(gridpanel, text='÷', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
+divide_label = Label(gridpanel, text='÷', font=("courier", 20, "bold"), bg=color_gui_base, fg=color_gui_contrast, anchor='c')
 divide_label.grid(column=0, row=2, sticky='ew')
 divide_variable = StringVar(value=1)
-divide_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'), textvariable=divide_variable)
+divide_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_light, fg=color_dark, font=('courier', 16, 'normal'), textvariable=divide_variable)
 divide_spin.grid(column=0, row=3, sticky='ew')
-times_label = Label(gridpanel, text='×', font=("courier", 20, "bold"), bg=color_basic_gui, fg='white', anchor='w')
+times_label = Label(gridpanel, text='×', font=("courier", 20, "bold"), bg=color_gui_base, fg=color_gui_contrast, anchor='c')
 times_label.grid(column=0, row=4, sticky='ew')
 times_variable = StringVar(value=1)
-times_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_highlight, font=('', 15, 'normal'), textvariable=times_variable)
+times_spin = Spinbox(gridpanel, from_=1, to=99, bg=color_light, fg=color_dark, font=('courier', 16, 'normal'), textvariable=times_variable)
 times_spin.grid(column=0, row=5, sticky='ew')
-fill_label1 = Label(gridpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+fill_label1 = Label(gridpanel, text='------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 
+    bg=color_gui_base, fg='#c8c8c8', anchor='c', font=("courier"))
 fill_label1.grid(column=0, row=6, sticky='ew')
-staffselect_label = Label(gridpanel, text='STAFF', bg=color_basic_gui, fg='white', font=("courier", 16), anchor='w')
+
+# staff selector
+staffselect_label = Label(gridpanel, text='STAFF:', bg=color_gui_base, fg=color_gui_contrast, font=("courier", 16, 'bold'), anchor='w')
 staffselect_label.grid(column=0, row=7, sticky='ew')
 staffselect_variable = StringVar(value=1)
-staffselect_spin = Spinbox(gridpanel, from_=1, to=4, bg=color_highlight, font=('', 15, 'normal'), textvariable=staffselect_variable)
+staffselect_spin = Spinbox(gridpanel, from_=1, to=4, bg=color_light, fg=color_dark, font=('courier', 16, 'normal'), textvariable=staffselect_variable)
 staffselect_spin.grid(column=0, row=8, sticky='ew')
-
-fill_label1.grid(column=0, row=9, sticky='ew')
-fill_label2 = Label(gridpanel, text='', bg=color_basic_gui, fg='white', anchor='w', font=("courier"))
+fill_label2 = Label(gridpanel, text='------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 
+    bg=color_gui_base, fg='#c8c8c8', anchor='c', font=("courier"))
 fill_label2.grid(column=0, row=10, sticky='ew')
-mode_label = Label(gridpanel, text='MODE', bg=color_basic_gui, fg='white', anchor='w', font=("courier", 16))
-mode_label.grid(column=0, row=11, sticky='ew')
-modetreeview = Tree(gridpanel)
-modetreeview.grid(column=0, row=12, sticky='ew')
 
-
-# # create a treeview
-# elements_selector = ttk.Treeview(gridpanel, selectmode='browse')
-# elements_selector.heading('#0', text='Mode', anchor='w')
-# # adding data
-# elements_selector.insert('', 'end', text='Note', iid=0, open=False)
-# # adding children of first node
-# lefthand_photo = ImageTk.PhotoImage(Image.open('icons/noteinput_L.png').resize((20, 20), Image.LANCZOS))
-# elements_selector.insert('', 'end', text='Left hand', iid=5, open=False, image=lefthand_photo)
-# righthand_photo = ImageTk.PhotoImage(Image.open('icons/noteinput_R.png').resize((20, 20), Image.LANCZOS))
-# elements_selector.insert('', 'end', text='Right hand', iid=6, open=False, image=righthand_photo)
-# elements_selector.move(5, 0, 0)
-# elements_selector.move(6, 0, 1)
-# # place the Treeview widget on the root window
-# elements_selector.pack(fill='x')
+# elements selector
+elements_label = Label(gridpanel, text='TOOL:', bg=color_gui_base, fg=color_gui_contrast, anchor='w', font=("courier", 16, 'bold'))
+elements_label.grid(column=0, row=11, sticky='ew')
+elements_treeview = Tree(gridpanel)
+elements_treeview.grid(column=0, row=12, sticky='ew')
 
 # editor
 root.update()
-editorpanel = Frame(master_paned, bg=color_basic_gui, width=scrwidth / 3 * 1.805)
+editorpanel = Frame(master_paned, bg=color_gui_base, width=scrwidth / 3 * 1.54)
 master_paned.add(editorpanel)
-editor = Canvas(editorpanel, bg=color_editor_canvas, relief='flat', cursor='cross')
+editor = Canvas(editorpanel, bg=color_light, relief='flat', cursor='cross')
 editor.place(relwidth=1, relheight=1)
-hbar = Scrollbar(editor, orient='horizontal', width=20, relief='flat', bg=color_basic_gui)
+hbar = Scrollbar(editor, orient='horizontal', width=20, relief='flat', bg=color_gui_base)
 hbar.pack(side='bottom', fill='x')
 hbar.config(command=editor.xview)
 editor.configure(xscrollcommand=hbar.set)
 
 # print view
-printpanel = Frame(master_paned, bg=color_basic_gui)
+printpanel = Frame(master_paned, bg=color_light)
 master_paned.add(printpanel)
-pview = Canvas(printpanel, bg=color_editor_canvas, relief='flat')
+pview = Canvas(printpanel, bg=color_light, relief='flat')
 pview.place(relwidth=1, relheight=1)
 
 
@@ -646,7 +619,7 @@ def do_pianoroll(event='event'):
                 text=str(grid_msg['numerator'])+'/'+str(grid_msg['denominator']),
                 font=('courier', 30, 'bold'),
                 anchor='nw',
-                fill='black')
+                fill=color_dark)
 
         for meas in range(grid_msg['amount']):
 
@@ -659,13 +632,13 @@ def do_pianoroll(event='event'):
                 staff_y1,
                 width=2,
                 tag='staffline',
-                fill=color_notation_editor,
+                fill=color_dark,
                 state='disabled')
             editor.create_text(x_curs+5,
                 staff_y0,
                 text=measnum,
                 anchor='sw',
-                fill=color_notation_editor,
+                fill=color_dark,
                 font=('courier', 30, 'bold'))
 
             # draw grid
@@ -678,7 +651,7 @@ def do_pianoroll(event='event'):
                     width=1,
                     dash=(6,6),
                     tag='staffline',
-                    fill=color_notation_editor,
+                    fill=color_dark,
                     state='disabled')
 
                 x_curs += grid_size / grid_msg['grid']
@@ -692,7 +665,7 @@ def do_pianoroll(event='event'):
         staff_y1,
         width=4,
         tag='staffline',
-        fill=color_notation_editor,
+        fill=color_dark,
         state='disabled')
 
     # draw staff-lines
@@ -707,7 +680,7 @@ def do_pianoroll(event='event'):
                 y_curs,
                 width=2,
                 tag='staffline',
-                fill=color_notation_editor,
+                fill=color_dark,
                 state='disabled')
             y_curs += 10 * y_factor
 
@@ -722,7 +695,7 @@ def do_pianoroll(event='event'):
                     width=1,
                     tag='staffline',
                     dash=(6,6),
-                    fill=color_notation_editor,
+                    fill=color_dark,
                     state='disabled')
             else:
                 editor.create_line(staff_x0,
@@ -731,7 +704,7 @@ def do_pianoroll(event='event'):
                     y_curs,
                     width=1,
                     tag='staffline',
-                    fill=color_notation_editor,
+                    fill=color_dark,
                     state='disabled')
             y_curs += 10 * y_factor
 
@@ -743,7 +716,7 @@ def do_pianoroll(event='event'):
         y_curs,
         width=2,
         tag='staffline',
-        fill=color_notation_editor,
+        fill=color_dark,
         state='disabled')
 
     # update bbox
@@ -764,9 +737,9 @@ def do_pianoroll(event='event'):
             y_scale_percent, 
             x_scale_quarter_mm, 
             MM, 
-            color_notation_editor, 
+            color_dark, 
             BLACK, 
-            color_editor_canvas, 
+            color_light, 
             Score)
         new_id += 1
 
@@ -779,7 +752,7 @@ def do_pianoroll(event='event'):
             y_scale_percent,
             x_scale_quarter_mm,
             MM,
-            color_notation_editor,
+            color_dark,
             color_highlight)
         new_id += 1
 
@@ -793,7 +766,7 @@ def do_pianoroll(event='event'):
                 y_scale_percent,
                 x_scale_quarter_mm,
                 MM,
-                color_notation_editor)
+                color_dark)
         new_id += 1
 
     # draw text events
@@ -898,7 +871,7 @@ def mouse_handling(event, event_type):
 
     editor.tag_lower('cursor')
 
-    input_mode = modetreeview.get
+    input_mode = elements_treeview.get
 
     # define mouse_x and mouse_y, event_x and event_y.
     mx = editor.canvasx(event.x)
@@ -962,9 +935,9 @@ def mouse_handling(event, event_type):
                     y_scale_percent, 
                     x_scale_quarter_mm, 
                     MM, 
-                    color_notation_editor, 
+                    color_dark, 
                     BLACK, 
-                    color_editor_canvas, 
+                    color_light, 
                     Score,
                     True)
                 # write new_note to Score
@@ -987,9 +960,9 @@ def mouse_handling(event, event_type):
                             y_scale_percent, 
                             x_scale_quarter_mm, 
                             MM, 
-                            color_notation_editor, 
+                            color_dark, 
                             BLACK, 
-                            color_editor_canvas, 
+                            color_light, 
                             Score,
                             True)
 
@@ -1022,9 +995,9 @@ def mouse_handling(event, event_type):
                                 y_scale_percent, 
                                 x_scale_quarter_mm, 
                                 MM, 
-                                color_notation_editor, 
+                                color_dark, 
                                 BLACK, 
-                                color_editor_canvas, 
+                                color_light, 
                                 Score,
                                 True)
 
@@ -1049,9 +1022,9 @@ def mouse_handling(event, event_type):
                     y_scale_percent, 
                     x_scale_quarter_mm, 
                     MM, 
-                    color_notation_editor, 
+                    color_dark, 
                     BLACK, 
-                    color_editor_canvas, 
+                    color_light, 
                     Score,
                     True)
                 edit_cursor = (ex,ey)
@@ -1081,9 +1054,9 @@ def mouse_handling(event, event_type):
                 y_scale_percent, 
                 x_scale_quarter_mm, 
                 MM, 
-                color_notation_editor, 
+                color_dark, 
                 BLACK, 
-                color_editor_canvas, 
+                color_light, 
                 Score,
                 True)
             do_engrave()
@@ -1106,9 +1079,9 @@ def mouse_handling(event, event_type):
                         if evt['id'] == tags[0]:
                             Score['events']['note'].pop(idx)
                             update_connectstem(evt,editor,hbar,y_scale_percent,x_scale_quarter_mm,
-                                MM,Score,color_notation_editor, True,'r')
+                                MM,Score,color_dark, True,'r')
                             update_connectstem(evt,editor,hbar,y_scale_percent,x_scale_quarter_mm,
-                                MM,Score,color_notation_editor, True,'r')
+                                MM,Score,color_dark, True,'r')
 
             do_engrave()
             return
@@ -1126,9 +1099,9 @@ def mouse_handling(event, event_type):
                         y_scale_percent, 
                         x_scale_quarter_mm, 
                         MM, 
-                        color_notation_editor, 
+                        color_dark, 
                         BLACK, 
-                        color_editor_canvas, 
+                        color_light, 
                         Score,
                         False)
                     update_drawing_order_editor(editor)
@@ -1238,9 +1211,9 @@ def mouse_handling(event, event_type):
                             y_scale_percent, 
                             x_scale_quarter_mm, 
                             MM, 
-                            color_notation_editor, 
+                            color_dark, 
                             BLACK, 
-                            color_editor_canvas, 
+                            color_light,
                             Score,
                             False,
                             True)
@@ -1320,7 +1293,7 @@ def mouse_handling(event, event_type):
                                     y_scale_percent,
                                     x_scale_quarter_mm,
                                     MM,
-                                    color_notation_editor,
+                                    color_dark,
                                     color_highlight)
                                 hold_id = ''
                                 file_changed = True
@@ -1332,7 +1305,7 @@ def mouse_handling(event, event_type):
                             y_scale_percent,
                             x_scale_quarter_mm,
                             MM,
-                            color_notation_editor,
+                            color_dark,
                             color_highlight)
                         hold_id = ''
                         file_changed = True
@@ -1359,7 +1332,7 @@ def mouse_handling(event, event_type):
                     y_scale_percent,
                     x_scale_quarter_mm,
                     MM,
-                    color_notation_editor,
+                    color_dark,
                     color_highlight)
                 Score['events']['line-break'].append(new_linebreak)
             
@@ -1976,9 +1949,9 @@ def mouse_handling(event, event_type):
                             y_scale_percent, 
                             x_scale_quarter_mm, 
                             MM, 
-                            color_notation_editor, 
+                            color_dark, 
                             BLACK, 
-                            color_editor_canvas, 
+                            color_light, 
                             Score,
                             False)
                     update_drawing_order_editor(editor)
@@ -2003,9 +1976,9 @@ def mouse_handling(event, event_type):
                             y_scale_percent, 
                             x_scale_quarter_mm, 
                             MM, 
-                            color_notation_editor, 
+                            color_dark, 
                             BLACK, 
-                            color_editor_canvas, 
+                            color_light, 
                             Score,
                             False)
                     update_drawing_order_editor(editor)
@@ -2030,9 +2003,9 @@ def mouse_handling(event, event_type):
                             y_scale_percent, 
                             x_scale_quarter_mm, 
                             MM, 
-                            color_notation_editor, 
+                            color_dark, 
                             BLACK, 
-                            color_editor_canvas, 
+                            color_light, 
                             Score,
                             False)
                     update_drawing_order_editor(editor)
@@ -2268,8 +2241,8 @@ def exportPDF(event=''):
                     Score,
                     MM,
                     last_pianotick,
-                    color_notation_editor,
-                    color_editor_canvas,
+                    color_dark,
+                    color_light,
                     pview,root,
                     BLACK))
                 for rend in numofpages:
@@ -2292,8 +2265,8 @@ def exportPDF(event=''):
                     Score,
                     MM,
                     last_pianotick,
-                    color_notation_editor,
-                    color_editor_canvas,
+                    color_dark,
+                    color_light,
                     pview,root,
                     BLACK))
                 for rend in numofpages:
@@ -2330,8 +2303,8 @@ def exportPDF(event=''):
                         Score,
                         MM,
                         last_pianotick,
-                        color_notation_editor,
-                        color_editor_canvas,
+                        color_dark,
+                        color_light,
                         pview,root,
                         BLACK))
                 for export in numofpages:
@@ -2366,8 +2339,8 @@ def exportPDF(event=''):
                         Score,
                         MM,
                         last_pianotick,
-                        color_notation_editor,
-                        color_editor_canvas,
+                        color_dark,
+                        color_light,
                         pview,root,
                         BLACK))
                 for export in numofpages:
@@ -2408,8 +2381,8 @@ def exportPDF(event=''):
                     Score,
                     MM,
                     last_pianotick,
-                    color_notation_editor,
-                    color_editor_canvas,
+                    color_dark,
+                    color_light,
                     pview,root,
                     BLACK))
                 for rend in numofpages:
@@ -2432,8 +2405,8 @@ def exportPDF(event=''):
                     Score,
                     MM,
                     last_pianotick,
-                    color_notation_editor,
-                    color_editor_canvas,
+                    color_dark,
+                    color_light,
                     pview,root,
                     BLACK))
                 for rend in numofpages:
@@ -2491,8 +2464,8 @@ def exportPostscript():
                 Score,
                 MM,
                 last_pianotick,
-                color_notation_editor,
-                color_editor_canvas,
+                color_dark,
+                color_light,
                 pview,root,
                 BLACK))
             for rend in numofpages:
@@ -2509,8 +2482,8 @@ def exportPostscript():
                 Score,
                 MM,
                 last_pianotick,
-                color_notation_editor,
-                color_editor_canvas,
+                color_dark,
+                color_light,
                 pview,root,
                 BLACK))
             for rend in numofpages:
@@ -2572,8 +2545,8 @@ class ThreadAutoRender(threading.Thread):
                     Score,
                     MM,
                     last_pianotick,
-                    color_notation_editor,
-                    color_editor_canvas,
+                    color_dark,
+                    color_light,
                     pview,root,
                     BLACK)
             if Score['properties']['engraver'] == 'pianoscript vertical':
@@ -2582,8 +2555,8 @@ class ThreadAutoRender(threading.Thread):
                     Score,
                     MM,
                     last_pianotick,
-                    color_notation_editor,
-                    color_editor_canvas,
+                    color_dark,
+                    color_light,
                     pview,root,
                     BLACK)
         except Exception:  # as e:
@@ -2657,7 +2630,7 @@ def grideditor(event=''):
         assigns the returning value to the Score object.
     '''
     global Score, last_pianotick
-    edit = GridEditor(root,Score)
+    edit = GridDialog(root,Score)
     Score = edit.processed_score
     last_pianotick = edit.last_pianotick
     do_pianoroll()
@@ -2796,7 +2769,7 @@ def add_quick_linebreaks(e=''):
         y_scale_percent,
         x_scale_quarter_mm,
         MM,
-        color_notation_editor,
+        color_dark,
         color_highlight)
     Score['events']['line-break'] = [new_linebreak]
     new_id += 1
@@ -2828,7 +2801,7 @@ def add_quick_linebreaks(e=''):
                 y_scale_percent,
                 x_scale_quarter_mm,
                 MM,
-                color_notation_editor,
+                color_dark,
                 color_highlight)
             Score['events']['line-break'].append(new_linebreak)
         c += 1
@@ -2860,9 +2833,9 @@ def switch_hand_selection(e, direction):
                             y_scale_percent, 
                             x_scale_quarter_mm, 
                             MM, 
-                            color_notation_editor, 
+                            color_dark, 
                             BLACK, 
-                            color_editor_canvas, 
+                            color_light, 
                             Score,
                             False,
                             True)
@@ -2925,9 +2898,9 @@ def switch_hand_selection(e, direction):
 #             y_scale_percent, 
 #             x_scale_quarter_mm, 
 #             MM, 
-#             color_notation_editor, 
+#             color_dark, 
 #             BLACK, 
-#             color_editor_canvas, 
+#             color_light, 
 #             Score)
 #     elif mode == 1:
 #         cursor = {
@@ -2949,9 +2922,9 @@ def switch_hand_selection(e, direction):
 #             y_scale_percent, 
 #             x_scale_quarter_mm, 
 #             MM, 
-#             color_notation_editor, 
+#             color_dark, 
 #             BLACK, 
-#             color_editor_canvas, 
+#             color_light, 
 #             Score)
 
 #     input_mode = i_mode
@@ -3098,15 +3071,15 @@ def cycle_trough_pages(event):
 
     do_engrave()
 
-# def cycle_trough_pages_button(event=''):
+def cycle_trough_pages_button(event=''):
     
-#     global renderpageno
+    global renderpageno
 
-#     if event == ':)':
-#         renderpageno += 1
-#     else:
-#         renderpageno -= 1
-#     do_engrave()
+    if event == '<':
+        renderpageno -= 1
+    else:
+        renderpageno += 1
+    do_engrave()
 # nextpage_button.configure(command=lambda: cycle_trough_pages_button(':)'))
 # prevpage_button.configure(command=cycle_trough_pages_button)
 
@@ -3216,9 +3189,9 @@ def paste_selection(e=''):
                 y_scale_percent, 
                 x_scale_quarter_mm, 
                 MM, 
-                color_notation_editor, 
+                color_dark, 
                 BLACK, 
-                color_editor_canvas, 
+                color_light, 
                 Score)
             update_drawing_order_editor(editor)
     do_engrave()
@@ -3272,9 +3245,9 @@ def transpose_up(event=''):
                 y_scale_percent, 
                 x_scale_quarter_mm, 
                 MM, 
-                color_notation_editor, 
+                color_dark, 
                 BLACK, 
-                color_editor_canvas, 
+                color_light, 
                 Score,
                 False,
                 True)
@@ -3295,9 +3268,9 @@ def transpose_down(event=''):
                 y_scale_percent, 
                 x_scale_quarter_mm, 
                 MM, 
-                color_notation_editor, 
+                color_dark, 
                 BLACK, 
-                color_editor_canvas, 
+                color_light, 
                 Score,
                 False,
                 True)
@@ -3319,9 +3292,9 @@ def move_selection_left(event=''):
                 y_scale_percent, 
                 x_scale_quarter_mm, 
                 MM, 
-                color_notation_editor, 
+                color_dark, 
                 BLACK, 
-                color_editor_canvas, 
+                color_light, 
                 Score,
                 False,
                 True)
@@ -3342,9 +3315,9 @@ def move_selection_right(event=''):
                 y_scale_percent, 
                 x_scale_quarter_mm, 
                 MM, 
-                color_notation_editor, 
+                color_dark, 
                 BLACK, 
-                color_editor_canvas, 
+                color_light, 
                 Score,
                 False,
                 True)
@@ -3382,9 +3355,9 @@ def quantize_selection(e=''):
                 y_scale_percent, 
                 x_scale_quarter_mm, 
                 MM, 
-                color_notation_editor, 
+                color_dark, 
                 BLACK, 
-                color_editor_canvas, 
+                color_light, 
                 Score,
                 False,
                 True)
@@ -3451,38 +3424,40 @@ def engraver_switch(event=''):
 # --------------------------------------------------------
 # MENU
 # --------------------------------------------------------
-menubar = Menu(root, relief='flat', bg=color_basic_gui, fg=color_editor_canvas)
+menubar = Menu(root, relief='flat', bg=color_gui_base, fg=color_light, font=('courier', 16))
 root.config(menu=menubar)
 fileMenu = Menu(menubar, tearoff=0)
-fileMenu.add_command(label='New [ctl+n]', command=new_file)
-fileMenu.add_command(label='Open [ctl+o]', command=load_file)
-fileMenu.add_command(label='Save [ctl+s]', command=save)
-fileMenu.add_command(label='Save as... [alt+s]', command=save_as)
+fileMenu.add_command(label='New [ctl+n]', command=new_file, font=('courier', 16))
+fileMenu.add_command(label='Open [ctl+o]', command=load_file, font=('courier', 16))
+fileMenu.add_command(label='Save [ctl+s]', command=save, font=('courier', 16))
+fileMenu.add_command(label='Save as... [alt+s]', command=save_as, font=('courier', 16))
 fileMenu.add_separator()
-fileMenu.add_command(label='Load midi [ctl+m]', command=midi_import)
+fileMenu.add_command(label='Load midi [ctl+m]', command=midi_import, font=('courier', 16))
 fileMenu.add_separator()
-fileMenu.add_command(label="Export ps", command=exportPostscript)
-fileMenu.add_command(label="Export pdf [ctl+e]", command=exportPDF)
-fileMenu.add_command(label="Export midi*", command=lambda: midiexport(root,Score))
+fileMenu.add_command(label="Export ps", command=exportPostscript, font=('courier', 16))
+fileMenu.add_command(label="Export pdf [ctl+e]", command=exportPDF, font=('courier', 16))
+fileMenu.add_command(label="Export midi*", command=lambda: midiexport(root,Score), font=('courier', 16))
 fileMenu.add_separator()
-fileMenu.add_command(label="Grid editor... [g]", underline=None, command=grideditor)
-fileMenu.add_command(label="Score options... [s]", underline=None, command=options_editor)
+fileMenu.add_command(label="Grid editor... [g]", underline=None, command=grideditor, font=('courier', 16))
+fileMenu.add_command(label="Score options... [s]", underline=None, command=options_editor, font=('courier', 16))
 fileMenu.add_separator()
-fileMenu.add_command(label="Exit", underline=None, command=quit_editor)
-menubar.add_cascade(label="File", underline=None, menu=fileMenu)
+fileMenu.add_command(label="Exit", underline=None, command=quit_editor, font=('courier', 16))
+menubar.add_cascade(label="File", underline=None, menu=fileMenu, font=('courier', 16))
 selectionMenu = Menu(menubar, tearoff=0)
-selectionMenu.add_command(label="Cut [ctl+x]", underline=None, command=cut_selection)
-selectionMenu.add_command(label="Copy [ctl+c]", underline=None, command=copy_selection)
-selectionMenu.add_command(label="Paste [ctl+v]", underline=None, command=paste_selection)
+selectionMenu.add_command(label="Cut [ctl+x]", underline=None, command=cut_selection, font=('courier', 16))
+selectionMenu.add_command(label="Copy [ctl+c]", underline=None, command=copy_selection, font=('courier', 16))
+selectionMenu.add_command(label="Paste [ctl+v]", underline=None, command=paste_selection, font=('courier', 16))
 selectionMenu.add_separator()
-selectionMenu.add_command(label="Select all [ctl+a]", underline=None, command=select_all)
-menubar.add_cascade(label="Selection", underline=None, menu=selectionMenu)
+selectionMenu.add_command(label="Select all [ctl+a]", underline=None, command=select_all, font=('courier', 16))
+menubar.add_cascade(label="Selection", underline=None, menu=selectionMenu, font=('courier', 16))
 toolsMenu = Menu(menubar, tearoff=1)
-toolsMenu.add_command(label='Redraw editor', command=lambda: do_pianoroll())
-toolsMenu.add_command(label='Quantize', command=lambda: quantize(Score))
-toolsMenu.add_command(label='Add quick line breaks', command=lambda: add_quick_linebreaks())
-toolsMenu.add_command(label='Transpose', command=lambda: transpose())
+toolsMenu.add_command(label='Redraw editor', command=lambda: do_pianoroll(), font=('courier', 16))
+toolsMenu.add_command(label='Quantize', command=lambda: quantize(Score), font=('courier', 16))
+toolsMenu.add_command(label='Add quick line breaks', command=lambda: add_quick_linebreaks(), font=('courier', 16))
+toolsMenu.add_command(label='Transpose', command=lambda: transpose(), font=('courier', 16))
 menubar.add_cascade(label="Tools", underline=None, menu=toolsMenu)
+menubar.add_command(label='< previous', command=lambda: cycle_trough_pages_button('<'), background='grey', activebackground=color_highlight)
+menubar.add_command(label='next >', command=lambda: cycle_trough_pages_button('>'), background='grey', activebackground=color_highlight)
 
 
 
@@ -3524,6 +3499,8 @@ if platform.system() == 'Linux':
     editor.bind("<4>", lambda event: editor.xview('scroll', -1, 'units'))
     pview.bind("<5>", lambda event: pview.yview('scroll', 1, 'units'))
     pview.bind("<4>", lambda event: pview.yview('scroll', -1, 'units'))
+    elements_treeview.bind("<5>", lambda event: elements_treeview.yview('scroll', 1, 'items'))
+    elements_treeview.bind("<4>", lambda event: elements_treeview.yview('scroll', -1, 'units'))
     divide_spin.bind("<5>", lambda event: divide_spin.xview('scroll', 1, 'units'))
     divide_spin.bind("<4>", lambda event: divide_spin.xview('scroll', -1, 'units'))
 def function():
@@ -3532,6 +3509,7 @@ def function():
 if platform.system() == 'Windows':
     editor.bind("<MouseWheel>", lambda event: editor.xview('scroll', -round(event.delta / 120), 'units'))
     pview.bind("<MouseWheel>", lambda event: pview.yview('scroll', -round(event.delta / 120), 'units'))
+    elements_treeview.bind("<MouseWheel>", lambda event: elements_treeview.yview('scroll', -round(event.delta / 120), 'units'))
 list_dur.bind('<<ListboxSelect>>', grid_selector)
 divide_spin.configure(command=lambda: grid_selector())
 divide_spin.bind('<Return>', lambda event: grid_selector())
@@ -3649,7 +3627,9 @@ root.bind('<F11>', fullscreen)
 
 
 if __name__ == '__main__':
-    
+
+    #main_editor = MainEditor(editor, elements_treeview, Score)
     new_file()
     #test_file()
     root.mainloop()
+

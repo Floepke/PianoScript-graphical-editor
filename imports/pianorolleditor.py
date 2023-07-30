@@ -1,3 +1,6 @@
+#! python3.9.2
+# coding: utf-8
+
 '''
 This file is part of the pianoscript project: http://www.pianoscript.org/
 
@@ -393,7 +396,6 @@ def update_drawing_order_editor(canvas):
     canvas.tag_raise('stem')   
     canvas.tag_raise('new')
     canvas.tag_raise('connectstem')
-    canvas.tag_raise('cursor')
     canvas.tag_raise('countline')
     canvas.tag_raise('texttext')
     canvas.tag_raise('startrepeat')
@@ -401,6 +403,7 @@ def update_drawing_order_editor(canvas):
     canvas.tag_raise('linebreak')
     canvas.tag_raise('staffsizer')
     canvas.tag_raise('slur')
+    canvas.tag_raise('cursor')
     
 
 

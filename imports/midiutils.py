@@ -1,3 +1,6 @@
+#! python3.9.2
+# coding: utf-8
+
 '''
 Copyright 2023 Philip Bergwerf
 

@@ -1,3 +1,5 @@
+#! python3.9.2
+# coding: utf-8
 '''
 This file is part of the pianoscript project: http://www.pianoscript.org/
 
