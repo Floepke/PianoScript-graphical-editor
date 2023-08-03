@@ -29,8 +29,6 @@ __copyright__ = '© Sihir 2023-2023 all rights reserved'  # noqa
 
 from sys import exit as _exit
 
-from typing import Callable
-
 from PIL import Image
 from tkinter import Tk
 
@@ -48,12 +46,9 @@ class Tree(Frame):
 
     def __init__(self, master, **kwargs):
         """ initialize the frame """
-
-        # self.single_click: Callable = kwargs.get('single_click')
-        # self.double_click: Callable = kwargs.get('double_click')
         self.SortDir = True
         self.ignore_single_click = False
-        self.selecteditem = 'right'
+        self.selecteditem = 'note_right'
 
         Frame.__init__(self, master, width=100, relief='flat')
 
@@ -75,150 +70,79 @@ class Tree(Frame):
         style = ttk.Style(master)
         style.configure('Treeview', rowheight=40)
 
-        # Node note:
-        self.node_note = self.tree.insert(parent='',
-                                id='folder.note',
-                                index='end',
-                                text=' Note:',
-                                open=True,
-                                tag='folder'
-                                )
+        # setup the elements_tree:
+        self.elements_tree = [
+            {
+                "text":"Note",
+                "id":"folder.note",
+                "items":[
+                    {
+                        "id":"note_right",
+                        "text":"Right",
+                        "image":PhotoImage(Image.open(fp="icons/noteinput_R.png").resize((30,30)))
+                    },
+                    {
+                        "id":"note_left",
+                        "text":"Left",
+                        "image":PhotoImage(Image.open(fp="icons/noteinput_L.png").resize((30,30)))
+                    },
+                    {
+                        "id":"accidental",
+                        "text":"Accidental",
+                        "image":PhotoImage(Image.open(fp="icons/accidental.png").resize((30,30)))
+                    },
+                    {
+                        "id":"beam",
+                        "text":"Beam",
+                        "image":PhotoImage(Image.open(fp="icons/beam.png").resize((30,30)))
+                    }
+                ]
+            },
+            {
+                "text":"Note",
+                "id":"folder.x",
+                "items":[
+                    {
+                        "id":"a",
+                        "text":"Right",
+                        "image":PhotoImage(Image.open(fp="icons/noteinput_R.png").resize((30,30)))
+                    },
+                    {
+                        "id":"b",
+                        "text":"Left",
+                        "image":PhotoImage(Image.open(fp="icons/noteinput_L.png").resize((30,30)))
+                    },
+                    {
+                        "id":"c",
+                        "text":"Accidental",
+                        "image":PhotoImage(Image.open(fp="icons/accidental.png").resize((30,30)))
+                    },
+                    {
+                        "id":"d",
+                        "text":"Beam",
+                        "image":PhotoImage(Image.open(fp="icons/beam.png").resize((30,30)))
+                    }
+                ]
+            }
+        ]
 
-        img = Image.open(fp="icons/noteinput_R.png")
-        img.resize((24,24))
-        self.img_noteinput_l = PhotoImage(img)
-        self.tree.insert(parent=self.node_note,
-                         id='right',
-                         index='end',
-                         text=' Right',
-                         image=self.img_noteinput_l
-                         )
-
-        img = Image.open(fp="icons/noteinput_L.png")
-        img.resize((24,24))
-        self.img_noteinput_r = PhotoImage(img)
-        self.tree.insert(parent=self.node_note,
-                         id='left',
-                         index='end',
-                         text=' Left',
-                         image=self.img_noteinput_r
-                         )
-
-        img = Image.open(fp="icons/accidental.png")
-        img.resize((24,24))
-        self.img_accidental = PhotoImage(img)
-        self.tree.insert(parent=self.node_note,
-                         id='accidental',
-                         index='end',
-                         text=' Accidental',
-                         image=self.img_accidental
-                         )
-
-        img = Image.open(fp="icons/beam.png")
-        img.resize((24,24))
-        self.img_beam = PhotoImage(img)
-        self.tree.insert(parent=self.node_note,
-                         id='beamtool',
-                         index='end',
-                         text=' Beam',
-                         image=self.img_beam
-                         )
-
-        # Node layout:
-        self.node_layout = self.tree.insert(parent='',
-                                id='folder.layout',
-                                index='end',
-                                text=' Layout:',
-                                open=True,
-                                tag='folder'
-                                )
-
-        img = Image.open(fp="icons/linebreak.png")
-        img.resize((24,24))
-        self.img_linebreak = PhotoImage(img)
-        self.tree.insert(parent=self.node_layout,
-                         id='linebreak',
-                         index='end',
-                         text=' Linebreak',
-                         image=self.img_linebreak
-                         )
-
-        img = Image.open(fp="icons/staffspacer.png")
-        img.resize((24,24))
-        self.img_staffsizer = PhotoImage(img)
-        self.tree.insert(parent=self.node_layout,
-                         id='staffsizer',
-                         index='end',
-                         text=' Staffsizer',
-                         image=self.img_staffsizer
-                         )
-
-        # Node lines
-        self.node_lines = self.tree.insert(parent='',
-                                id='folder.lines',
-                                index='end',
-                                text=' Lines:',
-                                open=True,
-                                tag='folder'
-                                )
-
-        img = Image.open(fp="icons/countline.png")
-        img.resize((24,24))
-        self.img_countline = PhotoImage(img)
-        self.tree.insert(parent=self.node_lines,
-                         id='countline',
-                         index='end',
-                         text=' Countline',
-                         image=self.img_countline
-                         )
-
-        img = Image.open(fp="icons/slur.png")
-        img.resize((24,24))
-        self.img_slur = PhotoImage(img)
-        self.tree.insert(parent=self.node_lines,
-                         id='slur',
-                         index='end',
-                         text=' Slur',
-                         image=self.img_slur
-                         )
-
-        # Node text
-        self.node_text = self.tree.insert(parent='',
-                                id='folder.text',
-                                index='end',
-                                text=' Text:',
-                                open=True,
-                                tag='folder'
-                                )
-
-        img = Image.open(fp="icons/text.png")
-        img.resize((24,24))
-        self.img_text = PhotoImage(img)
-        self.tree.insert(parent=self.node_text,
-                         id='text',
-                         index='end',
-                         text=' Text',
-                         image=self.img_text
-                         )
-
-        # Node bar
-        self.node_bar = self.tree.insert(parent='',
-                                id='folder.bar',
-                                index='end',
-                                text=' Bar:',
-                                open=True,
-                                tag='folder'
-                                )
-
-        img = Image.open(fp="icons/repeats.png")
-        img.resize((24,24))
-        self.img_repeats = PhotoImage(img)
-        self.tree.insert(parent=self.node_bar,
-                         id='repeats',
-                         index='end',
-                         text=' Repeats',
-                         image=self.img_repeats
-                         )
+        # placing the elements tree in the treeview:
+        for fld in self.elements_tree:
+            # create folder
+            folder = self.tree.insert(parent='',
+                        id=fld['id'],
+                        index='end',
+                        text=' '+fld['text'],
+                        open=True,
+                        tag='folder'
+                        )
+            for it in fld['items']:
+                self.tree.insert(parent=folder,
+                            id=it['id'],
+                            index='end',
+                            text=' '+it['text'],
+                            image=it['image']
+                            )
 
         self.tree.bind("<ButtonPress-1>", self.on_single_click)
         self.tree.bind("<Double-1>", self.on_single_click)
@@ -246,3 +170,6 @@ class Tree(Frame):
     @property
     def get(self):
         return self.selecteditem
+
+    def set(self, element: str):
+        self.tree.selection_set(element)

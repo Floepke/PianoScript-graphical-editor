@@ -95,7 +95,7 @@ from tkinter import simpledialog
 import platform, subprocess, os, threading, json, traceback, ctypes
 from mido import MidiFile
 from shutil import which
-import tkinter.ttk as ttk
+import tkinter.ttk as ttk   
 if platform.system() == 'Darwin':
     from tkmacosx import Button
 else:
@@ -247,10 +247,10 @@ editorpanel = Frame(master_paned, bg=color_gui_base, width=scrwidth / 3 * 1.54)
 master_paned.add(editorpanel)
 editor = Canvas(editorpanel, bg=color_light, relief='flat', cursor='cross')
 editor.place(relwidth=1, relheight=1)
-hbar = Scrollbar(editor, orient='horizontal', width=20, relief='flat', bg=color_gui_base)
-hbar.pack(side='bottom', fill='x')
-hbar.config(command=editor.xview)
-editor.configure(xscrollcommand=hbar.set)
+# hbar = Scrollbar(editor, orient='horizontal', width=20, relief='flat', bg=color_gui_base)
+# hbar.pack(side='bottom', fill='x')
+# hbar.config(command=editor.xview)
+# editor.configure(xscrollcommand=hbar.set)
 
 # print view
 printpanel = Frame(master_paned, bg=color_light)
@@ -569,262 +569,262 @@ hold_id = ''
 
 
 
-def do_pianoroll(event='event'):
-    '''
-        This function draws the pianoroll-view
-        based on the Score
-    '''
-    editor.delete('all')
-    editor.create_text(0,0,
-        text='Loading pianoroll...',
-        fill='red',
-        font=('courier', 30, 'bold'),
-        tag='loading',
-        anchor='nw')
+# def do_pianoroll(event='event'):
+#     '''
+#         This function draws the pianoroll-view
+#         based on the Score
+#     '''
+#     editor.delete('all')
+#     editor.create_text(0,0,
+#         text='Loading pianoroll...',
+#         fill='red',
+#         font=('courier', 30, 'bold'),
+#         tag='loading',
+#         anchor='nw')
 
-    global last_pianotick, new_id, x_scale_quarter_mm, y_scale_percent
+#     global last_pianotick, new_id, x_scale_quarter_mm, y_scale_percent
 
-    x_scale_quarter_mm = Score['properties']['editor-x-zoom']
-    y_scale_percent = Score['properties']['editor-y-zoom'] / 100
+#     x_scale_quarter_mm = Score['properties']['editor-x-zoom']
+#     y_scale_percent = Score['properties']['editor-y-zoom'] / 100
     
-    # calculate last_pianotick (staff length)
-    last_pianotick = 0
-    for grid in Score['events']['grid']:
+#     # calculate last_pianotick (staff length)
+#     last_pianotick = 0
+#     for grid in Score['events']['grid']:
 
-        last_pianotick += (grid['amount'] * measure_length((grid['numerator'], grid['denominator'])))
+#         last_pianotick += (grid['amount'] * measure_length((grid['numerator'], grid['denominator'])))
 
-    # calculate dimensions for staff (in px)
-    root.update()
-    editor_height = editor.winfo_height() - hbar.winfo_height()
-    staff_y_margin = (editor_height - (y_scale_percent * editor_height)) / 2
-    editor_x_margin = staff_y_margin # not sure
-    staff_height = editor_height - staff_y_margin - staff_y_margin
+#     # calculate dimensions for staff (in px)
+#     root.update()
+#     editor_height = editor.winfo_height() - hbar.winfo_height()
+#     staff_y_margin = (editor_height - (y_scale_percent * editor_height)) / 2
+#     editor_x_margin = staff_y_margin # not sure
+#     staff_height = editor_height - staff_y_margin - staff_y_margin
     
-    staff_x0 = editor_x_margin
-    staff_x1 = editor_x_margin + (((x_scale_quarter_mm / 256) * MM) * last_pianotick)
-    staff_y0 = staff_y_margin
-    staff_y1 = staff_y_margin + staff_height
+#     staff_x0 = editor_x_margin
+#     staff_x1 = editor_x_margin + (((x_scale_quarter_mm / 256) * MM) * last_pianotick)
+#     staff_y0 = staff_y_margin
+#     staff_y1 = staff_y_margin + staff_height
 
-    y_factor = staff_height / 490
+#     y_factor = staff_height / 490
 
-    # DOC STAFF #
-    x_curs = staff_x0
-    measnum = 1
-    for grid_msg in Score['events']['grid']:
+#     # DOC STAFF #
+#     x_curs = staff_x0
+#     measnum = 1
+    # for grid_msg in Score['events']['grid']:
 
-        # draw time signature change
-        if grid_msg['visible']:
-            editor.create_text(x_curs+5,
-                staff_y1+20,
-                text=str(grid_msg['numerator'])+'/'+str(grid_msg['denominator']),
-                font=('courier', 30, 'bold'),
-                anchor='nw',
-                fill=color_dark)
+    #     # draw time signature change
+    #     if grid_msg['visible']:
+    #         editor.create_text(x_curs+5,
+    #             staff_y1+20,
+    #             text=str(grid_msg['numerator'])+'/'+str(grid_msg['denominator']),
+    #             font=('courier', 30, 'bold'),
+    #             anchor='nw',
+    #             fill=color_dark)
 
-        for meas in range(grid_msg['amount']):
+    #     for meas in range(grid_msg['amount']):
 
-            # draw barlines
-            grid_size = ((x_scale_quarter_mm / 256) * MM) * measure_length(
-                (grid_msg['numerator'], grid_msg['denominator']))
-            editor.create_line(x_curs,
-                staff_y0,
-                x_curs,
-                staff_y1,
-                width=2,
-                tag='staffline',
-                fill=color_dark,
-                state='disabled')
-            editor.create_text(x_curs+5,
-                staff_y0,
-                text=measnum,
-                anchor='sw',
-                fill=color_dark,
-                font=('courier', 30, 'bold'))
+    #         # draw barlines
+    #         grid_size = ((x_scale_quarter_mm / 256) * MM) * measure_length(
+    #             (grid_msg['numerator'], grid_msg['denominator']))
+    #         editor.create_line(x_curs,
+    #             staff_y0,
+    #             x_curs,
+    #             staff_y1,
+    #             width=2,
+    #             tag='staffline',
+    #             fill=color_dark,
+    #             state='disabled')
+    #         editor.create_text(x_curs+5,
+    #             staff_y0,
+    #             text=measnum,
+    #             anchor='sw',
+    #             fill=color_dark,
+    #             font=('courier', 30, 'bold'))
 
-            # draw grid
-            for grid in range(grid_msg['grid']):
+#             # draw grid
+#             for grid in range(grid_msg['grid']):
 
-                editor.create_line(x_curs,
-                    staff_y0,
-                    x_curs,
-                    staff_y1,
-                    width=1,
-                    dash=(6,6),
-                    tag='staffline',
-                    fill=color_dark,
-                    state='disabled')
+#                 editor.create_line(x_curs,
+#                     staff_y0,
+#                     x_curs,
+#                     staff_y1,
+#                     width=1,
+#                     dash=(6,6),
+#                     tag='staffline',
+#                     fill=color_dark,
+#                     state='disabled')
 
-                x_curs += grid_size / grid_msg['grid']
+#                 x_curs += grid_size / grid_msg['grid']
 
-            measnum += 1
+#             measnum += 1
 
-    # draw endline
-    editor.create_line(staff_x1,
-        staff_y0,
-        staff_x1,
-        staff_y1,
-        width=4,
-        tag='staffline',
-        fill=color_dark,
-        state='disabled')
+#     # draw endline
+#     editor.create_line(staff_x1,
+#         staff_y0,
+#         staff_x1,
+#         staff_y1,
+#         width=4,
+#         tag='staffline',
+#         fill=color_dark,
+#         state='disabled')
 
-    # draw staff-lines
-    y_curs = staff_y0
+#     # draw staff-lines
+#     y_curs = staff_y0
 
-    for staff in range(7):
+    # for staff in range(7):
 
-        for line in range(3):
-            editor.create_line(staff_x0,
-                y_curs,
-                staff_x1,
-                y_curs,
-                width=2,
-                tag='staffline',
-                fill=color_dark,
-                state='disabled')
-            y_curs += 10 * y_factor
+    #     for line in range(3):
+    #         editor.create_line(staff_x0,
+    #             y_curs,
+    #             staff_x1,
+    #             y_curs,
+    #             width=2,
+    #             tag='staffline',
+    #             fill=color_dark,
+    #             state='disabled')
+    #         y_curs += 10 * y_factor
 
-        y_curs += 10 * y_factor
+    #     y_curs += 10 * y_factor
 
-        for line in range(2):
-            if staff == 3:
-                editor.create_line(staff_x0,
-                    y_curs,
-                    staff_x1,
-                    y_curs,
-                    width=1,
-                    tag='staffline',
-                    dash=(6,6),
-                    fill=color_dark,
-                    state='disabled')
-            else:
-                editor.create_line(staff_x0,
-                    y_curs,
-                    staff_x1,
-                    y_curs,
-                    width=1,
-                    tag='staffline',
-                    fill=color_dark,
-                    state='disabled')
-            y_curs += 10 * y_factor
+    #     for line in range(2):
+    #         if staff == 3:
+    #             editor.create_line(staff_x0,
+    #                 y_curs,
+    #                 staff_x1,
+    #                 y_curs,
+    #                 width=1,
+    #                 tag='staffline',
+    #                 dash=(6,6),
+    #                 fill=color_dark,
+    #                 state='disabled')
+    #         else:
+    #             editor.create_line(staff_x0,
+    #                 y_curs,
+    #                 staff_x1,
+    #                 y_curs,
+    #                 width=1,
+    #                 tag='staffline',
+    #                 fill=color_dark,
+    #                 state='disabled')
+    #         y_curs += 10 * y_factor
 
-        y_curs += 10 * y_factor
+    #     y_curs += 10 * y_factor
 
-    editor.create_line(staff_x0,
-        y_curs,
-        staff_x1,
-        y_curs,
-        width=2,
-        tag='staffline',
-        fill=color_dark,
-        state='disabled')
+    # editor.create_line(staff_x0,
+    #     y_curs,
+    #     staff_x1,
+    #     y_curs,
+    #     width=2,
+    #     tag='staffline',
+    #     fill=color_dark,
+    #     state='disabled')
 
-    # update bbox
-    _, _, bbox3, bbox4 = editor.bbox('all')
-    editor.configure(scrollregion=(0, 0, bbox3 + editor_x_margin, bbox4 + staff_y_margin))
+#     # update bbox
+#     _, _, bbox3, bbox4 = editor.bbox('all')
+#     editor.configure(scrollregion=(0, 0, bbox3 + editor_x_margin, bbox4 + staff_y_margin))
 
-    # DOC EVENTS
+#     # DOC EVENTS
 
-    new_id = 0
+#     new_id = 0
 
-    # draw note events
-    for note in Score['events']['note']:
-        note['id'] = 'note%i'%new_id
-        if note['staff'] == int(staffselect_variable.get())-1: draw_note_pianoroll(note,
-            False, 
-            editor, 
-            hbar, 
-            y_scale_percent, 
-            x_scale_quarter_mm, 
-            MM, 
-            color_dark, 
-            BLACK, 
-            color_light, 
-            Score)
-        new_id += 1
+#     # draw note events
+#     for note in Score['events']['note']:
+#         note['id'] = 'note%i'%new_id
+#         if note['staff'] == int(staffselect_variable.get())-1: draw_note_pianoroll(note,
+#             False, 
+#             editor, 
+#             hbar, 
+#             y_scale_percent, 
+#             x_scale_quarter_mm, 
+#             MM, 
+#             color_dark, 
+#             BLACK, 
+#             color_light, 
+#             Score)
+#         new_id += 1
 
-    # draw newline events
-    for linebreak in Score['events']['line-break']:
-        linebreak['id'] = 'linebreak%i'%new_id
-        draw_linebreak_editor(linebreak,
-            editor,
-            hbar,
-            y_scale_percent,
-            x_scale_quarter_mm,
-            MM,
-            color_dark,
-            color_highlight)
-        new_id += 1
+#     # draw newline events
+#     for linebreak in Score['events']['line-break']:
+#         linebreak['id'] = 'linebreak%i'%new_id
+#         draw_linebreak_editor(linebreak,
+#             editor,
+#             hbar,
+#             y_scale_percent,
+#             x_scale_quarter_mm,
+#             MM,
+#             color_dark,
+#             color_highlight)
+#         new_id += 1
 
-    # draw countline events
-    for cl in Score['events']['count-line']:
-        cl['id'] = 'countline%i'%new_id
-        if cl['staff'] == int(staffselect_variable.get())-1: 
-            draw_countline_editor(cl,
-                editor,
-                hbar,
-                y_scale_percent,
-                x_scale_quarter_mm,
-                MM,
-                color_dark)
-        new_id += 1
+#     # draw countline events
+#     for cl in Score['events']['count-line']:
+#         cl['id'] = 'countline%i'%new_id
+#         if cl['staff'] == int(staffselect_variable.get())-1: 
+#             draw_countline_editor(cl,
+#                 editor,
+#                 hbar,
+#                 y_scale_percent,
+#                 x_scale_quarter_mm,
+#                 MM,
+#                 color_dark)
+#         new_id += 1
 
-    # draw text events
-    for txt in Score['events']['text']:
-        txt['id'] = 'text%i'%new_id
-        if txt['staff'] == int(staffselect_variable.get())-1: draw_text_editor(txt,
-            editor, hbar, y_scale_percent, 
-            x_scale_quarter_mm, MM)
-        new_id += 1
+#     # draw text events
+#     for txt in Score['events']['text']:
+#         txt['id'] = 'text%i'%new_id
+#         if txt['staff'] == int(staffselect_variable.get())-1: draw_text_editor(txt,
+#             editor, hbar, y_scale_percent, 
+#             x_scale_quarter_mm, MM)
+#         new_id += 1
 
-    # draw staffsizer events
-    for ss in Score['events']['staff-sizer']:
-        ss['id'] = 'staffsizer%i'%new_id
-        if ss['staff'] == int(staffselect_variable.get())-1: draw_staffsizer_editor(ss,
-            editor, hbar, y_scale_percent, 
-            x_scale_quarter_mm, MM)
-        new_id += 1
+#     # draw staffsizer events
+#     for ss in Score['events']['staff-sizer']:
+#         ss['id'] = 'staffsizer%i'%new_id
+#         if ss['staff'] == int(staffselect_variable.get())-1: draw_staffsizer_editor(ss,
+#             editor, hbar, y_scale_percent, 
+#             x_scale_quarter_mm, MM)
+#         new_id += 1
 
-    # draw start repeat events
-    for sr in Score['events']['start-repeat']:
-        sr['id'] = 'startrepeat%i'%new_id
-        draw_startrepeat_editor(sr,
-            editor, hbar, y_scale_percent, 
-            x_scale_quarter_mm, MM)
-        new_id += 1
+#     # draw start repeat events
+#     for sr in Score['events']['start-repeat']:
+#         sr['id'] = 'startrepeat%i'%new_id
+#         draw_startrepeat_editor(sr,
+#             editor, hbar, y_scale_percent, 
+#             x_scale_quarter_mm, MM)
+#         new_id += 1
 
-    # draw end repeat events
-    for er in Score['events']['end-repeat']:
-        er['id'] = 'endrepeat%i'%new_id
-        draw_endrepeat_editor(er,
-            editor, hbar, y_scale_percent, 
-            x_scale_quarter_mm, MM)
-        new_id += 1
+#     # draw end repeat events
+#     for er in Score['events']['end-repeat']:
+#         er['id'] = 'endrepeat%i'%new_id
+#         draw_endrepeat_editor(er,
+#             editor, hbar, y_scale_percent, 
+#             x_scale_quarter_mm, MM)
+#         new_id += 1
 
-    # draw beam events
-    for bm in Score['events']['beam']:
-        bm['id'] = 'beam%i'%new_id
-        if bm['staff'] == int(staffselect_variable.get())-1: 
-            draw_beam_editor(bm,
-                editor, hbar, y_scale_percent, 
-                x_scale_quarter_mm, MM)
-        new_id += 1
+#     # draw beam events
+#     for bm in Score['events']['beam']:
+#         bm['id'] = 'beam%i'%new_id
+#         if bm['staff'] == int(staffselect_variable.get())-1: 
+#             draw_beam_editor(bm,
+#                 editor, hbar, y_scale_percent, 
+#                 x_scale_quarter_mm, MM)
+#         new_id += 1
 
-    # draw slur events
-    for sl in Score['events']['slur']:
-        sl['id'] = 'slur%i'%new_id
-        if sl['staff'] == int(staffselect_variable.get())-1:
-            slur_editor(sl,
-                editor,
-                hbar,
-                y_scale_percent,
-                x_scale_quarter_mm,
-                MM)
-        new_id += 1
+#     # draw slur events
+#     for sl in Score['events']['slur']:
+#         sl['id'] = 'slur%i'%new_id
+#         if sl['staff'] == int(staffselect_variable.get())-1:
+#             slur_editor(sl,
+#                 editor,
+#                 hbar,
+#                 y_scale_percent,
+#                 x_scale_quarter_mm,
+#                 MM)
+#         new_id += 1
 
-    update_drawing_order_editor(editor)
+#     update_drawing_order_editor(editor)
 
-    editor.delete('loading')
+#     editor.delete('loading')
 
     
 
@@ -2580,16 +2580,16 @@ thread_auto_render.start()
 
 
 
-root.update()
-window_width, window_height = root.winfo_width(), root.winfo_height()
-def check_resize():
-    global window_width, window_height
-    if (window_width != root.winfo_width()) or (window_height != root.winfo_height()):
-        window_width, window_height = root.winfo_width(),root.winfo_height()
-        threading.Thread(target=do_pianoroll()).start()
-        do_engrave()
-    root.after(500,check_resize)
-check_resize()
+# root.update()
+# window_width, window_height = root.winfo_width(), root.winfo_height()
+# def check_resize():
+#     global window_width, window_height
+#     if (window_width != root.winfo_width()) or (window_height != root.winfo_height()):
+#         window_width, window_height = root.winfo_width(),root.winfo_height()
+#         threading.Thread(target=do_pianoroll()).start()
+#         do_engrave()
+#     root.after(500,check_resize)
+# check_resize()
 
 
 
@@ -3489,7 +3489,7 @@ if platform.system() == 'Darwin':
     editor.bind('<ButtonRelease-2>', lambda event: mouse_handling(event, 'btn3release'))
     #toolbarpanel.bind('<Button-2>', lambda e: do_popup(e, setMenu))
     # mac scroll
-    editor.bind("<MouseWheel>", lambda event: editor.xview_scroll(-1 * event.delta, 'units'))
+    editor.bind("<MouseWheel>", lambda event: editor.yview_scroll(-1 * event.delta, 'units'))
     pview.bind("<MouseWheel>", lambda event: pview.yview_scroll(-1 * event.delta, 'units'))
     pview.bind('<Button-1>', lambda e: cycle_trough_pages(e))
     pview.bind('<Button-2>', lambda e: cycle_trough_pages(e))
@@ -3507,7 +3507,7 @@ def function():
     pass
 # windows scroll
 if platform.system() == 'Windows':
-    editor.bind("<MouseWheel>", lambda event: editor.xview('scroll', -round(event.delta / 120), 'units'))
+    editor.bind("<MouseWheel>", lambda event: editor.yview('scroll', -round(event.delta / 120), 'units'))
     pview.bind("<MouseWheel>", lambda event: pview.yview('scroll', -round(event.delta / 120), 'units'))
     elements_treeview.bind("<MouseWheel>", lambda event: elements_treeview.yview('scroll', -round(event.delta / 120), 'units'))
 list_dur.bind('<<ListboxSelect>>', grid_selector)
@@ -3546,8 +3546,8 @@ root.bind('<Control-o>', load_file)
 root.bind('<Control-O>', load_file)
 root.bind('<Control-s>', save)
 root.bind('<Control-S>', save_as)
-root.bind('<Control-r>', do_pianoroll)
-root.bind('<Control-R>', do_pianoroll)
+# root.bind('<Control-r>', do_pianoroll)
+# root.bind('<Control-R>', do_pianoroll)
 root.bind('<Control-e>', exportPDF)
 root.bind('<Up>', transpose_up)
 root.bind('<Down>', transpose_down)
@@ -3628,8 +3628,8 @@ root.bind('<F11>', fullscreen)
 
 if __name__ == '__main__':
 
-    #main_editor = MainEditor(editor, elements_treeview, Score)
-    new_file()
+    MainEditor(editor, elements_treeview, Score, root)
+    #new_file()
     #test_file()
     root.mainloop()
 

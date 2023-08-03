@@ -66,7 +66,7 @@ def barline_times(time_signatures):
     '''
         This function returns a list of
         times from every barline in the Score.
-        It takes the grid from Score
+        It takes the grid from Score['events']['grid']
     '''
     bl_times = []
     count = 0

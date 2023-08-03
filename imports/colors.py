@@ -49,9 +49,9 @@ color_gui_base = '#362419'
 color_gui_contrast = '#c8c8c8'
 color_highlight = '#b59b7c'
 
-# summer
-color_light = '#fff'
-color_dark = 'black'
-color_gui_base = '#241936'
-color_gui_contrast = '#c8c8c8'
-color_highlight = '#ab3a60'
+# # summer
+# color_light = '#fff'
+# color_dark = 'black'
+# color_gui_base = '#241936'
+# color_gui_contrast = '#c8c8c8'
+# color_highlight = '#ab3a60'
