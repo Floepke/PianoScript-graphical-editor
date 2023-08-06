@@ -31,28 +31,29 @@ This file contains all code for the editor:
 '''
 
 # imports
-if not __name__ == '__main__':
-    from imports.griddialog import GridDialog
-    from imports.optionsdialog import OptionsDialog
+# if not __name__ == '__main__':
+#     from imports.griddialog import GridDialog
+#     from imports.optionsdialog import OptionsDialog
 import platform
 from imports.colors import *
-from imports.tools import measure_length
+from imports.draw_staff import DrawStaff
+#from imports.tools import measure_length
 
 class MainEditor():
     """docstring for Editor"""
-    def __init__(self, Editor, element_tree, Score: dict, root):
+    def __init__(self, root, editor, element_tree, score):
 
-        self.editor = Editor # the editor canvas widget
-        self.score = Score # the savefile we are editing using the editor
-        self.element_tree = element_tree
         self.root = root
+        self.editor = editor # the editor canvas widget
+        self.element_tree = element_tree
+        self.score = score # the savefile we are editing using the editor
 
         self.edit_data = { # purpose: keeping track of all data for the editors usage
             'last_pianotick':100, # the last pianotick of the Score
             'new_id':0, # used to give every element a unique id
             'snap_grid':128, # the current selected grid from the grid selector
             'element':self.element_tree.get, # lookup here which element is selected in the element_tree
-            'ystaffzoom':1, # zoom setting in the y axis
+            'zoom(pianotick)':4096, # zoom setting in the y axis
             'mouse':{ # all info for the mouse
                 'x':0, # x position of the mouse in the editor view
                 'y':0, # y position of the mouse in the editor view
@@ -75,10 +76,11 @@ class MainEditor():
                 'selection_buffer':[],
                 'copycut_buffer':[]
             },
-            'editor_width':self.editor.winfo_width()
+            'editor_width':self.editor.winfo_width(),
+            'editor_height':self.editor.winfo_height(),
         }
 
-        # universal binds for mac/windows/linux:
+        # universal editor binds for mac/windows/linux:
         self.editor.bind('<Button-1>', lambda e: self.update(e, 'btn1click'))
         self.editor.bind('<ButtonRelease-1>', lambda e: self.update(e, 'btn1release'))
         if platform.system() in ['Linux', 'Windows']:
@@ -98,11 +100,7 @@ class MainEditor():
         self.editor.bind('<Control-KeyPress>', lambda e: self.update(e, 'ctlpress'))
         self.editor.bind('<Control-KeyRelease>', lambda e: self.update(e, 'ctlrelease'))
 
-        self.root.bind('<ButtonRelease-1>', lambda e: self.update_stafflines())
-
-        # test editor staff
-        self.update_stafflines()
-        
+        DrawStaff.draw_staff(self.editor, self.edit_data, self.score)
 
     def update(self, event, event_type):
         '''
@@ -130,8 +128,8 @@ class MainEditor():
         if event_type == 'motion':
             self.edit_data['mouse']['x'] = self.editor.canvasx(event.x)
             self.edit_data['mouse']['y'] = self.editor.canvasy(event.y)
-            self.edit_data['mouse']['ex'] = 0
-            self.edit_data['mouse']['ey'] = 0
+            self.edit_data['mouse']['ex'] = self.x2pitch(event.x)
+            self.edit_data['mouse']['ey'] = self.y2time(event.y)
 
         # update element:
         self.edit_data['element'] = self.element_tree.get
@@ -141,8 +139,19 @@ class MainEditor():
         except AttributeError:
             raise print('ERROR; this element is not yet implemented. ignoring click or mouse movement')
 
-        self.update_cursor()
-        self.update_stafflines()
+        self.draw_cursor()
+        DrawStaff.draw_staff(self.editor, self.edit_data, self.score)
+
+        # draw all elements. We check if we have to draw, delete or both.
+        
+        # # note
+        # for note in self.score['events']['note']:
+        #     print(note)
+        #     # if event_type in ['btn1click', 'btn1release']:
+        #     #     note['id'] = 'note%i'%self.edit_data['new_id']
+        #     #     self.edit_data['new_id'] += 1
+
+
 
     '''
     ELEMENTS TREE PART:
@@ -155,7 +164,9 @@ class MainEditor():
     '''
     def elm_note_left(self, event_type):
         '''code that handles the note input left element'''
-        ...# self.editor.delete('note')
+        ...
+
+        # self.editor.delete('note')
         # self.editor.create_oval(self.edit_data['mouse']['ex'], self.edit_data['mouse']['ey'],
         #   self.edit_data['mouse']['ex']+10, self.edit_data['mouse']['ey']+10,
         #   fill='red',
@@ -173,70 +184,7 @@ class MainEditor():
         '''code that handles the beam element'''
         ...
 
-    def update_stafflines(self):
-        '''code that draws the staff. It draws the stafflines, barlines and base-grid'''
-
-        # calculating dimensions
-        self.editor.update()
-        editor_width = self.editor.winfo_width()
-        editor_height = self.editor.winfo_height()
-        staff_width = editor_width * 0.8 # property?
-        staff_margin = (editor_width - staff_width) / 2
-        x_factor = staff_width / 490
-
-        # STAFFLINES:
-        # check if we need to redraw the stafflines:
-        if self.edit_data['editor_width'] != editor_width:
-            # first delete old stafflines
-            self.editor.delete('staffline')
-            # draw staff
-            x_curs = staff_margin
-
-            self.edit_data['last_pianotick'] = editor_height
-
-            self.editor.create_line(x_curs,0,
-                                    x_curs,self.edit_data['last_pianotick'],
-                                    width=2,
-                                    tag='staffline',
-                                    fill=color_dark,
-                                    state='disabled')
-
-            x_curs += 20 * x_factor
-
-            for staff in range(7):
-
-                for line in range(2):
-                    if staff == 3:
-                        self.editor.create_line(x_curs,0,
-                            x_curs,self.edit_data['last_pianotick'],
-                            width=1,
-                            tag='staffline',
-                            dash=(6,6),
-                            fill=color_dark,
-                            state='disabled')
-                    else:
-                        self.editor.create_line(x_curs,0,
-                            x_curs,self.edit_data['last_pianotick'],
-                            width=1,
-                            tag='staffline',
-                            fill=color_dark,
-                            state='disabled')
-                    x_curs += 10 * x_factor
-
-                x_curs += 10 * x_factor
-
-                for line in range(3):
-                    self.editor.create_line(x_curs,0,
-                                            x_curs,self.edit_data['last_pianotick'],
-                                            width=2,
-                                            tag='staffline',
-                                            fill=color_dark,
-                                            state='disabled')
-                    x_curs += 10 * x_factor
-
-                x_curs += 10 * x_factor
-
-    def update_cursor(self):
+    def draw_cursor(self):
         '''
             (re)-draws the cursor indicator that's always updated 
             no matter what tool is selected in the elements tree

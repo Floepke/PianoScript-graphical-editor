@@ -97,32 +97,6 @@ class Tree(Frame):
                         "image":PhotoImage(Image.open(fp="icons/beam.png").resize((30,30)))
                     }
                 ]
-            },
-            {
-                "text":"Note",
-                "id":"folder.x",
-                "items":[
-                    {
-                        "id":"a",
-                        "text":"Right",
-                        "image":PhotoImage(Image.open(fp="icons/noteinput_R.png").resize((30,30)))
-                    },
-                    {
-                        "id":"b",
-                        "text":"Left",
-                        "image":PhotoImage(Image.open(fp="icons/noteinput_L.png").resize((30,30)))
-                    },
-                    {
-                        "id":"c",
-                        "text":"Accidental",
-                        "image":PhotoImage(Image.open(fp="icons/accidental.png").resize((30,30)))
-                    },
-                    {
-                        "id":"d",
-                        "text":"Beam",
-                        "image":PhotoImage(Image.open(fp="icons/beam.png").resize((30,30)))
-                    }
-                ]
             }
         ]
 
@@ -145,12 +119,12 @@ class Tree(Frame):
                             )
 
         self.tree.bind("<ButtonPress-1>", self.on_single_click)
-        self.tree.bind("<Double-1>", self.on_single_click)
+        #self.tree.bind("<Double-1>", self.on_single_click)
 
         self.tree.selection_set(self.selecteditem)
 
         # stylize folder looks
-        self.tree.tag_configure('folder', background=color_gui_contrast, foreground=color_dark, font=('courier', 16, 'bold'))
+        self.tree.tag_configure('folder', background=color_gui_dark, foreground=color_dark, font=('courier', 16, 'bold'))
 
     def on_single_click(self, event):
         """ single click on tree """

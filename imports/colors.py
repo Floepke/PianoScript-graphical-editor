@@ -23,35 +23,29 @@ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
 OTHER DEALINGS IN THE SOFTWARE.
 '''
-color_right_midinote = '#c8c8c8'
-color_left_midinote = '#c8c8c8'
 
-# print(color_light,color_dark,color_gui_base,color_gui_contrast,color_highlight,color_right_midinote,color_left_midinote)
+'''
+	These are gui color themes. The last group of uncommented 
+	variables will be used.
+'''
 
 # rocky coastline:
 color_light = '#cccccc'
 color_dark = '#0D5880'
-color_gui_base = '#444444'
-color_gui_contrast = '#eeeeee'
+color_gui_light = '#444444'
+color_gui_dark = '#eeeeee'
 color_highlight = '#3cc7a6'
 
 # scouting
 color_light = '#2a3410'
 color_dark = '#ada765'
-color_gui_base = '#ad7d1c'
-color_gui_contrast = '#444c01'
+color_gui_light = '#ad7d1c'
+color_gui_dark = '#444c01'
 color_highlight = '#084c10'
 
 # light coffee
 color_light = 'white'
 color_dark = 'black'
-color_gui_base = '#362419'
-color_gui_contrast = '#c8c8c8'
+color_gui_light = '#362419'
+color_gui_dark = '#c8c8c8'
 color_highlight = '#b59b7c'
-
-# # summer
-# color_light = '#fff'
-# color_dark = 'black'
-# color_gui_base = '#241936'
-# color_gui_contrast = '#c8c8c8'
-# color_highlight = '#ab3a60'
