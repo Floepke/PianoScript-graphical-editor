@@ -37,23 +37,34 @@ This file contains all code for the editor:
 import platform
 from imports.colors import *
 from imports.draw_staff import DrawStaff
+from imports.elements import Elements
+from imports.savefilestructure import BluePrint
+from imports.tools import baseround, interpolation
+from tkinter import filedialog
+import json
+
+#from imports.elements
 #from imports.tools import measure_length
 
 class MainEditor():
     """docstring for Editor"""
-    def __init__(self, root, editor, element_tree, score):
+    def __init__(self, root, editor, element_tree):
 
         self.root = root
         self.editor = editor # the editor canvas widget
         self.element_tree = element_tree
-        self.score = score # the savefile we are editing using the editor
+        self.score = self.new() # the savefile we are editing using this editor
+        self.elements = Elements()
+
+        self.MM = self.root.winfo_fpixels('1m')
 
         self.edit_data = { # purpose: keeping track of all data for the editors usage
-            'last_pianotick':100, # the last pianotick of the Score
+            'editor':editor,
+            'last_pianotick':4096, # the last pianotick of the Score
             'new_id':0, # used to give every element a unique id
             'snap_grid':128, # the current selected grid from the grid selector
             'element':self.element_tree.get, # lookup here which element is selected in the element_tree
-            'zoom(pianotick)':4096, # zoom setting in the y axis
+            'zoom(1pianotick==mm)':1, # zoom setting in the y axis, 4096 pianoticks will fit on the screen.
             'mouse':{ # all info for the mouse
                 'x':0, # x position of the mouse in the editor view
                 'y':0, # y position of the mouse in the editor view
@@ -100,7 +111,9 @@ class MainEditor():
         self.editor.bind('<Control-KeyPress>', lambda e: self.update(e, 'ctlpress'))
         self.editor.bind('<Control-KeyRelease>', lambda e: self.update(e, 'ctlrelease'))
 
-        DrawStaff.draw_staff(self.editor, self.edit_data, self.score)
+        DrawStaff.draw_staff(self.edit_data, self.score)
+
+        self.new()
 
     def update(self, event, event_type):
         '''
@@ -128,76 +141,85 @@ class MainEditor():
         if event_type == 'motion':
             self.edit_data['mouse']['x'] = self.editor.canvasx(event.x)
             self.edit_data['mouse']['y'] = self.editor.canvasy(event.y)
-            self.edit_data['mouse']['ex'] = self.x2pitch(event.x)
-            self.edit_data['mouse']['ey'] = self.y2time(event.y)
+            self.edit_data['mouse']['ex'] = self.x2pitch(self.edit_data['mouse']['x'])
+            self.edit_data['mouse']['ey'] = self.y2time(self.edit_data['mouse']['y'])
 
         # update element:
         self.edit_data['element'] = self.element_tree.get
 
-        # running the element function:
-        try: eval(f'self.elm_{self.edit_data["element"]}(event_type)')
-        except AttributeError:
-            raise print('ERROR; this element is not yet implemented. ignoring click or mouse movement')
+        # running the right element function:
+        eval(f"self.elements.elm_{self.edit_data['element']}(event_type, self.edit_data, self.score)")
 
-        self.draw_cursor()
-        DrawStaff.draw_staff(self.editor, self.edit_data, self.score)
+        DrawStaff.draw_staff(self.edit_data, self.score)
 
-        # draw all elements. We check if we have to draw, delete or both.
+    '''
+        FILE MANAGEMENT:
+            - new; creates new project
+            - load; opens new project
+            - save; saves current project
+            - save as; saves current project but asks for save location
+    '''
+    def new(self):
+        '''
+            creates a new project by loading from the template file.
+            If the file is not on disk it creates one from the "BluePrint".
+        '''
         
-        # # note
-        # for note in self.score['events']['note']:
-        #     print(note)
-        #     # if event_type in ['btn1click', 'btn1release']:
-        #     #     note['id'] = 'note%i'%self.edit_data['new_id']
-        #     #     self.edit_data['new_id'] += 1
+        # load template:
+        try: # load template from disk
+            self.score = json.load(open('template.pianoscript', 'r'))
+        except: # if template not exists (if the user deleted the file during the run of the program)
+            self.score = BluePrint # fallback to source template
+        return self.score
 
+    def load(self):
+        
+        # choose file to open; ignore if user clicked cancel
+        f = filedialog.askopenfile(parent=self.root, 
+            mode='r',
+            title='Open *.pianoscript file...', 
+            filetypes=[("PianoScript files", "*.pianoscript")])
+        if f: f = f.name
+        else: return self.score
 
-
-    '''
-    ELEMENTS TREE PART:
-    In the following part all methods are listed that are used
-    to edit the current selected element in the elements tree.
-    For example: if elements tree 'accidental' is selected
-    update() calls elm_accidental() so the names below always
-    start with 'elm_' followed by the element label in the 
-    function name.
-    '''
-    def elm_note_left(self, event_type):
-        '''code that handles the note input left element'''
-        ...
-
-        # self.editor.delete('note')
-        # self.editor.create_oval(self.edit_data['mouse']['ex'], self.edit_data['mouse']['ey'],
-        #   self.edit_data['mouse']['ex']+10, self.edit_data['mouse']['ey']+10,
-        #   fill='red',
-        #   tag='note')
-
-    def elm_note_right(self, event_type):
-        '''code that handles the note input right element'''
-        ...
-
-    def elm_accidental(self, event_type):
-        '''code that handles the accidental element'''
-        ...
-
-    def elm_beam(self, event_type):
-        '''code that handles the beam element'''
-        ...
-
-    def draw_cursor(self):
-        '''
-            (re)-draws the cursor indicator that's always updated 
-            no matter what tool is selected in the elements tree
-        '''
-        ...
-
+        # if the file was selected, load the file
+        with open(f, 'r') as f:
+            self.score = json.load(f)
 
     def x2pitch(self, x):
         '''calculates the pitch which is closest to mouse x position'''
-        ...
-        return 0
+
+        # calculating dimensions
+        self.editor.update()
+        editor_width = self.editor.winfo_width()
+        staff_width = editor_width * 0.8 # property?
+        staff_margin = (editor_width - staff_width) / 2
+        factor = staff_width / 490
+        x -= staff_margin
+
+        cf = [4, 9, 16, 21, 28, 33, 40, 45, 52, 57, 64, 69, 76, 81, 88]
+        be = [3, 8, 15, 20, 27, 32, 39, 44, 51, 56, 63, 68, 75, 80, 87]
+
+        xlist = [505, 500, 490, 485, 480, 475, 470, 460, 455, 450, 445, 440, 
+        435, 430, 420, 415, 410, 405, 400, 390, 385, 380, 375, 370, 365, 360, 350, 
+        345, 340, 335, 330, 320, 315, 310, 305, 300, 295, 290, 280, 275, 270, 265, 
+        260, 250, 245, 240, 235, 230, 225, 220, 210, 205, 200, 195, 190, 180, 175, 
+        170, 165, 160, 155, 150, 140, 135, 130, 125, 120, 110, 105, 100, 95, 90, 
+        85, 80, 70, 65, 60, 55, 50, 40, 35, 30, 25, 20, 15, 10, 0, -5]
+
+        closest = min(xlist, key=lambda m:abs(m-(x/factor)))
+
+        for idx, xx in enumerate(reversed(xlist)):
+            if xx == closest:
+                return idx + 1
 
     def y2time(self, y):
         '''calculates time in pianoticks closest to mouse y position'''
-        ...
-        return 0
+
+        editor_height = self.editor.winfo_height()
+        last_tick = self.edit_data['last_pianotick']
+        zoom = self.edit_data['zoom(1pianotick==mm)'] * self.MM
+        grid = self.edit_data['snap_grid']
+        time = baseround(interpolation(0, last_tick, y) * last_tick, grid)
+        print(time)
+        return time

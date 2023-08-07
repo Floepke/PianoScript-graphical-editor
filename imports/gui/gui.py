@@ -94,11 +94,31 @@ class Gui:
 		self.main_paned.add(self.editorpanel)
 		self.editor = Canvas(self.editorpanel, bg=color_light, relief='flat', cursor='cross')
 		self.editor.place(relwidth=1, relheight=1)
+		self.editor.bind('<5>', lambda event: self.editor.yview('scroll', 1, 'units'))
+		self.editor.bind('<4>', lambda event: self.editor.yview('scroll', -1, 'units'))
 		# print view
 		self.printpanel = Frame(self.main_paned, bg=color_light)
 		self.main_paned.add(self.printpanel)
 		self.pview = Canvas(self.printpanel, bg=color_light, relief='flat')
 		self.pview.place(relwidth=1, relheight=1)
+
+		# Menu
+		
+		# self.selectionMenu = Menu(self.menubar, tearoff=0)
+		# self.selectionMenu.add_command(label="Cut [ctl+x]", underline=None, command=cut_selection, font=('courier', 16))
+		# self.selectionMenu.add_command(label="Copy [ctl+c]", underline=None, command=copy_selection, font=('courier', 16))
+		# self.selectionMenu.add_command(label="Paste [ctl+v]", underline=None, command=paste_selection, font=('courier', 16))
+		# self.selectionMenu.add_separator()
+		# self.selectionMenu.add_command(label="Select all [ctl+a]", underline=None, command=select_all, font=('courier', 16))
+		# self.menubar.add_cascade(label="Selection", underline=None, menu=selectionMenu, font=('courier', 16))
+		# self.toolsMenu = Menu(self.menubar, tearoff=1)
+		# self.toolsMenu.add_command(label='Redraw editor', command=lambda: do_pianoroll(), font=('courier', 16))
+		# self.toolsMenu.add_command(label='Quantize', command=lambda: quantize(Score), font=('courier', 16))
+		# self.toolsMenu.add_command(label='Add quick line breaks', command=lambda: add_quick_linebreaks(), font=('courier', 16))
+		# self.toolsMenu.add_command(label='Transpose', command=lambda: transpose(), font=('courier', 16))
+		# self.menubar.add_cascade(label="Tools", underline=None, menu=toolsMenu)
+		# self.menubar.add_command(label='< previous', command=lambda: cycle_trough_pages_button('<'), background='grey', activebackground=color_highlight)
+		# self.menubar.add_command(label='next >', command=lambda: cycle_trough_pages_button('>'), background='grey', activebackground=color_highlight)
 
 if __name__ == '__main__':
 

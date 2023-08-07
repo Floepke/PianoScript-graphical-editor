@@ -26,13 +26,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 # third party imports
 from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, PhotoImage
-from tkinter import filedialog, Label, Spinbox, StringVar, Listbox, ttk, Frame
+from tkinter import Label, Spinbox, StringVar, Listbox, ttk, Frame
 import platform, ctypes
 
 # own imports code :)
 from imports.editor import MainEditor
 from imports.savefilestructure import BluePrint
 from imports.gui.gui import Gui
+from imports.colors import color_light, color_gui_light
 
 class App:
 
@@ -44,8 +45,31 @@ class App:
 		# gui
 		self.gui = Gui(master=self.root)
 
-		# editable objects
-		self.score = BluePrint
+		# editor
+		self.main_editor = MainEditor(self.root,
+			self.gui.editor, 
+			self.gui.elements_treeview)
+
+		# menu
+		self.menubar = Menu(self.root, relief='flat', bg=color_gui_light, fg=color_light, font=('courier', 16))
+		self.root.config(menu=self.menubar)
+		self.fileMenu = Menu(self.menubar, tearoff=0)
+		self.fileMenu.add_command(label='New [ctl+n]', command=self.main_editor.new, font=('courier', 16))
+		self.fileMenu.add_command(label='Open [ctl+o]', command=self.main_editor.load, font=('courier', 16))
+		self.fileMenu.add_command(label='Save [ctl+s]', command=None, font=('courier', 16))
+		self.fileMenu.add_command(label='Save as... [alt+s]', command=None, font=('courier', 16))
+		self.fileMenu.add_separator()
+		self.fileMenu.add_command(label='Load midi [ctl+m]', command=None, font=('courier', 16))
+		self.fileMenu.add_separator()
+		self.fileMenu.add_command(label="Export ps", command=None, font=('courier', 16))
+		self.fileMenu.add_command(label="Export pdf [ctl+e]", command=None, font=('courier', 16))
+		self.fileMenu.add_command(label="Export midi*", command=None, font=('courier', 16))
+		self.fileMenu.add_separator()
+		self.fileMenu.add_command(label="Grid editor... [g]", underline=None, command=None, font=('courier', 16))
+		self.fileMenu.add_command(label="Score options... [s]", underline=None, command=None, font=('courier', 16))
+		self.fileMenu.add_separator()
+		self.fileMenu.add_command(label="Exit", underline=None, command=None, font=('courier', 16))
+		self.menubar.add_cascade(label="File", underline=None, menu=self.fileMenu, font=('courier', 16))
 
 		# binds
 		self.root.bind('<Escape>', self.quit)
@@ -53,11 +77,6 @@ class App:
 
 	def run(self):
 		'''In run() we setup the main run structure of the app'''
-
-		main_editor = MainEditor(self.root,
-			self.gui.editor, 
-			self.gui.elements_treeview, 
-			self.score)
 
 		# main_render = MainRender(self.editor,
 		# 	self.elements_treeview, 

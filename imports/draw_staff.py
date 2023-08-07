@@ -29,13 +29,13 @@ from imports.colors import color_dark
 class DrawStaff():
 
     @staticmethod
-    def draw_staff(editor, edit_data, score):
+    def draw_staff(edit_data, score):
         '''Draws/updates staff-lines, grid and barlines in the editor'''
         
         # calculating dimensions
-        editor.update()
-        editor_width = editor.winfo_width()
-        editor_height = editor.winfo_height()
+        edit_data['editor'].update()
+        editor_width = edit_data['editor'].winfo_width()
+        editor_height = edit_data['editor'].winfo_height()
         staff_width = editor_width * 0.8 # property?
         staff_margin = (editor_width - staff_width) / 2
         x_factor = staff_width / 490
@@ -43,13 +43,13 @@ class DrawStaff():
         # check if we need to redraw the stafflines:
         #if edit_data['editor_width'] != editor_width:
         # first delete old stafflines
-        editor.delete('staffline')
+        edit_data['editor'].delete('staffline')
         # draw staff
         x_curs = staff_margin
 
-        edit_data['last_pianotick'] = editor_height
+        #edit_data['last_pianotick'] = editor_height
 
-        editor.create_line(x_curs,0,
+        edit_data['editor'].create_line(x_curs,0,
                                 x_curs,edit_data['last_pianotick'],
                                 width=2,
                                 tag='staffline',
@@ -62,7 +62,7 @@ class DrawStaff():
 
             for line in range(2):
                 if staff == 3:
-                    editor.create_line(x_curs,0,
+                    edit_data['editor'].create_line(x_curs,0,
                         x_curs,edit_data['last_pianotick'],
                         width=1,
                         tag='staffline',
@@ -70,7 +70,7 @@ class DrawStaff():
                         fill=color_dark,
                         state='disabled')
                 else:
-                    editor.create_line(x_curs,0,
+                    edit_data['editor'].create_line(x_curs,0,
                         x_curs,edit_data['last_pianotick'],
                         width=1,
                         tag='staffline',
@@ -81,7 +81,7 @@ class DrawStaff():
             x_curs += 10 * x_factor
 
             for line in range(3):
-                editor.create_line(x_curs,0,
+                edit_data['editor'].create_line(x_curs,0,
                                         x_curs,edit_data['last_pianotick'],
                                         width=2,
                                         tag='staffline',
