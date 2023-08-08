@@ -30,10 +30,11 @@ from tkinter import Label, Spinbox, StringVar, Listbox, ttk, Frame
 import platform, ctypes
 
 # own imports code :)
-from imports.editor import MainEditor
+from imports.editor.editor import MainEditor
 from imports.savefilestructure import BluePrint
 from imports.gui.gui import Gui
 from imports.colors import color_light, color_gui_light
+from imports.editor.elements import Elements
 
 class App:
 
@@ -44,13 +45,72 @@ class App:
 
 		# gui
 		self.gui = Gui(master=self.root)
+		self.gui.editor.update()
+
+		# the self.data stores all data from the app in one organized dict:
+		self.io = {
+			# root window
+			'root':self.root,
+			# editor canvas
+			'editor':self.gui.editor,
+			# printview canvas
+			'pview':self.gui.pview,
+			# the curstomized elements tree widget
+			'tree':self.gui.treeview,
+			# gridselector
+			'grid_selector':self.gui.grid_selector,
+			# the score object where all score data is
+			'score':{},
+			# this class stores all methods for elements
+			'elm_func':Elements(),
+			# the last pianotick of the score
+			'last_pianotick':8096,
+			# used to give every element a unique id
+			'new_id':0,
+			# the current selected grid from the grid selector
+			'snap_grid':128,
+			# zoom setting in the y axis
+			'yscale':.75,
+			# 1 == the staff is the width of the editor canvas.
+			'xscale_staff':0.8,
+			# all info for the mouse
+			'mouse':{
+				'x':0, # x position of the mouse in the editor view
+				'y':0, # y position of the mouse in the editor view
+				'ex':0, # event x note position of the mouse in the editor view
+				'ey':0, # event y pianotick position of the mouse in the editor view
+				'button1':False, # True if the button is clicked and hold, False if not pressed
+				'button2':False, # ...
+				'button3':False # ...
+			},
+			# keep track wether an object on the editor is clicked; this variable is the 
+			# unique id from a clicked object on the editor canvas if an object is clicked+hold
+			'hold_id':'', 
+			'keyboard':{ # keep track wheter shift or ctl is pressed
+				'shift':False,
+				'ctl':False,
+			},
+			'selection':{ # everything about making a selection; keep track
+				'x1':None,
+				'y1':None,
+				'x2':None,
+				'y2':None,
+				'selection_buffer':[], # the buffer
+				'copycut_buffer':[]
+			},
+			# a mm in pixels on the screen
+			'mm': self.root.winfo_fpixels('1m'),
+			'editor_width': self.gui.editor.winfo_width(),
+			'editor_height': self.gui.editor.winfo_height()
+		}
 
 		# editor
-		self.main_editor = MainEditor(self.root,
-			self.gui.editor, 
-			self.gui.elements_treeview)
+		self.main_editor = MainEditor(self.io)
 
-		# menu
+		# engraver
+		...
+
+		# menu (written in this area because commands are not accessable inside the GUI class, can't set it later)
 		self.menubar = Menu(self.root, relief='flat', bg=color_gui_light, fg=color_light, font=('courier', 16))
 		self.root.config(menu=self.menubar)
 		self.fileMenu = Menu(self.menubar, tearoff=0)
@@ -76,13 +136,7 @@ class App:
 
 
 	def run(self):
-		'''In run() we setup the main run structure of the app'''
-
-		# main_render = MainRender(self.editor,
-		# 	self.elements_treeview, 
-		# 	self.score, 
-		# 	self.root)
-
+		'''In run() we go into the mainloop of the app'''
 		self.root.mainloop()
 
 	def quit(self, event=''):
@@ -90,7 +144,7 @@ class App:
 		# file-save-check
 		...
 
-		# quit
+		# quit (generates an error if mouse binds are still active TODO)
 		self.root.destroy()
 		
 

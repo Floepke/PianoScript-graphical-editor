@@ -24,8 +24,10 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-def draw_cursor(cursor, canvas):
+def draw_cursor(cursor, io):
 
-	canvas.delete('cursor')
+	io['editor'].delete('cursor')
 	
-	canvas.create_text(cursor['pitch'], cursor['time'], text='test', tag='cursor')
+	io['editor'].create_line(0, cursor['time'],
+		io['editor_width'], cursor['time'],
+		tag='cursor', width=4, fill='green')

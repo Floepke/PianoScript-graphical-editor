@@ -24,7 +24,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-from imports.editor_draw_elements import draw_cursor
+from imports.editor.editor_draw_elements import draw_cursor
 
 class Elements():
     '''
@@ -40,7 +40,7 @@ class Elements():
         
 
     # right hand
-    def elm_note_right(self, event_type, edit_data, score):
+    def elm_note_right(self, event_type, data):
         
         if event_type == 'btn1click':
             
@@ -48,14 +48,14 @@ class Elements():
 
         if event_type == 'motion':
             
-            if not edit_data['mouse']['button1']: # if button 1 is not pressed
+            if not data['mouse']['button1']: # if button 1 is not pressed
                 cursor = {
-                    'time':edit_data['mouse']['ey'],
-                    'pitch':edit_data['mouse']['ex'],
+                    'time':data['mouse']['ey'],
+                    'pitch':data['mouse']['ex'],
                     'hand':'r',
-                    'zoom':edit_data['zoom(1pianotick==mm)']
+                    'zoom':data['yscale']
                 }
-                draw_cursor(cursor, edit_data['editor'])
+                draw_cursor(cursor, data)
 
         if event_type == 'btn1release':
             
@@ -66,7 +66,7 @@ class Elements():
             ...
 
     # left hand
-    def elm_note_left(self, event_type, edit_data, canvas, score):
+    def elm_note_left(self, event_type, data):
         
         if event_type == 'btn1click':
             
@@ -85,7 +85,7 @@ class Elements():
             ...
 
     # accidental
-    def elm_accidental(self, event_type, edit_data, canvas, score):
+    def elm_accidental(self, event_type, data):
         
         if event_type == 'btn1click':
             
@@ -104,7 +104,7 @@ class Elements():
             ...
 
     # beam
-    def elm_beam(self, event_type, canvas, edit_data, score):
+    def elm_beam(self, event_type, data):
         
         if event_type == 'btn1click':
             

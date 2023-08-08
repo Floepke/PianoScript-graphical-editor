@@ -84,10 +84,10 @@ class Gui:
 		    bg=color_gui_light, fg='#c8c8c8', anchor='c', font=("courier"))
 		self.seperator_2.grid(column=0, row=10, sticky='ew')
 		# elements tree
-		self.elements_label = Label(self.gridpanel, text='TOOL:', bg=color_gui_light, fg=color_gui_light, anchor='w', font=("courier", 16, 'bold'))
-		self.elements_label.grid(column=0, row=11, sticky='ew')
-		self.elements_treeview = Tree(self.gridpanel)
-		self.elements_treeview.grid(column=0, row=12, sticky='ew')
+		self.treeview_label = Label(self.gridpanel, text='TOOL:', bg=color_gui_light, fg=color_gui_light, anchor='w', font=("courier", 16, 'bold'))
+		self.treeview_label.grid(column=0, row=11, sticky='ew')
+		self.treeview = Tree(self.gridpanel)
+		self.treeview.grid(column=0, row=12, sticky='ew')
 		# editor
 		self.root.update()
 		self.editorpanel = Frame(self.main_paned, bg=color_gui_light, width=self.scrwidth / 3 * 1.54)

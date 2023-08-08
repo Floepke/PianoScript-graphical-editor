@@ -144,6 +144,6 @@ class Tree(Frame):
     @property
     def get(self):
         return self.selecteditem
-
+    
     def set(self, element: str):
         self.tree.selection_set(element)
