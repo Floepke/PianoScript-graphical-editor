@@ -24,10 +24,20 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
+from imports.editor.tools_editor import ToolsEditor
+
 def draw_cursor(cursor, io):
 
-	io['editor'].delete('cursor')
-	
-	io['editor'].create_line(0, cursor['time'],
-		io['editor_width'], cursor['time'],
-		tag='cursor', width=4, fill='green')
+    io['editor'].delete('cursor')
+
+    time = ToolsEditor.tick2y(cursor['time'], io)
+    editor_width = io['editor_width']
+    staff_width = editor_width * io['xscale']
+    staff_margin = (editor_width - staff_width) / 2
+    
+    io['editor'].create_line(0, time,
+        staff_margin, time,
+        tag='cursor', width=4, fill='green')
+    io['editor'].create_line(editor_width-staff_margin, time,
+        editor_width, time,
+        tag='cursor', width=4, fill='green')

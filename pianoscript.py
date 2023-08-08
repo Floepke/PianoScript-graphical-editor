@@ -64,15 +64,15 @@ class App:
 			# this class stores all methods for elements
 			'elm_func':Elements(),
 			# the last pianotick of the score
-			'last_pianotick':8096,
+			'last_pianotick':8192,
 			# used to give every element a unique id
 			'new_id':0,
 			# the current selected grid from the grid selector
 			'snap_grid':128,
-			# zoom setting in the y axis
-			'yscale':.75,
+			# zoom setting in the y axis; we define the size of one pianotick in px on the screen
+			'ticksizepx':.5,
 			# 1 == the staff is the width of the editor canvas.
-			'xscale_staff':0.8,
+			'xscale':0.8,
 			# all info for the mouse
 			'mouse':{
 				'x':0, # x position of the mouse in the editor view
@@ -101,7 +101,8 @@ class App:
 			# a mm in pixels on the screen
 			'mm': self.root.winfo_fpixels('1m'),
 			'editor_width': self.gui.editor.winfo_width(),
-			'editor_height': self.gui.editor.winfo_height()
+			'editor_height': self.gui.editor.winfo_height(),
+			'redraw_editor':True
 		}
 
 		# editor

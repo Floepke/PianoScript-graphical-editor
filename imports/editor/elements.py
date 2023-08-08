@@ -40,7 +40,7 @@ class Elements():
         
 
     # right hand
-    def elm_note_right(self, event_type, data):
+    def elm_note_right(self, event_type, io):
         
         if event_type == 'btn1click':
             
@@ -48,14 +48,13 @@ class Elements():
 
         if event_type == 'motion':
             
-            if not data['mouse']['button1']: # if button 1 is not pressed
-                cursor = {
-                    'time':data['mouse']['ey'],
-                    'pitch':data['mouse']['ex'],
-                    'hand':'r',
-                    'zoom':data['yscale']
-                }
-                draw_cursor(cursor, data)
+            cursor = {
+                'time':io['mouse']['ey'],
+                'pitch':io['mouse']['ex'],
+                'hand':'r',
+                'zoom':io['ticksizepx']
+            }
+            draw_cursor(cursor, io)
 
         if event_type == 'btn1release':
             
@@ -66,7 +65,7 @@ class Elements():
             ...
 
     # left hand
-    def elm_note_left(self, event_type, data):
+    def elm_note_left(self, event_type, io):
         
         if event_type == 'btn1click':
             
@@ -85,7 +84,7 @@ class Elements():
             ...
 
     # accidental
-    def elm_accidental(self, event_type, data):
+    def elm_accidental(self, event_type, io):
         
         if event_type == 'btn1click':
             
@@ -104,7 +103,7 @@ class Elements():
             ...
 
     # beam
-    def elm_beam(self, event_type, data):
+    def elm_beam(self, event_type, io):
         
         if event_type == 'btn1click':
             

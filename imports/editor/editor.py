@@ -36,10 +36,11 @@ This file contains all code for the editor:
 #     from imports.optionsdialog import OptionsDialog
 import platform
 from imports.colors import *
-from imports.editor.draw_staff import DrawStaff
+from imports.editor.staff import DrawStaff
 from imports.editor.elements import Elements
 from imports.savefilestructure import BluePrint
 from imports.tools import baseround, interpolation
+from imports.editor.tools_editor import ToolsEditor
 from tkinter import filedialog
 import json
 
@@ -81,6 +82,8 @@ class MainEditor():
             Update event pitch and time (based on mouse position)
             Run the right function based on the element_tree.get
         '''
+        # unbind motion (because otherwise we can get recursiondept error if we move the mouse really quick)
+        self.io['editor'].unbind('<Motion>')
 
         # mouse buttons:
         if event_type == 'btn1click': self.io['mouse']['button1'] = True
@@ -100,17 +103,20 @@ class MainEditor():
         if event_type == 'motion':
             self.io['mouse']['x'] = self.io['editor'].canvasx(event.x)
             self.io['mouse']['y'] = self.io['editor'].canvasy(event.y)
-            self.io['mouse']['ex'] = self.x2pitch(self.io['mouse']['x'])
-            self.io['mouse']['ey'] = self.y2time(self.io['mouse']['y'])
+            self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io)
+            self.io['mouse']['ey'] = ToolsEditor.y2time(self.io)
 
         # update element:
         self.io['element'] = self.io['tree'].get
-        #self.io['snap_grid'] = self.io['grid_selector'].get()
+        self.io['snap_grid'] = self.io['grid_selector'].get()
 
         # running the right element function:
-        #eval(f"self.io['elm_func'].elm_{self.io['element']}(event_type, self.io)")
+        eval(f"self.io['elm_func'].elm_{self.io['element']}(event_type, self.io)")
 
         DrawStaff.draw_staff(self.io)
+
+        # rebind motion
+        self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))
 
     '''
         FILE MANAGEMENT:
@@ -149,51 +155,3 @@ class MainEditor():
         # if the file was selected, load the file
         with open(f, 'r') as f:
             self.score = json.load(f)
-
-    def x2pitch(self, x):
-        '''calculates the pitch which is closest to mouse x position'''
-
-        # calculating dimensions
-        self.io['editor'].update()
-        editor_width = self.io['editor'].winfo_width()
-        staff_width = editor_width * self.io['xscale_staff'] # property?
-        staff_margin = (editor_width - staff_width) / 2
-        factor = staff_width / 490
-        x -= staff_margin
-
-        cf = [4, 9, 16, 21, 28, 33, 40, 45, 52, 57, 64, 69, 76, 81, 88]
-        be = [3, 8, 15, 20, 27, 32, 39, 44, 51, 56, 63, 68, 75, 80, 87]
-
-        xlist = [505, 500, 490, 485, 480, 475, 470, 460, 455, 450, 445, 440, 
-        435, 430, 420, 415, 410, 405, 400, 390, 385, 380, 375, 370, 365, 360, 350, 
-        345, 340, 335, 330, 320, 315, 310, 305, 300, 295, 290, 280, 275, 270, 265, 
-        260, 250, 245, 240, 235, 230, 225, 220, 210, 205, 200, 195, 190, 180, 175, 
-        170, 165, 160, 155, 150, 140, 135, 130, 125, 120, 110, 105, 100, 95, 90, 
-        85, 80, 70, 65, 60, 55, 50, 40, 35, 30, 25, 20, 15, 10, 0, -5]
-
-        # closest = min(xlist, key=lambda m:abs(m-(x/factor)))
-
-        # for idx, xx in enumerate(reversed(xlist)):
-        #     if xx == closest:
-        #         return idx + 1
-        return 40
-
-    def y2time(self, y):
-        '''calculates time in pianoticks closest to mouse y position'''
-
-        grid = self.io['snap_grid']
-        zoom = self.io['yscale']
-        last_tick = self.io['last_pianotick']
-
-        self.io['editor'].update()
-        editor_width = self.io['editor_width']
-        staff_width = editor_width * self.io['xscale_staff']
-        staff_margin = (editor_width - staff_width) / 2
-
-        start = staff_margin
-        end = staff_margin + (last_tick * zoom)
-
-        time = baseround(interpolation(start, end, y), grid)
-        if time < 0: time = 0
-        print(time)
-        return time

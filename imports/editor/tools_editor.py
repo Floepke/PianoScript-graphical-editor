@@ -1,0 +1,103 @@
+#! python3.9.2
+# coding: utf-8
+
+'''
+This file is part of the pianoscript project: http://www.pianoscript.org/
+
+Permission is hereby granted, free of charge, to any person obtaining 
+a copy of this software and associated documentation files 
+(the “Software”), to deal in the Software without restriction, including 
+without limitation the rights to use, copy, modify, merge, publish, 
+distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the 
+following conditions:
+
+The above copyright notice and this permission notice shall be included 
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, 
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+OTHER DEALINGS IN THE SOFTWARE.
+'''
+
+from imports.tools import interpolation, baseround
+
+class ToolsEditor():
+    '''
+        In this class are only static methods that are
+        solving small parts of the puzzle and are related
+        to the editor part of the App.
+    '''
+
+    @staticmethod
+    def tick2y(time, io):
+        '''
+            time2y converts pianoticks into pixels
+            based on the io preferences.
+        '''
+        return time * io['ticksizepx']
+
+    @staticmethod
+    def pitch2x(time, io):
+        '''
+            pitch2x converts pitch into pixels
+            based on the io preferences.
+        '''
+        ticksize = io['ticksizepx']
+
+        return 0
+
+    @staticmethod
+    def y2time(io):
+        '''
+            calculates time in pianoticks 
+            closest to mouse y position.
+        '''
+        # unpacking parameters...
+        y = io['mouse']['y']
+        grid = io['snap_grid']
+        ticksize = io['ticksizepx']
+        last_tick = io['last_pianotick']
+
+        # calculating...
+        startpx = 0
+        endpx = last_tick * ticksize
+        time = baseround(interpolation(startpx, endpx, y) * last_tick, grid)
+        if time < 0: time = 0
+        return time
+
+    @staticmethod
+    def x2pitch(io):
+        '''
+            calculates the pitch which is 
+            closest to mouse x position.
+        '''
+        # unpacking parameters
+        x = io['mouse']['x']
+
+        # calculating dimensions
+        editor_width = io['editor_width']
+        staff_width = editor_width * io['xscale']
+        staff_margin = (editor_width - staff_width) / 2
+        factor = staff_width / 490
+        x -= staff_margin
+
+        cf = [4, 9, 16, 21, 28, 33, 40, 45, 52, 57, 64, 69, 76, 81, 88]
+        be = [3, 8, 15, 20, 27, 32, 39, 44, 51, 56, 63, 68, 75, 80, 87]
+
+        xlist = [505, 500, 490, 485, 480, 475, 470, 460, 455, 450, 445, 440, 
+        435, 430, 420, 415, 410, 405, 400, 390, 385, 380, 375, 370, 365, 360, 350, 
+        345, 340, 335, 330, 320, 315, 310, 305, 300, 295, 290, 280, 275, 270, 265, 
+        260, 250, 245, 240, 235, 230, 225, 220, 210, 205, 200, 195, 190, 180, 175, 
+        170, 165, 160, 155, 150, 140, 135, 130, 125, 120, 110, 105, 100, 95, 90, 
+        85, 80, 70, 65, 60, 55, 50, 40, 35, 30, 25, 20, 15, 10, 0, -5]
+
+        closest = min(xlist, key=lambda m:abs(m-(x/factor)))
+
+        for idx, xx in enumerate(reversed(xlist)):
+            if xx == closest:
+                return idx + 1
