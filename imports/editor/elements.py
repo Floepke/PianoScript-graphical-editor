@@ -24,7 +24,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-from imports.editor.editor_draw_elements import draw_cursor
+from imports.editor.editor_draw_elements import draw_cursor_indicator
 
 class Elements():
     '''
@@ -37,7 +37,20 @@ class Elements():
     '''
     def __init__(self):
         ...
-        
+
+    def cursor_indicator(self, event_type, io):
+        '''Draws the cursor indicator on the left and right of the staff'''
+        if event_type == 'motion':
+            
+            cursor = {
+                'time':io['mouse']['ey'],
+                'pitch':io['mouse']['ex'],
+                'hand':'r',
+                'zoom':io['ticksizepx']
+            }
+            draw_cursor_indicator(cursor, io)
+        if event_type == 'leave':
+            io['root'].after(250, io['editor'].delete('cursor'))
 
     # right hand
     def elm_note_right(self, event_type, io):
@@ -48,13 +61,7 @@ class Elements():
 
         if event_type == 'motion':
             
-            cursor = {
-                'time':io['mouse']['ey'],
-                'pitch':io['mouse']['ex'],
-                'hand':'r',
-                'zoom':io['ticksizepx']
-            }
-            draw_cursor(cursor, io)
+            ...
 
         if event_type == 'btn1release':
             

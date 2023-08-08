@@ -26,8 +26,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 from imports.editor.tools_editor import ToolsEditor
 
-def draw_cursor(cursor, io):
 
+
+def draw_cursor_indicator(cursor, io):
+    '''
+        Draws the cursor indicator for each individual 
+    '''
+
+    io['editor'].update()
     io['editor'].delete('cursor')
 
     time = ToolsEditor.tick2y(cursor['time'], io)

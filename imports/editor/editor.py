@@ -72,6 +72,7 @@ class MainEditor():
         self.io['editor'].bind('<Shift-KeyRelease>', lambda e: self.update(e, 'shiftrelease'))
         self.io['editor'].bind('<Control-KeyPress>', lambda e: self.update(e, 'ctlpress'))
         self.io['editor'].bind('<Control-KeyRelease>', lambda e: self.update(e, 'ctlrelease'))
+        self.io['editor'].bind('<Leave>', lambda e: self.update(e, 'leave'))
 
         self.new() # create a new initial project from template.pianoscript
 
@@ -85,7 +86,12 @@ class MainEditor():
         # unbind motion (because otherwise we can get recursiondept error if we move the mouse really quick)
         self.io['editor'].unbind('<Motion>')
 
-        # mouse buttons:
+        # update widget dimensions:
+        self.io['editor'].update()
+        self.io['editor_width'] = self.io['editor'].winfo_width()
+        self.io['editor_height'] = self.io['editor'].winfo_height()
+
+        # update mouse buttons:
         if event_type == 'btn1click': self.io['mouse']['button1'] = True
         if event_type == 'btn1release': self.io['mouse']['button1'] = False
         if event_type == 'btn2click': self.io['mouse']['button2'] = True
@@ -93,13 +99,13 @@ class MainEditor():
         if event_type == 'btn3click': self.io['mouse']['button3'] = True
         if event_type == 'btn3release': self.io['mouse']['button3']= False
 
-        # shift and ctl keys
+        # update shift and ctl keys
         if event_type == 'shiftpress': self.io['keyboard']['shift'] = True
         if event_type == 'shiftrelease': self.io['keyboard']['shift'] = False
         if event_type == 'ctlpress': self.io['keyboard']['ctl'] = True
         if event_type == 'ctlrelease': self.io['keyboard']['ctl'] = False
         
-        # motion
+        # update motion (mouse movement)
         if event_type == 'motion':
             self.io['mouse']['x'] = self.io['editor'].canvasx(event.x)
             self.io['mouse']['y'] = self.io['editor'].canvasy(event.y)
@@ -110,7 +116,10 @@ class MainEditor():
         self.io['element'] = self.io['tree'].get
         self.io['snap_grid'] = self.io['grid_selector'].get()
 
-        # running the right element function:
+        # update cursor indicator:
+        self.io['elm_func'].cursor_indicator(event_type, self.io)
+
+        # updating the right element function:
         eval(f"self.io['elm_func'].elm_{self.io['element']}(event_type, self.io)")
 
         DrawStaff.draw_staff(self.io)

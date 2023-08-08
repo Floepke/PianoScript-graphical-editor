@@ -85,7 +85,7 @@ class App:
 			},
 			# keep track wether an object on the editor is clicked; this variable is the 
 			# unique id from a clicked object on the editor canvas if an object is clicked+hold
-			'hold_id':'', 
+			'hold_id':'',
 			'keyboard':{ # keep track wheter shift or ctl is pressed
 				'shift':False,
 				'ctl':False,
