@@ -125,13 +125,17 @@ class DrawStaff():
                 # barlines:
                 t = ToolsEditor.tick2y(time, io)
                 io['editor'].create_line(staff_margin, t,
-                    editor_width-staff_margin, t, width=1, fill=color_dark, tag='barlines')
+                    editor_width-staff_margin, t, 
+                    width=1, 
+                    fill=color_dark, 
+                    tag='barlines')
                 io['editor'].create_text(editor_width-staff_margin, t,
                     text=bar_counter, 
                     anchor='sw', 
                     font=('Courier', int(32 * io['xscale'])), 
                     tag='barnumbering',
-                    angle=270)
+                    angle=270,
+                    fill=color_dark)
 
                 for n in range(gr['numerator']):
 

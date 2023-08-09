@@ -94,8 +94,11 @@ class Gui:
 		self.main_paned.add(self.editorpanel)
 		self.editor = Canvas(self.editorpanel, bg=color_light, relief='flat', cursor='cross')
 		self.editor.place(relwidth=1, relheight=1)
-		self.editor.bind('<5>', lambda event: self.editor.yview('scroll', 1, 'units'))
-		self.editor.bind('<4>', lambda event: self.editor.yview('scroll', -1, 'units'))
+		if platform.system() == 'Linux':
+			self.editor.bind('<5>', lambda event: self.editor.yview('scroll', 1, 'units'))
+			self.editor.bind('<4>', lambda event: self.editor.yview('scroll', -1, 'units'))
+		if platform.system() == 'Darwin':
+			self.editor.bind('<MouseWheel>', lambda event: self.editor.yview('scroll', event.delta, 'units'))
 		# print view
 		self.printpanel = Frame(self.main_paned, bg=color_light)
 		self.main_paned.add(self.printpanel)

@@ -106,7 +106,7 @@ class App:
 			'editor_height': self.gui.editor.winfo_height(),
 			# 
 			'old_editor_width':1,
-			'draaw_cursor':False
+			'draw_cursor':False
 		}
 
 		# editor
