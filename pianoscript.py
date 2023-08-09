@@ -104,9 +104,12 @@ class App:
 			'mm': self.root.winfo_fpixels('1m'),
 			'editor_width': self.gui.editor.winfo_width(),
 			'editor_height': self.gui.editor.winfo_height(),
-			# 
+			# keeping track of the editor_width if it's changed in width.
 			'old_editor_width':1,
-			'draw_cursor':False
+			# False if the mouse pointer is not on the editor
+			'cursor_on_editor':False,
+			# test purposes counter
+			'counter':0
 		}
 
 		# editor

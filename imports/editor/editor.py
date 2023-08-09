@@ -43,6 +43,7 @@ from imports.tools import baseround, interpolation
 from imports.editor.tools_editor import ToolsEditor
 from tkinter import filedialog
 import json
+from imports.editor.update_elements import UpdateElementsInView
 
 #from imports.elements
 #from imports.tools import measure_length
@@ -76,13 +77,19 @@ class MainEditor():
         self.io['editor'].bind('<Control-KeyRelease>', lambda e: self.update(e, 'ctlrelease'))
         self.io['editor'].bind('<Leave>', lambda e: self.update(e, 'leave'))
         self.io['editor'].bind('<Enter>', lambda e: self.update(e, 'enter'))
-
         # create a new initial project from template.pianoscript
         self.new()
 
         # draw the initial barlines and grid
         DrawStaff.draw_barlines_grid(self.io)
         DrawStaff.draw_staff(self.io)
+
+    def scroll_up_callback(self, event):
+
+        if platform.system() in ['Windows', 'Darwin']:
+            self.io['editor'].yview('scroll', event.delta, 'units')
+        else:
+            self.io['editor'].yview('scroll', event.delta, 'units')
 
     def update(self, event, event_type):
         '''
@@ -117,8 +124,8 @@ class MainEditor():
         if event_type == 'motion':
             self.io['mouse']['x'] = self.io['editor'].canvasx(event.x)
             self.io['mouse']['y'] = self.io['editor'].canvasy(event.y)
-            self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io)
-            self.io['mouse']['ey'] = ToolsEditor.y2time(self.io)
+            self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io['mouse']['x'], self.io)
+            self.io['mouse']['ey'] = ToolsEditor.y2time(self.io['mouse']['y'], self.io)
 
         # update element:
         self.io['element'] = self.io['tree'].get
@@ -137,6 +144,9 @@ class MainEditor():
             DrawStaff.draw_barlines_grid(self.io)
 
         ToolsEditor.update_last_pianotick(self.io)
+
+        # draw all objects that are in the current view/scroll position
+        UpdateElementsInView(self.io)
 
         # rebind motion
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))

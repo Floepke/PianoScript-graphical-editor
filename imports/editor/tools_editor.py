@@ -34,7 +34,7 @@ class ToolsEditor():
     '''
 
     @staticmethod
-    def tick2y(time, io):
+    def time2y(time, io):
         '''
             time2y converts pianoticks into pixels
             based on the io preferences.
@@ -42,23 +42,39 @@ class ToolsEditor():
         return time * io['ticksizepx']
 
     @staticmethod
-    def pitch2x(time, io):
+    def pitch2x(pitch, io):
         '''
             pitch2x converts pitch into pixels
             based on the io preferences.
         '''
-        ticksize = io['ticksizepx']
+        # calculating dimensions ...
+        editor_width = io['editor_width']
+        staff_width = editor_width * io['xscale']
+        staff_margin = (editor_width - staff_width) / 2
+        factor = staff_width / 490
 
-        return 0
+        # calculate x position ...
+        pxlist = [-5, 0, 5, 
+        15, 20, 25, 30, 35, 45, 50, 55, 60, 65, 70, 75,
+        85, 90, 95, 100, 105, 115, 120, 125, 130, 135, 140, 145,
+        155, 160, 165, 170, 175, 185, 190, 195, 200, 205, 210, 215,
+        225, 230, 235, 240, 245, 255, 260, 265, 270, 275, 280, 285,
+        295, 300, 305, 310, 315, 325, 330, 335, 340, 345, 350, 355,
+        365, 370, 375, 380, 385, 395, 400, 405, 410, 415, 420, 425,
+        435, 440, 445, 450, 455, 465, 470, 475, 480, 485, 490, 495,
+        505]
+        if pitch > 88:
+            pitch = 88
+        x = staff_margin + ((pxlist[pitch-1]) * factor)
+        return x
 
     @staticmethod
-    def y2time(io):
+    def y2time(y, io):
         '''
             calculates time in pianoticks 
             closest to mouse y position.
         '''
         # unpacking parameters...
-        y = io['mouse']['y']
         grid = io['snap_grid']
         ticksize = io['ticksizepx']
         last_tick = io['last_pianotick']
@@ -71,13 +87,11 @@ class ToolsEditor():
         return time
 
     @staticmethod
-    def x2pitch(io):
+    def x2pitch(x, io):
         '''
             calculates the pitch which is 
             closest to mouse x position.
         '''
-        # unpacking parameters
-        x = io['mouse']['x']
 
         # calculating dimensions
         editor_width = io['editor_width']

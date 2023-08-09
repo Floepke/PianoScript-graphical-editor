@@ -24,35 +24,17 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-'''
-	These are gui color themes. The last group of uncommented 
-	variables will be used.
-'''
 
-# rocky coastline:
-color_light = '#cccccc'
-color_dark = '#0D5880'
-color_gui_light = '#444444'
-color_gui_dark = '#eeeeee'
-color_highlight = '#3cc7a6'
+class UpdateElementsInView:
+	'''
+		This part of the program does the following big task:
+		All elements in the editor viewport that are vissible get refreshed.
+		All outside the view are ignored.
+	'''
 
-# # scouting
-# color_light = '#2a3410'
-# color_dark = '#ada765'
-# color_gui_light = '#ad7d1c'
-# color_gui_dark = '#444c01'
-# color_highlight = '#084c10'
+	def __init__(self, io):
+		
+		self.io = io
+		self.score = self.io['score']
 
-# # light coffee
-# color_light = 'white'
-# color_dark = 'black'
-# color_gui_light = '#362419'
-# color_gui_dark = '#c8c8c8'
-# color_highlight = '#b59b7c'
-
-# # light coffee
-# color_light = 'white'
-# color_dark = 'black'
-# color_gui_light = '#362419'
-# color_gui_dark = '#c8c8c8'
-# color_highlight = '#b59b7c'
+		...

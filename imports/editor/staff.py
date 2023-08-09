@@ -95,6 +95,8 @@ class DrawStaff():
     @staticmethod
     def draw_barlines_grid(io):
 
+        print(io['counter'])
+        io['counter'] += 1
 
         
         # unpacking parameters...
@@ -123,7 +125,7 @@ class DrawStaff():
             for a in range(gr['amount']):
 
                 # barlines:
-                t = ToolsEditor.tick2y(time, io)
+                t = ToolsEditor.time2y(time, io)
                 io['editor'].create_line(staff_margin, t,
                     editor_width-staff_margin, t, 
                     width=1, 
@@ -141,7 +143,7 @@ class DrawStaff():
 
                     # grid: TODO
                     l = length / gr['numerator']
-                    t = ToolsEditor.tick2y(l*grid_counter, io)
+                    t = ToolsEditor.time2y(l*grid_counter, io)
                     io['editor'].create_line(staff_margin, t,
                     editor_width-staff_margin, t, width=1, fill=color_dark, tag='gridlines', dash=(6,6))
                     grid_counter += 1

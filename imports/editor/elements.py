@@ -24,7 +24,8 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-from imports.editor.editor_draw_elements import draw_cursor_indicator
+from imports.editor.editor_draw_elements import DrawElements
+from imports.editor.tools_editor import ToolsEditor
 
 class Elements():
     '''
@@ -57,16 +58,34 @@ class Elements():
                 'hand':'r',
                 'zoom':io['ticksizepx']
             }
-            draw_cursor_indicator(cursor, io)
+            DrawElements.draw_cursor_indicator(cursor, io)
 
     # right hand
     def elm_note_right(self, event_type, io):
+
+        if event_type == 'leave':
+            io['editor'].delete('cursor')
+            io['draw_cursor'] = False
+            return
+        if event_type == 'enter':
+            io['draw_cursor'] = True
+            return
+
+        if event_type == 'motion' and io['draw_cursor']:
+
+            # draw the note cursor:
+            cursor_note = {
+                "time":io['mouse']['ey'],
+                "duration":640.0,
+                "pitch":io['mouse']['ex'],
+                "hand":"l",
+                "id":"cursor",
+                "stem-visible":True,
+                "accidental":0
+            }
+            DrawElements.draw_note_lr(cursor_note, io)
         
         if event_type == 'btn1click':
-            
-            ...
-
-        if event_type == 'motion':
             
             ...
 

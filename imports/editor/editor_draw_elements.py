@@ -25,25 +25,41 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 from imports.editor.tools_editor import ToolsEditor
+from imports.colors import color_highlight, color_dark
 
 
+class DrawElements:
 
-def draw_cursor_indicator(cursor, io):
-    '''
-        Draws the cursor indicator for each individual 
-    '''
+    @staticmethod
+    def draw_cursor_indicator(cursor, io):
+        '''
+            Draws the cursor indicator for each individual 
+        '''
 
-    io['editor'].update()
-    io['editor'].delete('cursor')
+        io['editor'].update()
+        io['editor'].delete('cursor')
 
-    time = ToolsEditor.tick2y(cursor['time'], io)
-    editor_width = io['editor_width']
-    staff_width = editor_width * io['xscale']
-    staff_margin = (editor_width - staff_width) / 2
-    
-    io['editor'].create_line(0, time,
-        staff_margin, time,
-        tag='cursor', width=4, fill='green')
-    io['editor'].create_line(editor_width-staff_margin, time,
-        editor_width, time,
-        tag='cursor', width=4, fill='green')
+        time = ToolsEditor.time2y(cursor['time'], io)
+        editor_width = io['editor_width']
+        staff_width = editor_width * io['xscale']
+        staff_margin = (editor_width - staff_width) / 2
+        
+        io['editor'].create_line(0, time,
+            staff_margin, time,
+            tag='cursor', width=4, fill=color_highlight)
+        io['editor'].create_line(editor_width-staff_margin, time,
+            editor_width, time,
+            tag='cursor', width=4, fill=color_highlight)
+
+    @staticmethod
+    def draw_note_lr(note, io):
+        
+        tags = [note['id']]
+        if note['id'] == 'cursor':
+            color = color_highlight
+        else:
+            color = color_dark
+        x = ToolsEditor.pitch2x(note['pitch'], io)
+        y = ToolsEditor.time2y(note['time'], io)
+        io['editor'].create_oval(x-5, y,
+            x+5, y+10, fill=color, outline='', tag=tags)
