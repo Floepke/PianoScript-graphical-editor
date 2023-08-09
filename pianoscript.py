@@ -33,7 +33,7 @@ import platform, ctypes
 from imports.editor.editor import MainEditor
 from imports.savefilestructure import BluePrint
 from imports.gui.gui import Gui
-from imports.colors import color_light, color_gui_light
+from imports.colors import color_light, color_gui_light, color_highlight
 from imports.editor.elements import Elements
 
 class App:
@@ -46,6 +46,8 @@ class App:
 		# gui
 		self.gui = Gui(master=self.root)
 		self.gui.editor.update()
+
+		self.root.update()
 
 		# the self.data stores all data from the app in one organized dict:
 		self.io = {
@@ -64,7 +66,7 @@ class App:
 			# this class stores all methods for elements
 			'elm_func':Elements(),
 			# the last pianotick of the score
-			'last_pianotick':8192,
+			'last_pianotick':1024 * 88,
 			# used to give every element a unique id
 			'new_id':0,
 			# the current selected grid from the grid selector
@@ -92,7 +94,7 @@ class App:
 			},
 			'selection':{ # everything about making a selection; keep track
 				'x1':None,
-				'y1':None,
+					'y1':None,
 				'x2':None,
 				'y2':None,
 				'selection_buffer':[], # the buffer
@@ -102,7 +104,9 @@ class App:
 			'mm': self.root.winfo_fpixels('1m'),
 			'editor_width': self.gui.editor.winfo_width(),
 			'editor_height': self.gui.editor.winfo_height(),
-			'redraw_editor':True
+			# 
+			'old_editor_width':1,
+			'draaw_cursor':False
 		}
 
 		# editor
@@ -131,6 +135,8 @@ class App:
 		self.fileMenu.add_separator()
 		self.fileMenu.add_command(label="Exit", underline=None, command=None, font=('courier', 16))
 		self.menubar.add_cascade(label="File", underline=None, menu=self.fileMenu, font=('courier', 16))
+		self.menubar.add_command(label='< previous', command=lambda: cycle_trough_pages_button('<'), background='grey', activebackground=color_highlight)
+		self.menubar.add_command(label='next >', command=lambda: cycle_trough_pages_button('>'), background='grey', activebackground=color_highlight)
 
 		# binds
 		self.root.bind('<Escape>', self.quit)

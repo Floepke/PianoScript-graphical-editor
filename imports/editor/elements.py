@@ -40,7 +40,16 @@ class Elements():
 
     def cursor_indicator(self, event_type, io):
         '''Draws the cursor indicator on the left and right of the staff'''
-        if event_type == 'motion':
+
+        if event_type == 'leave':
+            io['editor'].delete('cursor')
+            io['draw_cursor'] = False
+            return
+        if event_type == 'enter':
+            io['draw_cursor'] = True
+            return
+
+        if event_type == 'motion' and io['draw_cursor']:
             
             cursor = {
                 'time':io['mouse']['ey'],
@@ -49,8 +58,6 @@ class Elements():
                 'zoom':io['ticksizepx']
             }
             draw_cursor_indicator(cursor, io)
-        if event_type == 'leave':
-            io['root'].after(250, io['editor'].delete('cursor'))
 
     # right hand
     def elm_note_right(self, event_type, io):

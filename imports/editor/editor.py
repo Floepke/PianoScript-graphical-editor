@@ -68,13 +68,21 @@ class MainEditor():
             self.io['editor'].bind('<ButtonRelease-2>', lambda e: self.update(e, 'btn3release'))
         
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))
+        # to force the editor to update on mouse release when resizing the window for example.
+        self.io['root'].bind('<ButtonRelease-1>', lambda e: self.update(e, 'motion')) 
         self.io['editor'].bind('<Shift-KeyPress>', lambda e: self.update(e, 'shiftpress'))
         self.io['editor'].bind('<Shift-KeyRelease>', lambda e: self.update(e, 'shiftrelease'))
         self.io['editor'].bind('<Control-KeyPress>', lambda e: self.update(e, 'ctlpress'))
         self.io['editor'].bind('<Control-KeyRelease>', lambda e: self.update(e, 'ctlrelease'))
         self.io['editor'].bind('<Leave>', lambda e: self.update(e, 'leave'))
+        self.io['editor'].bind('<Enter>', lambda e: self.update(e, 'enter'))
 
-        self.new() # create a new initial project from template.pianoscript
+        # create a new initial project from template.pianoscript
+        self.new()
+
+        # draw the initial barlines and grid
+        DrawStaff.draw_barlines_grid(self.io)
+        DrawStaff.draw_staff(self.io)
 
     def update(self, event, event_type):
         '''
@@ -122,7 +130,13 @@ class MainEditor():
         # updating the right element function:
         eval(f"self.io['elm_func'].elm_{self.io['element']}(event_type, self.io)")
 
-        DrawStaff.draw_staff(self.io)
+        # check if we need to redraw the stafflines and grid:
+        if self.io['old_editor_width'] != self.io['editor_width']:
+            self.io['old_editor_width'] = self.io['editor_width']
+            DrawStaff.draw_staff(self.io)
+            DrawStaff.draw_barlines_grid(self.io)
+
+        ToolsEditor.update_last_pianotick(self.io)
 
         # rebind motion
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))

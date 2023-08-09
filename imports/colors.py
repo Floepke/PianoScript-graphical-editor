@@ -49,3 +49,10 @@ color_dark = 'black'
 color_gui_light = '#362419'
 color_gui_dark = '#c8c8c8'
 color_highlight = '#b59b7c'
+
+# light coffee
+color_light = 'white'
+color_dark = 'black'
+color_gui_light = '#362419'
+color_gui_dark = '#c8c8c8'
+color_highlight = '#b59b7c'

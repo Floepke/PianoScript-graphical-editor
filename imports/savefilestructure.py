@@ -35,10 +35,9 @@ from datetime import datetime
 # ------------------------
 # save file structure
 # ------------------------
-Score = {}
 
 # ------------------------
-# Blueprint
+# Blueprint (from the save file)
 # ------------------------
 BluePrint = {
   "header": {
@@ -130,7 +129,7 @@ BluePrint = {
   "events": {
     "grid": [
       {
-        "amount": 8,
+        "amount": 88,
         "numerator": 4,
         "denominator": 4,
         "grid": 4,

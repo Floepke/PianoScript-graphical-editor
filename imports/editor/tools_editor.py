@@ -101,3 +101,32 @@ class ToolsEditor():
         for idx, xx in enumerate(reversed(xlist)):
             if xx == closest:
                 return idx + 1
+
+    @staticmethod
+    def measure_length(numerator, denominator):
+        '''
+        returns the length in pianoticks (quarter == 256)
+        '''
+        return int(numerator * (1024 / denominator))
+
+    @staticmethod
+    def update_last_pianotick(io):
+        '''
+            Updates the property last_pianotick in self.io.
+            It counts the entire length of the music.
+        '''
+
+        score = io['score']
+        grid = score['events']['grid']
+
+        time = 0
+
+        for gr in grid:
+
+            length = ToolsEditor.measure_length(gr['numerator'], gr['denominator'])
+            
+            for a in range(gr['amount']):
+
+                time += length
+        
+        io['last_pianotick'] = time

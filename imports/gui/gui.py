@@ -117,8 +117,7 @@ class Gui:
 		# self.toolsMenu.add_command(label='Add quick line breaks', command=lambda: add_quick_linebreaks(), font=('courier', 16))
 		# self.toolsMenu.add_command(label='Transpose', command=lambda: transpose(), font=('courier', 16))
 		# self.menubar.add_cascade(label="Tools", underline=None, menu=toolsMenu)
-		# self.menubar.add_command(label='< previous', command=lambda: cycle_trough_pages_button('<'), background='grey', activebackground=color_highlight)
-		# self.menubar.add_command(label='next >', command=lambda: cycle_trough_pages_button('>'), background='grey', activebackground=color_highlight)
+		
 
 if __name__ == '__main__':
 

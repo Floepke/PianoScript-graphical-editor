@@ -31,14 +31,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 import time
 
-def measure_length(tsig):
+def measure_length(numerator, denominator):
     '''
-    tsig is a tuple that contains: (numerator, denominator)
     returns the length in pianoticks (quarter == 256)
     '''
-    n = tsig[0]
-    d = 1024 / tsig[1]
-    return int(n * d)
+    return int(numerator * (1024 / denominator))
 
 
 def interpolation(x, y, z):
