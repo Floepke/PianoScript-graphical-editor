@@ -46,7 +46,6 @@ class App:
 		# gui
 		self.gui = Gui(master=self.root)
 		self.gui.editor.update()
-
 		self.root.update()
 
 		# the self.data stores all data from the app in one organized dict:
@@ -55,18 +54,20 @@ class App:
 			'root':self.root,
 			# editor canvas
 			'editor':self.gui.editor,
+			# scrollbar
+			'sbar':self.gui.sbar,
 			# printview canvas
 			'pview':self.gui.pview,
 			# the curstomized elements tree widget
 			'tree':self.gui.treeview,
 			# gridselector
 			'grid_selector':self.gui.grid_selector,
-			# the score object where all score data is
+			# the score object where all score data is stored (the savefile)
 			'score':{},
 			# this class stores all methods for elements
 			'elm_func':Elements(),
 			# the last pianotick of the score
-			'last_pianotick':1024 * 88,
+			'last_pianotick':0,
 			# used to give every element a unique id
 			'new_id':0,
 			# the current selected grid from the grid selector
@@ -108,8 +109,8 @@ class App:
 			'old_editor_width':1,
 			# False if the mouse pointer is not on the editor
 			'cursor_on_editor':False,
-			# test purposes counter
-			'counter':0
+			# scroll position; used for detecting which notes are in the current viewport
+			'scroll_position':0,
 		}
 
 		# editor

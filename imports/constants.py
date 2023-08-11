@@ -1,4 +1,4 @@
-#! python3.9.2
+#!python3.9.2
 # coding: utf-8
 
 '''
@@ -24,35 +24,5 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-'''
-	These are gui color themes. The last group of uncommented 
-	variables will be used.
-'''
-
-# rocky coastline:
-color_light = '#cccccc'
-color_dark = '#000010'
-color_gui_light = '#444444'
-color_gui_dark = '#eeeeee'
-color_highlight = '#3cc7a6'
-
-# # scouting
-# color_light = '#2a3410'
-# color_dark = '#ada765'
-# color_gui_light = '#ad7d1c'
-# color_gui_dark = '#444c01'
-# color_highlight = '#084c10'
-
-# # light coffee
-# color_light = 'white'
-# color_dark = 'black'
-# color_gui_light = '#362419'
-# color_gui_dark = '#c8c8c8'
-# color_highlight = '#b59b7c'
-
-# # light coffee
-# color_light = 'white'
-# color_dark = 'black'
-# color_gui_light = '#362419'
-# color_gui_dark = '#c8c8c8'
-# color_highlight = '#b59b7c'
+BLACK = [2, 5, 7, 10, 12, 14, 17, 19, 22, 24, 26, 29, 31, 34, 36, 38, 41, 43, 46,
+         48, 50, 53, 55, 58, 60, 62, 65, 67, 70, 72, 74, 77, 79, 82, 84, 86]

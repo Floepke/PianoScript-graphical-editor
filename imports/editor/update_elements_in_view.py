@@ -28,8 +28,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 class UpdateElementsInView:
 	'''
 		This part of the program does the following big task:
-		All elements in the editor viewport that are vissible get refreshed.
-		All outside the view are ignored.
+		All elements in the editor viewport that are vissible 
+		get refreshed. All outside the view are ignored. This
+		means once a note is drawn it stays there.
 	'''
 
 	def __init__(self, io):
@@ -37,4 +38,11 @@ class UpdateElementsInView:
 		self.io = io
 		self.score = self.io['score']
 
+		# keeping track of the notes wheter they need to be drawn or not
+		self.drawn_id = []
+		self.scroll_fromtick = 0
+		self.scroll_totick = 0
+		
+	def update_scroll(self):
+		
 		...

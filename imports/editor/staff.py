@@ -36,12 +36,15 @@ class DrawStaff():
         # calculating dimensions
         score = io['score']
         io['editor'].update()
-        editor_width = io['editor'].winfo_width()
+        sbar_width = io['sbar'].winfo_width()
+        editor_width = io['editor'].winfo_width() - sbar_width
         editor_height = io['editor'].winfo_height()
         staff_width = editor_width * io['xscale']
         staff_margin = (editor_width - staff_width) / 2
         x_factor = staff_width / 490
         yscale = io['ticksizepx']
+
+        #io['editor'].create_line(sbar_width,100,100,100, width='10')
 
         # first delete old stafflines
         io['editor'].delete('staffline')
@@ -50,8 +53,8 @@ class DrawStaff():
 
         #io['last_pianotick'] = editor_height
 
-        io['editor'].create_line(x_curs,0,
-                                x_curs,io['last_pianotick']*yscale,
+        io['editor'].create_line(sbar_width+x_curs,0,
+                                sbar_width+x_curs,io['last_pianotick']*yscale,
                                 width=2,
                                 tag='staffline',
                                 fill=color_dark,
@@ -63,16 +66,16 @@ class DrawStaff():
 
             for line in range(2):
                 if staff == 3:
-                    io['editor'].create_line(x_curs,0,
-                        x_curs,io['last_pianotick']*yscale,
+                    io['editor'].create_line(sbar_width+x_curs,0,
+                        sbar_width+x_curs,io['last_pianotick']*yscale,
                         width=1,
                         tag='staffline',
                         dash=(6,6),
                         fill=color_dark,
                         state='disabled')
                 else:
-                    io['editor'].create_line(x_curs,0,
-                        x_curs,io['last_pianotick']*yscale,
+                    io['editor'].create_line(sbar_width+x_curs,0,
+                        sbar_width+x_curs,io['last_pianotick']*yscale,
                         width=1,
                         tag='staffline',
                         fill=color_dark,
@@ -82,8 +85,8 @@ class DrawStaff():
             x_curs += 10 * x_factor
 
             for line in range(3):
-                io['editor'].create_line(x_curs,0,
-                                        x_curs,io['last_pianotick']*yscale,
+                io['editor'].create_line(sbar_width+x_curs,0,
+                                        sbar_width+x_curs,io['last_pianotick']*yscale,
                                         width=2,
                                         tag='staffline',
                                         fill=color_dark,
@@ -94,18 +97,14 @@ class DrawStaff():
 
     @staticmethod
     def draw_barlines_grid(io):
-
-        print(io['counter'])
-        io['counter'] += 1
-
         
         # unpacking parameters...
         score = io['score']
         grid = score['events']['grid']
 
         # calculating dimensions...
-        editor_width = io['editor'].winfo_width()
-
+        sbar_width = io['sbar'].winfo_width()
+        editor_width = io['editor'].winfo_width() - sbar_width
         staff_width = editor_width * io['xscale']
         staff_margin = (editor_width - staff_width) / 2
         x_factor = staff_width / 490
@@ -126,12 +125,12 @@ class DrawStaff():
 
                 # barlines:
                 t = ToolsEditor.time2y(time, io)
-                io['editor'].create_line(staff_margin, t,
-                    editor_width-staff_margin, t, 
+                io['editor'].create_line(sbar_width+staff_margin, t,
+                    sbar_width+editor_width-staff_margin, t, 
                     width=1, 
                     fill=color_dark, 
                     tag='barlines')
-                io['editor'].create_text(editor_width-staff_margin, t,
+                io['editor'].create_text(sbar_width+editor_width-staff_margin, t,
                     text=bar_counter, 
                     anchor='sw', 
                     font=('Courier', int(32 * io['xscale'])), 
@@ -144,8 +143,8 @@ class DrawStaff():
                     # grid: TODO
                     l = length / gr['numerator']
                     t = ToolsEditor.time2y(l*grid_counter, io)
-                    io['editor'].create_line(staff_margin, t,
-                    editor_width-staff_margin, t, width=1, fill=color_dark, tag='gridlines', dash=(6,6))
+                    io['editor'].create_line(sbar_width+staff_margin, t,
+                    sbar_width+editor_width-staff_margin, t, width=1, fill=color_dark, tag='gridlines', dash=(6,6))
                     grid_counter += 1
 
                 time += length

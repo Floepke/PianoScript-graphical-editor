@@ -43,7 +43,7 @@ from imports.tools import baseround, interpolation
 from imports.editor.tools_editor import ToolsEditor
 from tkinter import filedialog
 import json
-from imports.editor.update_elements import UpdateElementsInView
+from imports.editor.update_elements_in_view import UpdateElementsInView
 
 #from imports.elements
 #from imports.tools import measure_length
@@ -77,19 +77,40 @@ class MainEditor():
         self.io['editor'].bind('<Control-KeyRelease>', lambda e: self.update(e, 'ctlrelease'))
         self.io['editor'].bind('<Leave>', lambda e: self.update(e, 'leave'))
         self.io['editor'].bind('<Enter>', lambda e: self.update(e, 'enter'))
+
+        # scroll-bind:
+        if platform.system() == 'Linux':
+            self.io['editor'].bind('<5>', lambda event: self.scroll_up_callback(event))
+            self.io['editor'].bind('<4>', lambda event: self.scroll_down_callback(event))
+        if platform.system() == 'Darwin':
+            self.editor.bind('<MouseWheel>', lambda event: self.editor.yview('scroll', event.delta, 'units'))
+
         # create a new initial project from template.pianoscript
         self.new()
 
         # draw the initial barlines and grid
+        ToolsEditor.update_last_pianotick(self.io)
         DrawStaff.draw_barlines_grid(self.io)
         DrawStaff.draw_staff(self.io)
+
+        # call the automatic note drawer on scroll position to life:
+        self.update_elements_in_view = UpdateElementsInView(self.io)
 
     def scroll_up_callback(self, event):
 
         if platform.system() in ['Windows', 'Darwin']:
             self.io['editor'].yview('scroll', event.delta, 'units')
         else:
+            self.io['editor'].yview('scroll', 1, 'units')
+        self.update(event, 'motion')
+
+    def scroll_down_callback(self, event):
+
+        if platform.system() in ['Windows', 'Darwin']:
             self.io['editor'].yview('scroll', event.delta, 'units')
+        else:
+            self.io['editor'].yview('scroll', -1, 'units')
+        self.update(event, 'motion')
 
     def update(self, event, event_type):
         '''
@@ -127,6 +148,9 @@ class MainEditor():
             self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io['mouse']['x'], self.io)
             self.io['mouse']['ey'] = ToolsEditor.y2time(self.io['mouse']['y'], self.io)
 
+        # update scroll position
+        self.io['scroll_position'] = self.update_scroll()
+
         # update element:
         self.io['element'] = self.io['tree'].get
         self.io['snap_grid'] = self.io['grid_selector'].get()
@@ -140,13 +164,14 @@ class MainEditor():
         # check if we need to redraw the stafflines and grid:
         if self.io['old_editor_width'] != self.io['editor_width']:
             self.io['old_editor_width'] = self.io['editor_width']
+            ToolsEditor.update_last_pianotick(self.io)
             DrawStaff.draw_staff(self.io)
             DrawStaff.draw_barlines_grid(self.io)
+            ToolsEditor.set_scroll_region(self.io)
 
-        ToolsEditor.update_last_pianotick(self.io)
 
         # draw all objects that are in the current view/scroll position
-        UpdateElementsInView(self.io)
+        ToolsEditor.update_tick_range(self.io)
 
         # rebind motion
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))
@@ -188,3 +213,11 @@ class MainEditor():
         # if the file was selected, load the file
         with open(f, 'r') as f:
             self.score = json.load(f)
+
+    def update_scroll(self):
+        '''
+            Updates the current scroll position.
+            scroll position is a float 0..1
+        '''
+        ...
+        return 0

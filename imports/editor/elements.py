@@ -44,13 +44,13 @@ class Elements():
 
         if event_type == 'leave':
             io['editor'].delete('cursor')
-            io['draw_cursor'] = False
+            io['cursor_on_editor'] = False
             return
         if event_type == 'enter':
-            io['draw_cursor'] = True
+            io['cursor_on_editor'] = True
             return
 
-        if event_type == 'motion' and io['draw_cursor']:
+        if event_type == 'motion' and io['cursor_on_editor']:
             
             cursor = {
                 'time':io['mouse']['ey'],
@@ -71,7 +71,7 @@ class Elements():
             io['draw_cursor'] = True
             return
 
-        if event_type == 'motion' and io['draw_cursor']:
+        if event_type == 'motion' and io['cursor_on_editor']:
 
             # draw the note cursor:
             cursor_note = {

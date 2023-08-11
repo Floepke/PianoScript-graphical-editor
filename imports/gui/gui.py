@@ -90,15 +90,13 @@ class Gui:
 		self.treeview.grid(column=0, row=12, sticky='ew')
 		# editor
 		self.root.update()
-		self.editorpanel = Frame(self.main_paned, bg=color_gui_light, width=self.scrwidth / 3 * 1.54)
+		self.editorpanel = Frame(self.main_paned, bg=color_gui_light, width=self.scrwidth / 3 * 1.54) # TODO
 		self.main_paned.add(self.editorpanel)
 		self.editor = Canvas(self.editorpanel, bg=color_light, relief='flat', cursor='cross')
 		self.editor.place(relwidth=1, relheight=1)
-		if platform.system() == 'Linux':
-			self.editor.bind('<5>', lambda event: self.editor.yview('scroll', 1, 'units'))
-			self.editor.bind('<4>', lambda event: self.editor.yview('scroll', -1, 'units'))
-		if platform.system() == 'Darwin':
-			self.editor.bind('<MouseWheel>', lambda event: self.editor.yview('scroll', event.delta, 'units'))
+		self.sbar = Scrollbar(self.editor, orient='vertical', width=20, relief='flat', bg=color_gui_dark, command=self.editor.yview)
+		self.editor['yscrollcommand'] = self.sbar.set
+		self.sbar.pack(side='left', fill='y')
 		# print view
 		self.printpanel = Frame(self.main_paned, bg=color_light)
 		self.main_paned.add(self.printpanel)

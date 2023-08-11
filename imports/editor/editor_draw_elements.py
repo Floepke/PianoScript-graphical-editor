@@ -25,7 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 from imports.editor.tools_editor import ToolsEditor
-from imports.colors import color_highlight, color_dark
+from imports.colors import color_highlight, color_dark, color_light
+from imports.constants import BLACK
 
 
 class DrawElements:
@@ -40,26 +41,29 @@ class DrawElements:
         io['editor'].delete('cursor')
 
         time = ToolsEditor.time2y(cursor['time'], io)
-        editor_width = io['editor_width']
+        sbar_width = io['sbar'].winfo_width()
+        editor_width = io['editor_width'] - sbar_width
         staff_width = editor_width * io['xscale']
         staff_margin = (editor_width - staff_width) / 2
         
-        io['editor'].create_line(0, time,
-            staff_margin, time,
-            tag='cursor', width=4, fill=color_highlight)
-        io['editor'].create_line(editor_width-staff_margin, time,
-            editor_width, time,
-            tag='cursor', width=4, fill=color_highlight)
+        io['editor'].create_line(sbar_width, time,
+            sbar_width+staff_margin, time,
+            tag='cursor', width=4, fill=color_dark)
+        io['editor'].create_line(sbar_width+editor_width-staff_margin, time,
+            sbar_width+editor_width, time,
+            tag='cursor', width=4, fill=color_dark)
+
+        if cursor['pitch'] in BLACK:
+            fill = color_dark
+        else:
+            fill = color_light
+        x = ToolsEditor.pitch2x(cursor['pitch'], io)
+        y = ToolsEditor.time2y(cursor['time'], io)
+        print(y)
+        io['editor'].create_oval(x-(10 * io['xscale']), y,
+            x+(10 * io['xscale']), y+20, fill=fill, outline=color_dark, tag='cursor', width=2)
 
     @staticmethod
     def draw_note_lr(note, io):
         
-        tags = [note['id']]
-        if note['id'] == 'cursor':
-            color = color_highlight
-        else:
-            color = color_dark
-        x = ToolsEditor.pitch2x(note['pitch'], io)
-        y = ToolsEditor.time2y(note['time'], io)
-        io['editor'].create_oval(x-5, y,
-            x+5, y+10, fill=color, outline='', tag=tags)
+        ...

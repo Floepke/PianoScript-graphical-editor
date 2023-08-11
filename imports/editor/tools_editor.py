@@ -48,7 +48,8 @@ class ToolsEditor():
             based on the io preferences.
         '''
         # calculating dimensions ...
-        editor_width = io['editor_width']
+        sbar_width = io['sbar'].winfo_width()
+        editor_width = io['editor_width'] - sbar_width
         staff_width = editor_width * io['xscale']
         staff_margin = (editor_width - staff_width) / 2
         factor = staff_width / 490
@@ -65,7 +66,7 @@ class ToolsEditor():
         505]
         if pitch > 88:
             pitch = 88
-        x = staff_margin + ((pxlist[pitch-1]) * factor)
+        x = sbar_width+staff_margin + ((pxlist[pitch-1]) * factor)
         return x
 
     @staticmethod
@@ -93,12 +94,13 @@ class ToolsEditor():
             closest to mouse x position.
         '''
 
-        # calculating dimensions
-        editor_width = io['editor_width']
+        # calculating dimensions...
+        sbar_width = io['sbar'].winfo_width()
+        editor_width = io['editor_width'] - sbar_width
         staff_width = editor_width * io['xscale']
         staff_margin = (editor_width - staff_width) / 2
         factor = staff_width / 490
-        x -= staff_margin
+        x -= staff_margin + sbar_width
 
         cf = [4, 9, 16, 21, 28, 33, 40, 45, 52, 57, 64, 69, 76, 81, 88]
         be = [3, 8, 15, 20, 27, 32, 39, 44, 51, 56, 63, 68, 75, 80, 87]
@@ -144,3 +146,42 @@ class ToolsEditor():
                 time += length
         
         io['last_pianotick'] = time
+
+    @staticmethod
+    def set_scroll_region(io):
+        '''
+            updates the scroll region and returns the bounding box
+        '''
+        x1, y1, x2, y2 = io['editor'].bbox('all')
+        margin = (io['editor_width'] - (io['editor_width'] * io['xscale'])) / 2
+        y1 -= margin
+        y2 += margin
+        scrollregion = (0, y1, x2, y2)
+        io['editor']['scrollregion'] = scrollregion
+
+        return (x1, y1, x2, y2)
+
+    @staticmethod
+    def update_tick_range(io):
+        '''
+            updates the tick range that are in 
+            the current viewport.
+        '''
+        # unpack parameters...
+
+        # calculating dimensions...
+        sbar_width = io['sbar'].winfo_width()
+        editor_width = io['editor'].winfo_width() - sbar_width
+        editor_height = io['editor'].winfo_height()
+        staff_width = editor_width * io['xscale']
+        staff_margin = (editor_width - staff_width) / 2
+
+        # calculating ticks...
+        start, end = io['sbar'].get()
+        start_tick = int((io['last_pianotick'] * io['ticksizepx']) * start)
+        start_tick -= staff_margin
+        if start_tick < 0: start_tick = 0
+        end_tick = int((io['last_pianotick'] * io['ticksizepx']) * end)
+        if end_tick > io['last_pianotick']: end_tick = io['last_pianotick']
+        print(start_tick, end_tick)
+        ...
