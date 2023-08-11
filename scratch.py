@@ -1,17 +1,28 @@
-from tkinter import Tk, Canvas, Scrollbar, Frame
+import tkinter as tk
 
-root=Tk()
-frame=Frame(root,width=300,height=300)
-frame.pack(expand=True, fill='both') #.grid(row=0,column=0)
-canvas=Canvas(frame,bg='#FFFFFF',width=300,height=300,scrollregion=(0,0,500,500))
-hbar=Scrollbar(frame,orient='h')
-hbar.pack(side='bottom',fill='x')
-hbar.config(command=canvas.xview)
-vbar=Scrollbar(frame,orient='v')
-vbar.pack(side='right',fill='y')
-vbar.config(command=canvas.yview)
-canvas.config(width=300,height=300)
-canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
-canvas.pack(side='left',expand=True,fill='both')
+def on_select(event):
+    selected_index = listbox.curselection()
+    if selected_index:
+        selected_word = listbox.get(selected_index[0])
+        label.config(text=f"Selected Word: {selected_word}")
 
+# Create the main application window
+root = tk.Tk()
+root.title("Word Selection App")
+
+# Create a Listbox
+listbox = tk.Listbox(root, selectmode=tk.SINGLE)
+words = ["Apple", "Banana", "Cherry", "Grape", "Lemon", "Orange", "Peach", "Strawberry"]
+for word in words:
+    listbox.insert(tk.END, word)
+listbox.pack(padx=20, pady=10)
+
+# Create a Label
+label = tk.Label(root, text="Selected Word: ")
+label.pack(padx=20, pady=(0, 10))
+
+# Bind the selection event to the Listbox
+listbox.bind('<<ListboxSelect>>', on_select)
+
+# Start the Tkinter event loop
 root.mainloop()

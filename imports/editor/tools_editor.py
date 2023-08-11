@@ -159,8 +159,6 @@ class ToolsEditor():
         scrollregion = (0, y1, x2, y2)
         io['editor']['scrollregion'] = scrollregion
 
-        return (x1, y1, x2, y2)
-
     @staticmethod
     def update_tick_range(io):
         '''
@@ -174,14 +172,27 @@ class ToolsEditor():
         staff_width = editor_width * io['xscale']
         staff_margin = (editor_width - staff_width) / 2
 
+        # get scroll region
+        x1, y1, x2, y2 = io['editor'].bbox('all')
+        margin = (io['editor_width'] - (io['editor_width'] * io['xscale'])) / 2
+        y1 -= margin
+        y2 += margin
+        scrollregion = (x1, y1+margin, x2, y2-margin)
+
         # calculating ticks...
         start, end = io['sbar'].get()
-        start_tick = int((io['last_pianotick'] * io['ticksizepx']) * start)
-        start_tick -= staff_margin
-        if start_tick < 0: start_tick = 0
-        end_tick = int((io['last_pianotick'] * io['ticksizepx']) * end)
-        if end_tick > io['last_pianotick']: end_tick = io['last_pianotick']
+        start_tick = start * io['ticksizepx'] * io['last_pianotick'] * 2 - 256
+        end_tick = start_tick + (editor_height / io['ticksizepx'])
+
+        print('start: ', start_tick)
+        # start_tick = (io['last_pianotick'] * io['ticksizepx']) * start
+        # start_tick -= staff_margin
+        # #if start_tick < 0: start_tick = 0
+        # end_tick = start_tick + (editor_height * io['ticksizepx'] * 4)
+        # end_tick += staff_margin
+        #if end_tick > io['last_pianotick']: end_tick = io['last_pianotick']
         
         # writing ticks to io...
         io['view_start_tick'] = start_tick
         io['view_end_tick'] = end_tick
+

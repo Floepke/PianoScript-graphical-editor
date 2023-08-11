@@ -42,12 +42,11 @@ class Elements():
     def cursor_indicator(self, event_type, io):
         '''Draws the cursor indicator on the left and right of the staff'''
 
-        if event_type == 'leave':
+        if not event_type == 'leave':
+            io['cursor_on_editor'] = True
+        else:
             io['editor'].delete('cursor')
             io['cursor_on_editor'] = False
-            return
-        if event_type == 'enter':
-            io['cursor_on_editor'] = True
             return
 
         if event_type == 'motion' and io['cursor_on_editor']:

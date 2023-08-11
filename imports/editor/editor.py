@@ -80,10 +80,10 @@ class MainEditor():
 
         # scroll-bind:
         if platform.system() == 'Linux':
-            self.io['editor'].bind('<5>', lambda event: self.scroll_up_callback(event))
-            self.io['editor'].bind('<4>', lambda event: self.scroll_down_callback(event))
-        if platform.system() == 'Darwin':
-            self.editor.bind('<MouseWheel>', lambda event: self.editor.yview('scroll', event.delta, 'units'))
+            self.io['editor'].bind('<5>', lambda event: self.scroll_up_callback_linux(event))
+            self.io['editor'].bind('<4>', lambda event: self.scroll_down_callback_linux(event))
+        if platform.system() in ['Windows', 'Darwin']:
+            self.io['editor'].bind('<MouseWheel>', lambda event: self.scroll_callback_windows(event))
 
         # create a new initial project from template.pianoscript
         self.new()
@@ -92,25 +92,30 @@ class MainEditor():
         ToolsEditor.update_last_pianotick(self.io)
         DrawStaff.draw_barlines_grid(self.io)
         DrawStaff.draw_staff(self.io)
+        self.io['editor'].update()
+        self.io['sbar'].update()
+        ToolsEditor.update_tick_range(self.io)
+        UpdateElementsInView.draw_note(self.io)
 
         # call the automatic note drawer on scroll position to life:
-        self.update_elements_in_view = UpdateElementsInView(self.io)
+        #self.update_elements_in_view = UpdateElementsInView.(self.io)
 
-    def scroll_up_callback(self, event):
+    def scroll_up_callback_linux(self, event):
+        print(event.delta)
+        self.io['editor'].yview('scroll', 1, 'units')
+        self.update(event, 'scroll')
 
-        if platform.system() in ['Windows', 'Darwin']:
-            self.io['editor'].yview('scroll', event.delta, 'units')
-        else:
+    def scroll_down_callback_linux(self, event):
+        print(event.delta)
+        self.io['editor'].yview('scroll', -1, 'units')
+        self.update(event, 'scroll')
+
+    def scroll_callback_windows(self, event):
+        if event.delta < 0:
             self.io['editor'].yview('scroll', 1, 'units')
-        self.update(event, 'motion')
-
-    def scroll_down_callback(self, event):
-
-        if platform.system() in ['Windows', 'Darwin']:
-            self.io['editor'].yview('scroll', event.delta, 'units')
         else:
             self.io['editor'].yview('scroll', -1, 'units')
-        self.update(event, 'motion')
+        self.update(event, 'scroll')
 
     def update(self, event, event_type):
         '''
@@ -142,7 +147,7 @@ class MainEditor():
         if event_type == 'ctlrelease': self.io['keyboard']['ctl'] = False
         
         # update motion (mouse movement)
-        if event_type == 'motion':
+        if event_type in ['motion', 'scroll']:
             self.io['mouse']['x'] = self.io['editor'].canvasx(event.x)
             self.io['mouse']['y'] = self.io['editor'].canvasy(event.y)
             self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io['mouse']['x'], self.io)
@@ -154,6 +159,7 @@ class MainEditor():
         # update element:
         self.io['element'] = self.io['tree'].get
         self.io['snap_grid'] = self.io['grid_selector'].get()
+        #self.io['grid_selector'].set(self.io['snap_grid'])
 
         # update cursor indicator:
         self.io['elm_func'].cursor_indicator(event_type, self.io)
@@ -161,17 +167,16 @@ class MainEditor():
         # updating the right element function:
         eval(f"self.io['elm_func'].elm_{self.io['element']}(event_type, self.io)")
 
-        # check if we need to redraw the stafflines and grid:
-        if self.io['old_editor_width'] != self.io['editor_width']:
+        # check if we need to redraw everything:
+        if self.io['old_editor_width'] != self.io['editor_width']: # if editor-width has changed:
             self.io['old_editor_width'] = self.io['editor_width']
-            ToolsEditor.update_last_pianotick(self.io)
-            DrawStaff.draw_staff(self.io)
-            DrawStaff.draw_barlines_grid(self.io)
-            ToolsEditor.set_scroll_region(self.io)
-
+            self.redraw_editor(self.io)
 
         # draw all objects that are in the current view/scroll position
-        ToolsEditor.update_tick_range(self.io)
+        if event_type in ['scroll', 'btn1release', 'motion']:    
+            ToolsEditor.update_tick_range(self.io)
+            UpdateElementsInView.draw_note(self.io)
+
 
         # rebind motion
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))
@@ -203,16 +208,29 @@ class MainEditor():
     def load(self):
         
         # choose file to open; ignore if user clicked cancel
-        f = filedialog.askopenfile(parent=self.root, 
+        f = filedialog.askopenfile(parent=self.io['root'], 
             mode='r',
             title='Open *.pianoscript file...', 
             filetypes=[("PianoScript files", "*.pianoscript")])
         if f: f = f.name
-        else: return self.score
+        else: return
 
         # if the file was selected, load the file
         with open(f, 'r') as f:
-            self.score = json.load(f)
+            self.io['score'] = json.load(f)
+
+        # redraw the editor
+        self.io['editor'].delete('note', 'midinote')
+        ToolsEditor.update_last_pianotick(self.io)
+        self.io['editor'].update()
+        self.io['sbar'].update()
+        DrawStaff.draw_barlines_grid(self.io)
+        DrawStaff.draw_staff(self.io)
+        ToolsEditor.update_tick_range(self.io)
+        ToolsEditor.set_scroll_region(self.io)
+        self.io['drawn_obj'] = []
+        UpdateElementsInView.draw_note(self.io)
+
 
     def update_scroll(self):
         '''
@@ -221,3 +239,18 @@ class MainEditor():
         '''
         ...
         return 0
+
+    def redraw_editor(self, io):
+        '''Runs the task of redrawing the entire editor drawing'''
+        
+        io['editor'].delete('note', 'midinote', 'stem')
+        io['drawn_obj'] = []
+        ToolsEditor.update_last_pianotick(io)
+        DrawStaff.draw_staff(io)
+        DrawStaff.draw_barlines_grid(io)
+        ToolsEditor.set_scroll_region(io)
+
+if __name__ == '__main__':
+    from .....pianoscript import App
+    app = App()
+    app.run()

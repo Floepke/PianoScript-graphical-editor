@@ -24,25 +24,73 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
+from imports.editor.tools_editor import ToolsEditor
+from imports.colors import color_dark, color_light
+from imports.constants import BLACK
 
 class UpdateElementsInView:
-	'''
-		This part of the program does the following big task:
-		All elements in the editor viewport that are vissible 
-		get refreshed. All outside the view are ignored. This
-		means once a note is drawn it stays there.
-	'''
+    '''
+        All elements in the editor viewport that are vissible 
+        get refreshed. All outside the view are ignored. This
+        means once a note is drawn it stays there.
+    '''
 
-	def __init__(self, io):
-		
-		self.io = io
-		self.score = self.io['score']
+    @staticmethod
+    def draw_note(io):
+        
+        for note in io['score']['events']['note']:
 
-		# keeping track of the notes wheter they need to be drawn or not
-		self.drawn_id = []
-		self.scroll_fromtick = 0
-		self.scroll_totick = 0
-		
-	def update_scroll(self):
-		
-		...
+            if note['time'] >= io['view_start_tick']-1024 and note['time']+note['duration'] < io['view_end_tick']+1024 or note['time']+note['duration'] >= io['view_start_tick']-1024 and note['time'] < io['view_end_tick']+1024:
+                if not note['id'] in io['drawn_obj']: 
+                    x = ToolsEditor.pitch2x(note['pitch'], io)
+                    y = ToolsEditor.time2y(note['time'], io)
+                    d = ToolsEditor.time2y(note['time']+note['duration'], io)
+
+                    if note['pitch'] in BLACK:
+                        fill = color_dark
+                        width = 2
+                    else:
+                        fill = color_light
+                        width = 4
+
+                    sbar_width = io['sbar'].winfo_width()
+                    editor_width = io['editor'].winfo_width() - sbar_width
+                    editor_height = io['editor'].winfo_height()
+                    staff_width = editor_width * io['xscale']
+                    staff_margin = (editor_width - staff_width) / 2
+                    scale = staff_width / 1024
+
+                    # note:
+                    io['editor'].create_oval(x-(10 * scale), y,
+                        x+(10 * scale), y+(20 * scale), 
+                        fill=fill, 
+                        outline=color_dark, 
+                        tag=(note['id'], 'note'), 
+                        width=width*scale)
+                    
+                    # midinote:
+                    io['editor'].create_polygon(x, y,
+                        x+(10*scale), y+(10*scale),
+                        x+(10*scale), d,
+                        x-(10*scale), d,
+                        x-(10*scale), y+(10*scale),
+                        fill='grey', 
+                        outline='', 
+                        tag=(note['id'], 'midinote'))
+
+                    # stem (hand)
+                    io['editor'].create_line(x, y,
+                        x + (50*scale), y, 
+                        capstyle='round',
+                        tag=(note['id'], 'stem'),
+                        width=8*scale,
+                        fill=color_dark)
+
+                    io['editor'].tag_lower('midinote')
+                    io['drawn_obj'].append(note['id'])
+
+            if note['time']+note['duration'] > io['view_end_tick']+1024:
+                return
+
+        
+    

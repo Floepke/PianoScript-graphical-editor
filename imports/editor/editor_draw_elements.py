@@ -48,19 +48,18 @@ class DrawElements:
         
         io['editor'].create_line(sbar_width, time,
             sbar_width+staff_margin, time,
-            tag='cursor', width=4, fill=color_dark)
+            tag='cursor', 
+            width=4, 
+            fill=color_dark,
+            arrow='last',
+            arrowshape=(40, 40, 20))
         io['editor'].create_line(sbar_width+editor_width-staff_margin, time,
             sbar_width+editor_width, time,
-            tag='cursor', width=4, fill=color_dark)
-
-        if cursor['pitch'] in BLACK:
-            fill = color_dark
-        else:
-            fill = color_light
-        x = ToolsEditor.pitch2x(cursor['pitch'], io)
-        y = ToolsEditor.time2y(cursor['time'], io)
-        io['editor'].create_oval(x-(10 * io['xscale']), y,
-            x+(10 * io['xscale']), y+20, fill=fill, outline=color_dark, tag='cursor', width=2)
+            tag='cursor', 
+            width=4, 
+            fill=color_dark,
+            arrow='first',
+            arrowshape=(40, 40, 20))
 
     @staticmethod
     def draw_note_lr(note, io):

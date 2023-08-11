@@ -79,6 +79,17 @@ class GridSelector(Frame):
     def get(self):
         '''get the value of the grid in pianoticks'''
         lengthdict = {1: 1024, 2: 512, 4: 256, 8: 128, 16: 64, 32: 32, 64: 16, 128: 8}
-        listbox_ticks = float(lengthdict[int(self.list_dur.get(self.list_dur.curselection()))])
-        return listbox_ticks / int(self.divide_variable.get()) * int(self.times_variable.get())
+        selected_index = self.list_dur.curselection()
+        if selected_index:
+            selected_length = int(self.list_dur.get(selected_index[0]))
+        try: 
+            selected_length = lengthdict[selected_length]
+        except UnboundLocalError:
+            selected_length = 128
+            self.list_dur.select_set(3)
+        return selected_length / int(self.divide_variable.get()) * int(self.times_variable.get())
+
+    # def set(self, value):
+    #     list_dict = {1024:0, 510:1, 256:2, 128:3, 64:4, 32:5, 16:6, 8:7}
+    #     self.list_dur.select_set(list_dict[int(value)])
         

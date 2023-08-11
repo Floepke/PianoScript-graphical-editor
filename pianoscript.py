@@ -74,8 +74,8 @@ class App:
 			'snap_grid':128,
 			# zoom setting in the y axis; we define the size of one pianotick in px on the screen
 			'ticksizepx':.5,
-			# 1 == the staff is the width of the editor canvas.
-			'xscale':0.8,
+			# 1 == the staff is the width of the editor canvas. in it's default value the staff == 80% of the editor width.
+			'xscale':0.7,
 			# all info for the mouse
 			'mouse':{
 				'x':0, # x position of the mouse in the editor view
@@ -111,8 +111,12 @@ class App:
 			'cursor_on_editor':False,
 			# scroll position; used for detecting which notes are in the current viewport
 			'scroll_position':0,
+			# the start tick from the viewport
 			'view_start_tick':0,
-			'view_end_tick':0
+			# the end tick from the viewport
+			'view_end_tick':0,
+			# a list to keep track of the objects that are on the canvas. it are tags from create_line(), create_polygon() etc...
+			'drawn_obj':[]
 		}
 
 		# editor
