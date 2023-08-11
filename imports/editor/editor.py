@@ -35,18 +35,16 @@ This file contains all code for the editor:
 #     from imports.griddialog import GridDialog
 #     from imports.optionsdialog import OptionsDialog
 import platform
-from imports.colors import *
+from imports.colors import * # TODO
 from imports.editor.staff import DrawStaff
-from imports.editor.elements import Elements
+from imports.editor.mouse_handling import MouseHandling
+from imports.editor.draw_viewport import DrawViewport
 from imports.savefilestructure import BluePrint
 from imports.tools import baseround, interpolation
 from imports.editor.tools_editor import ToolsEditor
 from tkinter import filedialog
 import json
-from imports.editor.update_elements_in_view import UpdateElementsInView
 
-#from imports.elements
-#from imports.tools import measure_length
 
 class MainEditor():
     """docstring for Editor"""
@@ -83,19 +81,13 @@ class MainEditor():
             self.io['editor'].bind('<5>', lambda event: self.scroll_up_callback_linux(event))
             self.io['editor'].bind('<4>', lambda event: self.scroll_down_callback_linux(event))
         if platform.system() in ['Windows', 'Darwin']:
-            self.io['editor'].bind('<MouseWheel>', lambda event: self.scroll_callback_windows(event))
+            self.io['editor'].bind('<MouseWheel>', lambda event: self.scroll_callback_windows_darwin(event))
 
         # create a new initial project from template.pianoscript
         self.new()
 
         # draw the initial barlines and grid
-        ToolsEditor.update_last_pianotick(self.io)
-        DrawStaff.draw_barlines_grid(self.io)
-        DrawStaff.draw_staff(self.io)
-        self.io['editor'].update()
-        self.io['sbar'].update()
-        ToolsEditor.update_tick_range(self.io)
-        UpdateElementsInView.draw_note(self.io)
+        self.redraw_editor(self.io)
 
         # call the automatic note drawer on scroll position to life:
         #self.update_elements_in_view = UpdateElementsInView.(self.io)
@@ -110,7 +102,7 @@ class MainEditor():
         self.io['editor'].yview('scroll', -1, 'units')
         self.update(event, 'scroll')
 
-    def scroll_callback_windows(self, event):
+    def scroll_callback_windows_darwin(self, event):
         if event.delta < 0:
             self.io['editor'].yview('scroll', 1, 'units')
         else:
@@ -127,11 +119,12 @@ class MainEditor():
         # unbind motion (because otherwise we can get recursiondept error if we move the mouse really quick)
         self.io['editor'].unbind('<Motion>')
 
-        # update widget dimensions:
+        # update widget dimensions: # TODO update only at start of update() function.
         self.io['editor'].update()
+        self.io['root'].update()
+        self.io['sbar'].update()
         self.io['editor_width'] = self.io['editor'].winfo_width()
         self.io['editor_height'] = self.io['editor'].winfo_height()
-
         # update mouse buttons:
         if event_type == 'btn1click': self.io['mouse']['button1'] = True
         if event_type == 'btn1release': self.io['mouse']['button1'] = False
@@ -139,13 +132,11 @@ class MainEditor():
         if event_type == 'btn2release': self.io['mouse']['button2'] = False
         if event_type == 'btn3click': self.io['mouse']['button3'] = True
         if event_type == 'btn3release': self.io['mouse']['button3']= False
-
         # update shift and ctl keys
         if event_type == 'shiftpress': self.io['keyboard']['shift'] = True
         if event_type == 'shiftrelease': self.io['keyboard']['shift'] = False
         if event_type == 'ctlpress': self.io['keyboard']['ctl'] = True
         if event_type == 'ctlrelease': self.io['keyboard']['ctl'] = False
-        
         # update motion (mouse movement)
         if event_type in ['motion', 'scroll']:
             self.io['mouse']['x'] = self.io['editor'].canvasx(event.x)
@@ -153,29 +144,25 @@ class MainEditor():
             self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io['mouse']['x'], self.io)
             self.io['mouse']['ey'] = ToolsEditor.y2time(self.io['mouse']['y'], self.io)
 
-        # update scroll position
-        self.io['scroll_position'] = self.update_scroll()
-
-        # update element:
+        # update/read elements tree:
         self.io['element'] = self.io['tree'].get
         self.io['snap_grid'] = self.io['grid_selector'].get()
-        #self.io['grid_selector'].set(self.io['snap_grid'])
+         # updating the right element function:
+        eval(f"self.io['elm_func'].elm_{self.io['element']}(event_type, self.io)")
 
         # update cursor indicator:
         self.io['elm_func'].cursor_indicator(event_type, self.io)
 
-        # updating the right element function:
-        eval(f"self.io['elm_func'].elm_{self.io['element']}(event_type, self.io)")
-
         # check if we need to redraw everything:
-        if self.io['old_editor_width'] != self.io['editor_width']: # if editor-width has changed:
+        if self.io['old_editor_width'] != self.io['editor_width']: # if editor-width or height has changed:
             self.io['old_editor_width'] = self.io['editor_width']
+            ToolsEditor.update_tick_range(self.io)
             self.redraw_editor(self.io)
 
         # draw all objects that are in the current view/scroll position
         if event_type in ['scroll', 'btn1release', 'motion']:    
             ToolsEditor.update_tick_range(self.io)
-            UpdateElementsInView.draw_note(self.io)
+            DrawViewport.draw(self.io)
 
 
         # rebind motion
@@ -220,16 +207,7 @@ class MainEditor():
             self.io['score'] = json.load(f)
 
         # redraw the editor
-        self.io['editor'].delete('note', 'midinote')
-        ToolsEditor.update_last_pianotick(self.io)
-        self.io['editor'].update()
-        self.io['sbar'].update()
-        DrawStaff.draw_barlines_grid(self.io)
-        DrawStaff.draw_staff(self.io)
-        ToolsEditor.update_tick_range(self.io)
-        ToolsEditor.set_scroll_region(self.io)
-        self.io['drawn_obj'] = []
-        UpdateElementsInView.draw_note(self.io)
+        self.redraw_editor(self.io)
 
 
     def update_scroll(self):
@@ -241,7 +219,13 @@ class MainEditor():
         return 0
 
     def redraw_editor(self, io):
-        '''Runs the task of redrawing the entire editor drawing'''
+        '''
+            Runs the task of redrawing the entire editor drawing in case:
+                - resized window
+                - creating a new project
+                - loading a existing project
+                - loading a midi file (that replaces the current project)
+        '''
         
         io['editor'].delete('note', 'midinote', 'stem')
         io['drawn_obj'] = []
@@ -249,8 +233,4 @@ class MainEditor():
         DrawStaff.draw_staff(io)
         DrawStaff.draw_barlines_grid(io)
         ToolsEditor.set_scroll_region(io)
-
-if __name__ == '__main__':
-    from .....pianoscript import App
-    app = App()
-    app.run()
+        DrawViewport.draw(io)

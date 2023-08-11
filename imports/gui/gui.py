@@ -75,16 +75,16 @@ class Gui:
 		self.grid_selector = GridSelector(self.gridpanel)
 		self.grid_selector.grid(column=0,row=0)
 		# staff selector
-		self.staffselect_label = Label(self.gridpanel, text='STAFF:', bg=color_gui_light, fg=color_gui_light, font=("courier", 16, 'bold'), anchor='w')
+		self.staffselect_label = Label(self.gridpanel, text='STAFF:', bg=color_gui_light, fg=color_gui_dark, font=("courier", 16, 'bold'), anchor='w')
 		self.staffselect_label.grid(column=0, row=7, sticky='ew')
 		self.staff_selector = StringVar(value=1)
-		self.staffselect_spin = Spinbox(self.gridpanel, from_=1, to=4, bg=color_light, fg=color_dark, font=('courier', 16, 'normal'), textvariable=self.staff_selector)
+		self.staffselect_spin = Spinbox(self.gridpanel, from_=1, to=4, bg=color_gui_dark, fg=color_dark, font=('courier', 16, 'normal'), textvariable=self.staff_selector)
 		self.staffselect_spin.grid(column=0, row=8, sticky='ew')
 		self.seperator_2 = Label(self.gridpanel, text='------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 
 		    bg=color_gui_light, fg='#c8c8c8', anchor='c', font=("courier"))
 		self.seperator_2.grid(column=0, row=10, sticky='ew')
 		# elements tree
-		self.treeview_label = Label(self.gridpanel, text='TOOL:', bg=color_gui_light, fg=color_gui_light, anchor='w', font=("courier", 16, 'bold'))
+		self.treeview_label = Label(self.gridpanel, text='ELEMENTS TREE:', bg=color_gui_light, fg=color_gui_dark, anchor='w', font=("courier", 16, 'bold'))
 		self.treeview_label.grid(column=0, row=11, sticky='ew')
 		self.treeview = Tree(self.gridpanel)
 		self.treeview.grid(column=0, row=12, sticky='ew')

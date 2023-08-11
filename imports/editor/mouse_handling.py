@@ -26,8 +26,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 from imports.editor.editor_draw_elements import DrawElements
 from imports.editor.tools_editor import ToolsEditor
+from imports.colors import color_dark
 
-class Elements():
+class MouseHandling():
     '''
         The elements class stores all element modes.
         In this file/class the mouse and keyboard handlings
@@ -57,7 +58,32 @@ class Elements():
                 'hand':'r',
                 'zoom':io['ticksizepx']
             }
-            DrawElements.draw_cursor_indicator(cursor, io)
+            io['editor'].update()
+            io['editor'].delete('cursor')
+
+            time = ToolsEditor.time2y(cursor['time'], io)
+            sbar_width = io['sbar'].winfo_width()
+            editor_width = io['editor_width'] - sbar_width
+            staff_width = editor_width * io['xscale']
+            staff_margin = (editor_width - staff_width) / 2
+            
+            io['editor'].create_line(sbar_width, time,
+                sbar_width+staff_margin, time,
+                tag='cursor', 
+                width=4, 
+                fill=color_dark,
+                arrow='last',
+                arrowshape=(40, 40, 20))
+            io['editor'].create_line(sbar_width+editor_width-staff_margin, time,
+                sbar_width+editor_width, time,
+                tag='cursor', 
+                width=4, 
+                fill=color_dark,
+                arrow='first',
+                arrowshape=(40, 40, 20))
+
+
+
 
     # right hand
     def elm_note_right(self, event_type, io):
@@ -95,6 +121,9 @@ class Elements():
         if event_type == 'btn3click':
             
             ...
+
+
+
 
     # left hand
     def elm_note_left(self, event_type, io):
@@ -134,6 +163,9 @@ class Elements():
             
             ...
 
+
+
+
     # beam
     def elm_beam(self, event_type, io):
         
@@ -152,3 +184,6 @@ class Elements():
         if event_type == 'btn3click':
             
             ...
+
+
+

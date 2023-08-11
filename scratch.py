@@ -1,28 +1,29 @@
 import tkinter as tk
 
-def on_select(event):
-    selected_index = listbox.curselection()
-    if selected_index:
-        selected_word = listbox.get(selected_index[0])
-        label.config(text=f"Selected Word: {selected_word}")
+def on_canvas_configure(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
 
-# Create the main application window
+def on_scrollbar_move(*args):
+    canvas.yview(*args)
+    
 root = tk.Tk()
-root.title("Word Selection App")
+root.title("Scrollbar Example")
 
-# Create a Listbox
-listbox = tk.Listbox(root, selectmode=tk.SINGLE)
-words = ["Apple", "Banana", "Cherry", "Grape", "Lemon", "Orange", "Peach", "Strawberry"]
-for word in words:
-    listbox.insert(tk.END, word)
-listbox.pack(padx=20, pady=10)
+canvas = tk.Canvas(root)
+canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-# Create a Label
-label = tk.Label(root, text="Selected Word: ")
-label.pack(padx=20, pady=(0, 10))
+scrollbar = tk.Scrollbar(canvas, command=on_scrollbar_move)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-# Bind the selection event to the Listbox
-listbox.bind('<<ListboxSelect>>', on_select)
+canvas.configure(yscrollcommand=scrollbar.set)
 
-# Start the Tkinter event loop
+frame = tk.Frame(canvas)
+canvas.create_window((0, 0), window=frame, anchor="nw")
+
+# Attach the on_canvas_configure function to the canvas configuration event
+canvas.bind("<Configure>", on_canvas_configure)
+
+for i in range(50):
+    tk.Label(frame, text=f"Label {i}").pack()
+
 root.mainloop()

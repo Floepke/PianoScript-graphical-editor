@@ -34,7 +34,7 @@ from imports.editor.editor import MainEditor
 from imports.savefilestructure import BluePrint
 from imports.gui.gui import Gui
 from imports.colors import color_light, color_gui_light, color_highlight
-from imports.editor.elements import Elements
+from imports.editor.mouse_handling import MouseHandling
 
 class App:
 
@@ -65,7 +65,7 @@ class App:
 			# the score object where all score data is stored (the savefile)
 			'score':{},
 			# this class stores all methods for elements
-			'elm_func':Elements(),
+			'elm_func':MouseHandling(),
 			# the last pianotick of the score
 			'last_pianotick':0,
 			# used to give every element a unique id
@@ -168,5 +168,6 @@ class App:
 
 
 if __name__ == '__main__':
+	import sys
 	app = App()
 	app.run()

@@ -28,7 +28,7 @@ from imports.editor.tools_editor import ToolsEditor
 from imports.colors import color_dark, color_light
 from imports.constants import BLACK
 
-class UpdateElementsInView:
+class DrawViewport:
     '''
         All elements in the editor viewport that are vissible 
         get refreshed. All outside the view are ignored. This
@@ -36,7 +36,7 @@ class UpdateElementsInView:
     '''
 
     @staticmethod
-    def draw_note(io):
+    def draw(io):
         
         for note in io['score']['events']['note']:
 
@@ -75,7 +75,7 @@ class UpdateElementsInView:
                         x-(10*scale), d,
                         x-(10*scale), y+(10*scale),
                         fill='grey', 
-                        outline='', 
+                        outline='grey',
                         tag=(note['id'], 'midinote'))
 
                     # stem (hand)
@@ -83,7 +83,7 @@ class UpdateElementsInView:
                         x + (50*scale), y, 
                         capstyle='round',
                         tag=(note['id'], 'stem'),
-                        width=8*scale,
+                        width=6*scale,
                         fill=color_dark)
 
                     io['editor'].tag_lower('midinote')
