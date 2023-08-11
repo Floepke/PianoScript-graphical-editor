@@ -111,6 +111,8 @@ class App:
 			'cursor_on_editor':False,
 			# scroll position; used for detecting which notes are in the current viewport
 			'scroll_position':0,
+			'view_start_tick':0,
+			'view_end_tick':0
 		}
 
 		# editor

@@ -167,8 +167,6 @@ class ToolsEditor():
             updates the tick range that are in 
             the current viewport.
         '''
-        # unpack parameters...
-
         # calculating dimensions...
         sbar_width = io['sbar'].winfo_width()
         editor_width = io['editor'].winfo_width() - sbar_width
@@ -183,5 +181,7 @@ class ToolsEditor():
         if start_tick < 0: start_tick = 0
         end_tick = int((io['last_pianotick'] * io['ticksizepx']) * end)
         if end_tick > io['last_pianotick']: end_tick = io['last_pianotick']
-        print(start_tick, end_tick)
-        ...
+        
+        # writing ticks to io...
+        io['view_start_tick'] = start_tick
+        io['view_end_tick'] = end_tick

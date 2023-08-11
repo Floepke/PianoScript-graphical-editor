@@ -59,7 +59,6 @@ class DrawElements:
             fill = color_light
         x = ToolsEditor.pitch2x(cursor['pitch'], io)
         y = ToolsEditor.time2y(cursor['time'], io)
-        print(y)
         io['editor'].create_oval(x-(10 * io['xscale']), y,
             x+(10 * io['xscale']), y+20, fill=fill, outline=color_dark, tag='cursor', width=2)
 
