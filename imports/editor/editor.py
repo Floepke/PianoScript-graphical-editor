@@ -31,9 +31,6 @@ This file contains all code for the editor:
 '''
 
 # imports
-# if not __name__ == '__main__':
-#     from imports.griddialog import GridDialog
-#     from imports.optionsdialog import OptionsDialog
 import platform
 from imports.colors import * # TODO
 from imports.editor.staff import DrawStaff
@@ -44,6 +41,8 @@ from imports.tools import baseround, interpolation
 from imports.editor.tools_editor import ToolsEditor
 from tkinter import filedialog
 import json
+from tkinter.messagebox import askyesnocancel
+from tkinter import filedialog
 
 
 class MainEditor():
@@ -51,6 +50,14 @@ class MainEditor():
     def __init__(self, io):
 
         self.io = io
+
+
+        # caller; calls the corresponding function in mousehandling
+        self.element_caller = {
+            "note":MouseHandling.elm_note,
+            "accidental":MouseHandling.elm_accidental,
+            "beam":MouseHandling.elm_beam
+        }
 
         # universal editor binds for mac/windows/linux:
         self.io['editor'].bind('<Button-1>', lambda e: self.update(e, 'btn1click'))
@@ -78,10 +85,10 @@ class MainEditor():
 
         # scroll-bind:
         if platform.system() == 'Linux':
-            self.io['editor'].bind('<5>', lambda event: self.scroll_up_callback_linux(event))
-            self.io['editor'].bind('<4>', lambda event: self.scroll_down_callback_linux(event))
+            self.io['editor'].bind('<5>', lambda e: self.scroll_up_callback_linux(e))
+            self.io['editor'].bind('<4>', lambda e: self.scroll_down_callback_linux(e))
         if platform.system() in ['Windows', 'Darwin']:
-            self.io['editor'].bind('<MouseWheel>', lambda event: self.scroll_callback_windows_darwin(event))
+            self.io['editor'].bind('<MouseWheel>', lambda e: self.scroll_callback_windows_darwin(e))
 
         # create a new initial project from template.pianoscript
         self.new()
@@ -89,35 +96,67 @@ class MainEditor():
         # draw the initial barlines and grid
         self.redraw_editor(self.io)
 
-        # call the automatic note drawer on scroll position to life:
-        #self.update_elements_in_view = UpdateElementsInView.(self.io)
+        ToolsEditor.update_drawing_order(self.io)
 
-    def scroll_up_callback_linux(self, event):
-        print(event.delta)
+    def scroll_up_callback_linux(self, e):
+        print(e.delta)
         self.io['editor'].yview('scroll', 1, 'units')
-        self.update(event, 'scroll')
+        self.update(e, 'scroll')
 
-    def scroll_down_callback_linux(self, event):
-        print(event.delta)
+    def scroll_down_callback_linux(self, e):
+        print(e.delta)
         self.io['editor'].yview('scroll', -1, 'units')
-        self.update(event, 'scroll')
+        self.update(e, 'scroll')
 
-    def scroll_callback_windows_darwin(self, event):
-        if event.delta < 0:
+    def scroll_callback_windows_darwin(self, e):
+        if e.delta < 0:
             self.io['editor'].yview('scroll', 1, 'units')
         else:
             self.io['editor'].yview('scroll', -1, 'units')
-        self.update(event, 'scroll')
+        self.update(e, 'scroll')
 
-    def update(self, event, event_type):
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def update(self, e, event_type, xy=None):
         '''
             Keep track of mouse buttons pressed or not
             Update mouse position
-            Update event pitch and time (based on mouse position)
+            Update e pitch and time (based on mouse position)
             Run the right function based on the element_tree.get
         '''
+
+        # update idle flag
+        self.io['idle'] = False
+
+        # regulate spacebar hit; use previous xy mouse points
+        if event_type == 'space':
+            x, y = self.io['editor'].winfo_pointerxy()
+            e.x = xy[0]
+            e.y = xy[1]
+            event_type = 'motion'
+
         # unbind motion (because otherwise we can get recursiondept error if we move the mouse really quick)
         self.io['editor'].unbind('<Motion>')
+
+        # check for leave or enter editor to run the update function or not
+        if event_type == 'leave':
+            self.io['editor'].delete('cursor', 'notecursor')
+            self.io['cursor_on_editor'] = False
+            return
+        if event_type == 'enter':
+            self.io['cursor_on_editor'] = True
 
         # update widget dimensions: # TODO update only at start of update() function.
         self.io['editor'].update()
@@ -125,6 +164,7 @@ class MainEditor():
         self.io['sbar'].update()
         self.io['editor_width'] = self.io['editor'].winfo_width()
         self.io['editor_height'] = self.io['editor'].winfo_height()
+        
         # update mouse buttons:
         if event_type == 'btn1click': self.io['mouse']['button1'] = True
         if event_type == 'btn1release': self.io['mouse']['button1'] = False
@@ -132,28 +172,31 @@ class MainEditor():
         if event_type == 'btn2release': self.io['mouse']['button2'] = False
         if event_type == 'btn3click': self.io['mouse']['button3'] = True
         if event_type == 'btn3release': self.io['mouse']['button3']= False
+        
         # update shift and ctl keys
         if event_type == 'shiftpress': self.io['keyboard']['shift'] = True
         if event_type == 'shiftrelease': self.io['keyboard']['shift'] = False
         if event_type == 'ctlpress': self.io['keyboard']['ctl'] = True
         if event_type == 'ctlrelease': self.io['keyboard']['ctl'] = False
+        
         # update motion (mouse movement)
         if event_type in ['motion', 'scroll']:
-            self.io['mouse']['x'] = self.io['editor'].canvasx(event.x)
-            self.io['mouse']['y'] = self.io['editor'].canvasy(event.y)
+            self.io['mouse']['x'] = self.io['editor'].canvasx(e.x)
+            self.io['mouse']['y'] = self.io['editor'].canvasy(e.y)
             self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io['mouse']['x'], self.io)
             self.io['mouse']['ey'] = ToolsEditor.y2time(self.io['mouse']['y'], self.io)
 
         # update/read elements tree:
         self.io['element'] = self.io['tree'].get
         self.io['snap_grid'] = self.io['grid_selector'].get()
-         # updating the right element function:
-        eval(f"self.io['elm_func'].elm_{self.io['element']}(event_type, self.io)")
+        
+        # updating the right element function:
+        self.element_caller[self.io['element']](event_type, self.io)
 
         # update cursor indicator:
-        self.io['elm_func'].cursor_indicator(event_type, self.io)
+        self.io['mouse_handling'].cursor_indicator(event_type, self.io)
 
-        # check if we need to redraw everything:
+        # check if we need to redraw the entire editor:
         if self.io['old_editor_width'] != self.io['editor_width']: # if editor-width or height has changed:
             self.io['old_editor_width'] = self.io['editor_width']
             ToolsEditor.update_tick_range(self.io)
@@ -164,9 +207,44 @@ class MainEditor():
             ToolsEditor.update_tick_range(self.io)
             DrawViewport.draw(self.io)
 
+        ToolsEditor.update_drawing_order(self.io)
 
         # rebind motion
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))
+
+        # update idle flag
+        self.io['idle'] = True
+
+    def redraw_editor(self, io):
+        '''
+            Runs the task of redrawing the entire editor drawing in case:
+                - resized window
+                - creating a new project
+                - loading a existing project
+                - loading a midi file (that replaces the current project)
+        '''
+        
+        io['editor'].delete('note', 'midinote', 
+            'stem', 'barline', 'gridline', 
+            'barnumbering', 'leftdot')
+        io['drawn_obj'] = []
+        ToolsEditor.update_last_pianotick(io)
+        DrawStaff.draw_staff(io)
+        DrawStaff.draw_barlines_grid(io)
+        ToolsEditor.set_scroll_region(io)
+        DrawViewport.draw(io)
+        ToolsEditor.update_drawing_order(io)
+
+
+
+
+
+
+
+
+    
+
+
 
     '''
         FILE MANAGEMENT:
@@ -180,19 +258,51 @@ class MainEditor():
             creates a new project by loading from the template file.
             If the file is not on disk it creates one from the "BluePrint".
         '''
-        
+        print('new...')
+
+        # check if user wants to save or cancel the task.
+        if self.io['savefile_system']['filechanged']:
+            ask = askyesnocancel('Wish to save?', 'Do you wish to save the current Score?')
+            if ask == True:
+                save()
+            elif ask == False:
+                ...
+            elif ask == None:
+                return
+        else:
+            ...
+
         # load template:
         try: # load template from disk
             self.io['score'] = json.load(open('template.pianoscript', 'r'))
         except: # if template not exists (if the user deleted the file during the run of the program)
             self.io['score'] = BluePrint # fallback to source template
 
-        # update several important values
-        #self.io['last_pianotick'] = 1024
+        # redraw the editor
+        self.redraw_editor(self.io)
+
+        # renumbering tags
+        ToolsEditor.renumber_tags(self.io)
+
+        # empty drawn_obj
+        self.io['drawn_obj'] = []
 
         return self.io['score']
 
     def load(self):
+        print('load...')
+
+        # check if user wants to save or cancel the task.
+        if self.io['savefile_system']['filechanged']:
+            ask = askyesnocancel('Wish to save?', 'Do you wish to save the current Score?')
+            if ask == True:
+                save()
+            elif ask == False:
+                ...
+            elif ask == None:
+                return
+        else:
+            ...
         
         # choose file to open; ignore if user clicked cancel
         f = filedialog.askopenfile(parent=self.io['root'], 
@@ -206,31 +316,38 @@ class MainEditor():
         with open(f, 'r') as f:
             self.io['score'] = json.load(f)
 
+        # renumbering tags
+        ToolsEditor.renumber_tags(self.io)
+
+        # empty drawn_obj
+        self.io['drawn_obj'] = []
+
         # redraw the editor
         self.redraw_editor(self.io)
 
+    def save(self):
+        print('save...')
 
-    def update_scroll(self):
-        '''
-            Updates the current scroll position.
-            scroll position is a float 0..1
-        '''
-        ...
-        return 0
+        if self.io['savefile_system']['filepath'] != 'New':
+            with open(self.io['savefile_system']['filepath'], 'w') as f:
+                f.write(json.dumps(self.io['score'], separators=(',', ':'), indent=2))
+            file_changed = False
+        else:
+            self.saveas()
 
-    def redraw_editor(self, io):
-        '''
-            Runs the task of redrawing the entire editor drawing in case:
-                - resized window
-                - creating a new project
-                - loading a existing project
-                - loading a midi file (that replaces the current project)
-        '''
-        
-        io['editor'].delete('note', 'midinote', 'stem')
-        io['drawn_obj'] = []
-        ToolsEditor.update_last_pianotick(io)
-        DrawStaff.draw_staff(io)
-        DrawStaff.draw_barlines_grid(io)
-        ToolsEditor.set_scroll_region(io)
-        DrawViewport.draw(io)
+    def saveas(self):
+        print('saveas...')
+
+        f = filedialog.asksaveasfile(parent=self.io['root'], 
+            mode='w', 
+            filetypes=[("PianoScript files", "*.pianoscript")],
+            title='Save as...',
+            initialdir='~/Desktop/')
+        f = f.name
+        if f:
+            self.io['root'].title('PianoScript - %s' % f)
+            with open(f, 'w') as file:
+                file.write(json.dumps(self.io['score'], separators=(',', ':'), indent=2))# indent=2
+            # update file_path
+            self.io['savefile_system']['filepath'] = f
+            self.io['savefile_system']['filechanged'] = False

@@ -48,7 +48,7 @@ class Tree(Frame):
         """ initialize the frame """
         self.SortDir = True
         self.ignore_single_click = False
-        self.selecteditem = 'note_right'
+        self.selecteditem = 'note'
 
         Frame.__init__(self, master, width=100, relief='flat')
 
@@ -77,14 +77,9 @@ class Tree(Frame):
                 "id":"folder.note",
                 "items":[
                     {
-                        "id":"note_right",
-                        "text":"Right",
+                        "id":"note",
+                        "text":"Note",
                         "image":PhotoImage(Image.open(fp="icons/noteinput_R.png").resize((30,30)))
-                    },
-                    {
-                        "id":"note_left",
-                        "text":"Left",
-                        "image":PhotoImage(Image.open(fp="icons/noteinput_L.png").resize((30,30)))
                     },
                     {
                         "id":"accidental",

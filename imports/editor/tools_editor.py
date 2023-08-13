@@ -172,27 +172,43 @@ class ToolsEditor():
         staff_width = editor_width * io['xscale']
         staff_margin = (editor_width - staff_width) / 2
 
-        # get scroll region
-        x1, y1, x2, y2 = io['editor'].bbox('all')
-        margin = (io['editor_width'] - (io['editor_width'] * io['xscale'])) / 2
-        y1 -= margin
-        y2 += margin
-        scrollregion = (x1, y1+margin, x2, y2-margin)
-
         # calculating ticks...
         start, end = io['sbar'].get()
-        start_tick = start * io['ticksizepx'] * io['last_pianotick'] * 2 - 256
-        end_tick = start_tick + (editor_height / io['ticksizepx'])
-
-        print('start: ', start_tick)
-        # start_tick = (io['last_pianotick'] * io['ticksizepx']) * start
-        # start_tick -= staff_margin
-        # #if start_tick < 0: start_tick = 0
-        # end_tick = start_tick + (editor_height * io['ticksizepx'] * 4)
-        # end_tick += staff_margin
-        #if end_tick > io['last_pianotick']: end_tick = io['last_pianotick']
+        start_tick = start * io['last_pianotick'] - (staff_margin / io['ticksizepx']) - 1024 # 1024 it draws a little outside the view
+        end_tick = start_tick + (editor_height / io['ticksizepx']) + 2048 # 2048 it draws a little outside the view (1024 ticks)
         
         # writing ticks to io...
         io['view_start_tick'] = start_tick
         io['view_end_tick'] = end_tick
 
+    @staticmethod
+    def update_drawing_order(io):
+        io['editor'].tag_raise('midinote')
+        io['editor'].tag_raise('staffline')
+        io['editor'].tag_raise('barline')
+        io['editor'].tag_raise('gridline')
+        io['editor'].tag_raise('barnumbering')
+        io['editor'].tag_raise('note')
+        io['editor'].tag_raise('stem')
+        io['editor'].tag_raise('leftdot')
+        io['editor'].tag_raise('notecursor')
+        io['editor'].tag_raise('notecursor')
+
+    @staticmethod
+    def add_tag(io):
+        tag = io['new_tag']
+        io['new_tag'] += 1
+        return tag
+
+    @staticmethod
+    def renumber_tags(io):
+        '''
+            This function takes the score and
+            renumbers the event tags starting
+            from zero again. It's needed if we
+            load a new or existing project.
+        '''
+        for k in io['score']['events'].keys():
+            for obj in io['score']['events'][k]:
+                obj['tag'] = f"{k}{io['new_tag']}"
+                io['new_tag'] += 1

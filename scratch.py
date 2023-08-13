@@ -1,29 +1,20 @@
-import tkinter as tk
+import os
+import glob
 
-def on_canvas_configure(event):
-    canvas.configure(scrollregion=canvas.bbox("all"))
+def count_lines_in_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return sum(1 for line in file)
 
-def on_scrollbar_move(*args):
-    canvas.yview(*args)
-    
-root = tk.Tk()
-root.title("Scrollbar Example")
+def count_lines_in_directory(directory):
+    total_lines = 0
+    for py_file in glob.glob(os.path.join(directory, '**/*.py'), recursive=True):
+        total_lines += count_lines_in_file(py_file)
+    return total_lines
 
-canvas = tk.Canvas(root)
-canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+def main(root_directory):
+    total_lines = count_lines_in_directory(root_directory)
+    print(f"Total lines in all .py files: {total_lines}")
 
-scrollbar = tk.Scrollbar(canvas, command=on_scrollbar_move)
-scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-canvas.configure(yscrollcommand=scrollbar.set)
-
-frame = tk.Frame(canvas)
-canvas.create_window((0, 0), window=frame, anchor="nw")
-
-# Attach the on_canvas_configure function to the canvas configuration event
-canvas.bind("<Configure>", on_canvas_configure)
-
-for i in range(50):
-    tk.Label(frame, text=f"Label {i}").pack()
-
-root.mainloop()
+if __name__ == "__main__":
+    root_directory = "."  # Change this to the desired root directory
+    main(root_directory)

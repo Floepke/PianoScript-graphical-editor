@@ -40,8 +40,8 @@ class DrawViewport:
         
         for note in io['score']['events']['note']:
 
-            if note['time'] >= io['view_start_tick']-1024 and note['time']+note['duration'] < io['view_end_tick']+1024 or note['time']+note['duration'] >= io['view_start_tick']-1024 and note['time'] < io['view_end_tick']+1024:
-                if not note['id'] in io['drawn_obj']: 
+            if note['time'] >= io['view_start_tick'] and note['time'] < io['view_end_tick'] or note['time']+note['duration'] >= io['view_start_tick'] and note['time']+note['duration'] < io['view_end_tick']:
+                if not note['tag'] in io['drawn_obj']: 
                     x = ToolsEditor.pitch2x(note['pitch'], io)
                     y = ToolsEditor.time2y(note['time'], io)
                     d = ToolsEditor.time2y(note['time']+note['duration'], io)
@@ -58,14 +58,27 @@ class DrawViewport:
                     editor_height = io['editor'].winfo_height()
                     staff_width = editor_width * io['xscale']
                     staff_margin = (editor_width - staff_width) / 2
-                    scale = staff_width / 1024
+                    scale = staff_width / 1000
 
                     # note:
+                    if note['hand'] == 'l':
+                        if note['pitch'] in BLACK:
+                            io['editor'].create_oval(x-(2 * scale), y+(8*scale),
+                                x+(2 * scale), y+(12 * scale),
+                                tag=(note['tag'], 'leftdot'),
+                                outline='',
+                                fill=color_light)
+                        else:
+                            io['editor'].create_oval(x-(2 * scale), y+(8*scale),
+                                x+(2 * scale), y+(12 * scale),
+                                tag=(note['tag'], 'leftdot'),
+                                outline='',
+                                fill=color_dark)
                     io['editor'].create_oval(x-(10 * scale), y,
                         x+(10 * scale), y+(20 * scale), 
                         fill=fill, 
                         outline=color_dark, 
-                        tag=(note['id'], 'note'), 
+                        tag=(note['tag'], 'note'), 
                         width=width*scale)
                     
                     # midinote:
@@ -74,20 +87,28 @@ class DrawViewport:
                         x+(10*scale), d,
                         x-(10*scale), d,
                         x-(10*scale), y+(10*scale),
-                        fill='grey', 
-                        outline='grey',
-                        tag=(note['id'], 'midinote'))
+                        fill=io['editor_settings']['note_color'], 
+                        outline=io['editor_settings']['note_color'],
+                        tag=(note['tag'], 'midinote'))
 
                     # stem (hand)
-                    io['editor'].create_line(x, y,
-                        x + (50*scale), y, 
-                        capstyle='round',
-                        tag=(note['id'], 'stem'),
-                        width=6*scale,
-                        fill=color_dark)
+                    if note['hand'] == 'l':
+                        io['editor'].create_line(x, y,
+                            x - (50*scale), y, 
+                            capstyle='round',
+                            tag=(note['tag'], 'stem'),
+                            width=6*scale,
+                            fill=color_dark)
+                    else:
+                        io['editor'].create_line(x, y,
+                            x + (50*scale), y, 
+                            capstyle='round',
+                            tag=(note['tag'], 'stem'),
+                            width=6*scale,
+                            fill=color_dark)
 
-                    io['editor'].tag_lower('midinote')
-                    io['drawn_obj'].append(note['id'])
+                    # add to drawn list
+                    io['drawn_obj'].append(note['tag'])
 
             if note['time']+note['duration'] > io['view_end_tick']+1024:
                 return

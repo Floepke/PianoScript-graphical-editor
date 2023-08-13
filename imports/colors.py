@@ -30,11 +30,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 # rocky coastline:
-color_light = '#cccccc'
+color_light = '#ffffff'
 color_dark = '#000010'
 color_gui_light = '#444444'
 color_gui_dark = '#eeeeee'
-color_highlight = '#3cc7a6'
+color_highlight = '#59cc59'
 
 # # scouting
 # color_light = '#2a3410'

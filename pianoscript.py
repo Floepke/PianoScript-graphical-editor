@@ -25,16 +25,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 # third party imports
-from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, PhotoImage
-from tkinter import Label, Spinbox, StringVar, Listbox, ttk, Frame
-import platform, ctypes
+from tkinter import Tk, Menu
+
 
 # own imports code :)
 from imports.editor.editor import MainEditor
-from imports.savefilestructure import BluePrint
 from imports.gui.gui import Gui
 from imports.colors import color_light, color_gui_light, color_highlight
 from imports.editor.mouse_handling import MouseHandling
+from imports.editor.kbd_handling import Keyboard
+from imports.gui.options_dialog import OptionsDialog
 
 class App:
 
@@ -45,8 +45,8 @@ class App:
 
 		# gui
 		self.gui = Gui(master=self.root)
-		self.gui.editor.update()
 		self.root.update()
+		self.gui.editor.update()
 
 		# the self.data stores all data from the app in one organized dict:
 		self.io = {
@@ -65,17 +65,17 @@ class App:
 			# the score object where all score data is stored (the savefile)
 			'score':{},
 			# this class stores all methods for elements
-			'elm_func':MouseHandling(),
+			'mouse_handling':MouseHandling(),
 			# the last pianotick of the score
 			'last_pianotick':0,
 			# used to give every element a unique id
-			'new_id':0,
+			'new_tag':0,
 			# the current selected grid from the grid selector
 			'snap_grid':128,
 			# zoom setting in the y axis; we define the size of one pianotick in px on the screen
-			'ticksizepx':.5,
+			'ticksizepx':.6,
 			# 1 == the staff is the width of the editor canvas. in it's default value the staff == 80% of the editor width.
-			'xscale':0.7,
+			'xscale':.7,
 			# all info for the mouse
 			'mouse':{
 				'x':0, # x position of the mouse in the editor view
@@ -95,10 +95,12 @@ class App:
 			},
 			'selection':{ # everything about making a selection; keep track
 				'x1':None,
-					'y1':None,
+				'y1':None,
 				'x2':None,
 				'y2':None,
-				'selection_buffer':[], # the buffer
+				# the buffer that holds any selected element
+				'selection_buffer':[],
+				# the buffer that holds any copied or cutted selection
 				'copycut_buffer':[]
 			},
 			# a mm in pixels on the screen
@@ -108,45 +110,65 @@ class App:
 			# keeping track of the editor_width if it's changed in width.
 			'old_editor_width':1,
 			# False if the mouse pointer is not on the editor
-			'cursor_on_editor':False,
-			# scroll position; used for detecting which notes are in the current viewport
-			'scroll_position':0,
+			'cursor_on_editor':True,
 			# the start tick from the viewport
 			'view_start_tick':0,
 			# the end tick from the viewport
-			'view_end_tick':0,
+			'view_end_tick':8192,
 			# a list to keep track of the objects that are on the canvas. it are tags from create_line(), create_polygon() etc...
-			'drawn_obj':[]
+			'drawn_obj':[],
+			# edit buffer; holds an event obj (dict) if we are editing an object, None in idle
+			'edit_obj':None,
+			# the savefilesystem variables:
+			'savefile_system':{
+				'filepath':'New',
+				'filechanged':False
+			},
+			# editor settings:
+			'editor_settings':{
+				'note_color':'#aaa'	
+			},
+			# True if app is in idle
+			'idle':False,
+			# right-left switch for the note modes
+			'hand':'r'
 		}
 
 		# editor
 		self.main_editor = MainEditor(self.io)
+		self.io['editor'].yview('scroll', -10, 'unit')
+
+		
+
+		# keyboard binding
+		self.keyboard = Keyboard(self.io, self.main_editor)
 
 		# engraver
 		...
 
 		# menu (written in this area because commands are not accessable inside the GUI class, can't set it later)
-		self.menubar = Menu(self.root, relief='flat', bg=color_gui_light, fg=color_light, font=('courier', 16))
+		self.font = ('courier', 16, 'bold')
+		self.menubar = Menu(self.root, relief='flat', bg=color_gui_light, fg=color_light, font=self.font)
 		self.root.config(menu=self.menubar)
 		self.fileMenu = Menu(self.menubar, tearoff=0)
-		self.fileMenu.add_command(label='New [ctl+n]', command=self.main_editor.new, font=('courier', 16))
-		self.fileMenu.add_command(label='Open [ctl+o]', command=self.main_editor.load, font=('courier', 16))
-		self.fileMenu.add_command(label='Save [ctl+s]', command=None, font=('courier', 16))
-		self.fileMenu.add_command(label='Save as... [alt+s]', command=None, font=('courier', 16))
+		self.fileMenu.add_command(label='New [ctl+n]', command=self.main_editor.new, font=self.font)
+		self.fileMenu.add_command(label='Open [ctl+o]', command=self.main_editor.load, font=self.font)
+		self.fileMenu.add_command(label='Save [ctl+s]', command=self.main_editor.save, font=self.font)
+		self.fileMenu.add_command(label='Save as... [alt+s]', command=self.main_editor.saveas, font=self.font)
 		self.fileMenu.add_separator()
-		self.fileMenu.add_command(label='Load midi [ctl+m]', command=None, font=('courier', 16))
+		self.fileMenu.add_command(label='Load midi [ctl+m]', command=None, font=self.font)
 		self.fileMenu.add_separator()
-		self.fileMenu.add_command(label="Export ps", command=None, font=('courier', 16))
-		self.fileMenu.add_command(label="Export pdf [ctl+e]", command=None, font=('courier', 16))
-		self.fileMenu.add_command(label="Export midi*", command=None, font=('courier', 16))
+		self.fileMenu.add_command(label="Export ps", command=None, font=self.font)
+		self.fileMenu.add_command(label="Export pdf [ctl+e]", command=None, font=self.font)
+		self.fileMenu.add_command(label="Export midi*", command=None, font=self.font)
 		self.fileMenu.add_separator()
-		self.fileMenu.add_command(label="Grid editor... [g]", underline=None, command=None, font=('courier', 16))
-		self.fileMenu.add_command(label="Score options... [s]", underline=None, command=None, font=('courier', 16))
+		self.fileMenu.add_command(label="Grid editor... [g]", underline=None, command=None, font=self.font)
+		self.fileMenu.add_command(label="Score options... [s]", underline=None, command=lambda: OptionsDialog(self.root, self.io), font=self.font)
 		self.fileMenu.add_separator()
-		self.fileMenu.add_command(label="Exit", underline=None, command=None, font=('courier', 16))
-		self.menubar.add_cascade(label="File", underline=None, menu=self.fileMenu, font=('courier', 16))
-		self.menubar.add_command(label='< previous', command=lambda: cycle_trough_pages_button('<'), background='grey', activebackground=color_highlight)
-		self.menubar.add_command(label='next >', command=lambda: cycle_trough_pages_button('>'), background='grey', activebackground=color_highlight)
+		self.fileMenu.add_command(label="Exit", underline=None, command=None, font=self.font)
+		self.menubar.add_cascade(label="File", underline=None, menu=self.fileMenu, font=self.font)
+		self.menubar.add_command(label='< previous', command=None, background='grey', activebackground=color_highlight)
+		self.menubar.add_command(label='next >', command=None, background='grey', activebackground=color_highlight)
 
 		# binds
 		self.root.bind('<Escape>', self.quit)
@@ -161,6 +183,8 @@ class App:
 		# file-save-check
 		...
 
+		
+
 		# quit (generates an error if mouse binds are still active TODO)
 		self.root.destroy()
 		
@@ -168,6 +192,5 @@ class App:
 
 
 if __name__ == '__main__':
-	import sys
 	app = App()
 	app.run()

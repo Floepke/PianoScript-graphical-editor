@@ -31,26 +31,17 @@ from imports.colors import color_dark
 class MouseHandling():
     '''
         The elements class stores all element modes.
-        In this file/class the mouse and keyboard handlings
+        In this file/class the mouse handlings
         are programmed. every function get's the event_type
         ('btn123click', 'btn123release', 'motion', ...),
-        self.editor/canvas, self.score and returns the 
-        (maybe) edited score.
+        io and changes the edited element if so...
     '''
-    def __init__(self):
-        ...
 
-    def cursor_indicator(self, event_type, io):
+    @staticmethod
+    def cursor_indicator(event_type, io):
         '''Draws the cursor indicator on the left and right of the staff'''
 
-        if not event_type == 'leave':
-            io['cursor_on_editor'] = True
-        else:
-            io['editor'].delete('cursor')
-            io['cursor_on_editor'] = False
-            return
-
-        if event_type == 'motion' and io['cursor_on_editor']:
+        if event_type in ['motion', 'scroll'] and io['cursor_on_editor']:
             
             cursor = {
                 'time':io['mouse']['ey'],
@@ -85,67 +76,87 @@ class MouseHandling():
 
 
 
-    # right hand
-    def elm_note_right(self, event_type, io):
+    # note:
+    @staticmethod
+    def elm_note(event_type, io):
 
-        if event_type == 'leave':
-            io['editor'].delete('cursor')
-            io['draw_cursor'] = False
-            return
-        if event_type == 'enter':
-            io['draw_cursor'] = True
-            return
+        obj_type = 'note'
+
+        # right-left choice
+        if io['hand'] == 'r':
+            hand = 'r'
+        else:
+            hand = 'l'
+
+        if event_type == 'btn1click':
+
+            # detect if we are editing a note or
+            # in case we click not on a note, we
+            # create a new_note.
+            tags = io['editor'].gettags("current")
+            if tags:
+                if obj_type in tags[0]:
+                    for note in io['score']['events']['note']:
+                        if note['tag'] == tags[0]:
+                            # starting to edit a note...
+                            io['edit_obj'] = note
+                            return
+            
+            # create a new note
+            new_note = {
+                "tag":obj_type + str(ToolsEditor.add_tag(io)),
+                "time":io['mouse']['ey'],
+                "duration":io['snap_grid'],
+                "pitch":io['mouse']['ex'],
+                "hand":hand,
+                "stem_visible":True,
+                "accidental":0,
+                "staff":0,
+                "notestop":True
+            }
+            DrawElements.draw_note(new_note, io, new=True)
+            io['edit_obj'] = new_note
+            io['old_obj'] = new_note
 
         if event_type == 'motion' and io['cursor_on_editor']:
 
-            # draw the note cursor:
-            cursor_note = {
-                "time":io['mouse']['ey'],
-                "duration":640.0,
-                "pitch":io['mouse']['ex'],
-                "hand":"l",
-                "id":"cursor",
-                "stem-visible":True,
-                "accidental":0
-            }
-            DrawElements.draw_note_lr(cursor_note, io)
-        
-        if event_type == 'btn1click':
-            
-            ...
+            if not io['mouse']['button1']:
+                # draw the note cursor:
+                cursor_note = {
+                    "time":io['mouse']['ey'],
+                    "duration":640.0,
+                    "pitch":io['mouse']['ex'],
+                    "hand":hand,
+                    "id":"cursor",
+                    "stem-visible":True,
+                    "accidental":0
+                }
+                DrawElements.draw_note_cursor(cursor_note, io)
+            elif io['edit_obj']:
+                io['edit_obj']['duration'] = io['mouse']['ey'] - io['edit_obj']['time']
+                DrawElements.draw_note(io['edit_obj'], io, new=False)
+                    
 
         if event_type == 'btn1release':
             
-            ...
+            io['edit_obj'] = None
+            io['old_obj'] = None
 
         if event_type == 'btn3click':
             
-            ...
+            # detect if we are clicking on a note and delete if so
+            tags = io['editor'].gettags("current")
+            if tags:
+                if obj_type in tags[0]:
+                    for note in io['score']['events']['note']:
+                        if note['tag'] == tags[0]:
+                            # delete note
+                            io['editor'].delete(note['tag'])
+                            io['score']['events']['note'].remove(note)
 
-
-
-
-    # left hand
-    def elm_note_left(self, event_type, io):
-        
-        if event_type == 'btn1click':
-            
-            ...
-
-        if event_type == 'motion':
-            
-            ...
-
-        if event_type == 'btn1release':
-            
-            ...
-
-        if event_type == 'btn3click':
-            
-            ...
-
-    # accidental
-    def elm_accidental(self, event_type, io):
+    # accidental:
+    @staticmethod
+    def elm_accidental(event_type, io):
         
         if event_type == 'btn1click':
             
@@ -166,8 +177,9 @@ class MouseHandling():
 
 
 
-    # beam
-    def elm_beam(self, event_type, io):
+    # beam:
+    @staticmethod
+    def elm_beam(event_type, io):
         
         if event_type == 'btn1click':
             

@@ -129,13 +129,13 @@ class DrawStaff():
                     sbar_width+editor_width-staff_margin, t, 
                     width=1, 
                     fill=color_dark, 
-                    tag='barlines')
-                io['editor'].create_text(sbar_width+editor_width-staff_margin, t,
-                    text=bar_counter, 
-                    anchor='sw', 
-                    font=('Courier', int(32 * io['xscale'])), 
+                    tag='barline',
+                    state='disabled')
+                io['editor'].create_text(sbar_width+editor_width-staff_margin+10, t,
+                    text=bar_counter,
+                    anchor='nw', 
+                    font=('Courier', int(32 * io['xscale']), 'bold'), 
                     tag='barnumbering',
-                    angle=270,
                     fill=color_dark)
 
                 for n in range(gr['numerator']):
@@ -144,7 +144,12 @@ class DrawStaff():
                     l = length / gr['numerator']
                     t = ToolsEditor.time2y(l*grid_counter, io)
                     io['editor'].create_line(sbar_width+staff_margin, t,
-                    sbar_width+editor_width-staff_margin, t, width=1, fill=color_dark, tag='gridlines', dash=(6,6))
+                    sbar_width+editor_width-staff_margin, t, 
+                        width=1, 
+                        fill=color_dark, 
+                        tag='gridline', 
+                        dash=(6,6),
+                        state='disabled')
                     grid_counter += 1
 
                 time += length
