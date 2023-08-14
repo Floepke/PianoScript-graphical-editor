@@ -140,12 +140,12 @@ class MainEditor():
         # update idle flag
         self.io['idle'] = False
 
-        # regulate spacebar hit; use previous xy mouse points
-        if event_type == 'space':
-            x, y = self.io['editor'].winfo_pointerxy()
-            e.x = xy[0]
-            e.y = xy[1]
-            event_type = 'motion'
+        # # regulate spacebar hit; use previous xy mouse points
+        # if event_type == 'space':
+        #     x, y = self.io['editor'].winfo_pointerxy()
+        #     e.x = xy[0]
+        #     e.y = xy[1]
+        #     event_type = 'motion'
 
         # unbind motion (because otherwise we can get recursiondept error if we move the mouse really quick)
         self.io['editor'].unbind('<Motion>')
@@ -179,12 +179,11 @@ class MainEditor():
         if event_type == 'ctlpress': self.io['keyboard']['ctl'] = True
         if event_type == 'ctlrelease': self.io['keyboard']['ctl'] = False
         
-        # update motion (mouse movement)
-        if event_type in ['motion', 'scroll']:
-            self.io['mouse']['x'] = self.io['editor'].canvasx(e.x)
-            self.io['mouse']['y'] = self.io['editor'].canvasy(e.y)
-            self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io['mouse']['x'], self.io)
-            self.io['mouse']['ey'] = ToolsEditor.y2time(self.io['mouse']['y'], self.io)
+        # update motion (mouse movemenelm_funcevent_type in ['motion', 'scroll']:
+        self.io['mouse']['x'] = self.io['editor'].canvasx(e.x)
+        self.io['mouse']['y'] = self.io['editor'].canvasy(e.y)
+        self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io['mouse']['x'], self.io)
+        self.io['mouse']['ey'] = ToolsEditor.y2time(self.io['mouse']['y'], self.io)
 
         # update/read elements tree:
         self.io['element'] = self.io['tree'].get
@@ -210,7 +209,7 @@ class MainEditor():
         if self.io['mouse']['button1']:
             self.io['editor'].delete('notecursor')
 
-        ToolsEditor.update_drawing_order(self.io)
+        #ToolsEditor.update_drawing_order(self.io)
 
         # rebind motion
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))

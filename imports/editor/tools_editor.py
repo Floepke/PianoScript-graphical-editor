@@ -183,16 +183,14 @@ class ToolsEditor():
 
     @staticmethod
     def update_drawing_order(io):
-        io['editor'].tag_lower(('midinote', 'staffline', 'barline', 'gridline', 
-            'barnumbering', 'note', 'stem', 'leftdot', 'notecursor', 'staffline', 'continuationdot'))
-        # io['editor'].tag_raise('staffline')
-        # io['editor'].tag_raise('barline')
-        # io['editor'].tag_raise('gridline')
-        # io['editor'].tag_raise('barnumbering')
-        # io['editor'].tag_raise('note')
-        # io['editor'].tag_raise('stem')
-        # io['editor'].tag_raise('leftdot')
-        # io['editor'].tag_raise('notecursor')
+        io['editor'].tag_raise('staffline')
+        io['editor'].tag_raise('barline')
+        io['editor'].tag_raise('gridline')
+        io['editor'].tag_raise('barnumbering')
+        io['editor'].tag_raise('note')
+        io['editor'].tag_raise('stem')
+        io['editor'].tag_raise('leftdot')
+        io['editor'].tag_raise('notecursor')
 
     @staticmethod
     def add_tag(io):

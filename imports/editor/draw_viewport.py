@@ -110,6 +110,13 @@ class DrawViewport:
                     # add to drawn list
                     io['drawn_obj'].append(note['tag'])
 
+                    # update drawing order for note
+                    io['editor'].tag_lower(note['tag'])
+                    io['editor'].tag_raise('stem')
+                    io['editor'].tag_raise('continuationdot')
+                    io['editor'].tag_raise('note')
+                    io['editor'].tag_raise('blacknote')
+
             if note['time']+note['duration'] > io['view_end_tick']+1024:
                 return
 

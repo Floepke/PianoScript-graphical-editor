@@ -121,7 +121,7 @@ class MouseHandling():
             io['edit_obj'] = new_note
             io['old_obj'] = new_note
 
-        if event_type == 'motion' and io['cursor_on_editor']:
+        if event_type in ['motion', 'space'] and io['cursor_on_editor']:
 
             if not io['mouse']['button1']:
                 # draw the note cursor:
