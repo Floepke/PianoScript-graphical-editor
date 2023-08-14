@@ -47,7 +47,7 @@ class MouseHandling():
                 'time':io['mouse']['ey'],
                 'pitch':io['mouse']['ex'],
                 'hand':'r',
-                'zoom':io['ticksizepx']
+                'tag':'cursor'
             }
             io['editor'].update()
             io['editor'].delete('cursor')
@@ -90,6 +90,9 @@ class MouseHandling():
 
         if event_type == 'btn1click':
 
+            # set filechanged flag
+            io['savefile_system']['filechanged'] = True
+
             # detect if we are editing a note or
             # in case we click not on a note, we
             # create a new_note.
@@ -124,16 +127,21 @@ class MouseHandling():
                 # draw the note cursor:
                 cursor_note = {
                     "time":io['mouse']['ey'],
-                    "duration":640.0,
                     "pitch":io['mouse']['ex'],
                     "hand":hand,
                     "id":"cursor",
-                    "stem-visible":True,
-                    "accidental":0
                 }
                 DrawElements.draw_note_cursor(cursor_note, io)
+            
+            # this get executed if the mousebtn1 is pressed:
             elif io['edit_obj']:
-                io['edit_obj']['duration'] = io['mouse']['ey'] - io['edit_obj']['time']
+                # edit the notes length or pitch in the specific pianoscript way:
+                if io['mouse']['ey'] >= io['edit_obj']['time']:
+                    if io['mouse']['ey'] >= io['snap_grid']+io['edit_obj']['time']:
+                        io['edit_obj']['duration'] = io['mouse']['ey'] - io['edit_obj']['time']
+                else:
+                    io['edit_obj']['pitch'] = io['mouse']['ex']
+                    
                 DrawElements.draw_note(io['edit_obj'], io, new=False)
                     
 

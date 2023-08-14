@@ -150,7 +150,7 @@ class App:
 		self.font = ('courier', 16, 'bold')
 		self.menubar = Menu(self.root, relief='flat', bg=color_gui_light, fg=color_light, font=self.font)
 		self.root.config(menu=self.menubar)
-		self.fileMenu = Menu(self.menubar, tearoff=0)
+		self.fileMenu = Menu(self.menubar, tearoff=2)
 		self.fileMenu.add_command(label='New [ctl+n]', command=self.main_editor.new, font=self.font)
 		self.fileMenu.add_command(label='Open [ctl+o]', command=self.main_editor.load, font=self.font)
 		self.fileMenu.add_command(label='Save [ctl+s]', command=self.main_editor.save, font=self.font)

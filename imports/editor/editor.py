@@ -30,7 +30,7 @@ This file contains all code for the editor:
     - ...
 '''
 
-# imports
+# imports   
 import platform
 from imports.colors import * # TODO
 from imports.editor.staff import DrawStaff
@@ -207,6 +207,9 @@ class MainEditor():
             ToolsEditor.update_tick_range(self.io)
             DrawViewport.draw(self.io)
 
+        if self.io['mouse']['button1']:
+            self.io['editor'].delete('notecursor')
+
         ToolsEditor.update_drawing_order(self.io)
 
         # rebind motion
@@ -287,6 +290,11 @@ class MainEditor():
         # empty drawn_obj
         self.io['drawn_obj'] = []
 
+        # update filepath
+        self.io['savefile_system']['filepath'] = 'New'
+        self.io['savefile_system']['filechanged'] = False
+
+
         return self.io['score']
 
     def load(self):
@@ -296,7 +304,7 @@ class MainEditor():
         if self.io['savefile_system']['filechanged']:
             ask = askyesnocancel('Wish to save?', 'Do you wish to save the current Score?')
             if ask == True:
-                save()
+                self.save()
             elif ask == False:
                 ...
             elif ask == None:
@@ -325,19 +333,27 @@ class MainEditor():
         # redraw the editor
         self.redraw_editor(self.io)
 
+        # update filepath
+        self.io['savefile_system']['filepath'] = f.name
+        self.io['savefile_system']['filechanged'] = False
+
+        # update window title
+        self.io['root'].title(f"PianoScript - {self.io['savefile_system']['filepath']}")
+
     def save(self):
         print('save...')
 
         if self.io['savefile_system']['filepath'] != 'New':
             with open(self.io['savefile_system']['filepath'], 'w') as f:
-                f.write(json.dumps(self.io['score'], separators=(',', ':'), indent=2))
-            file_changed = False
+                f.write(json.dumps(self.io['score'], separators=(',', ':')))#, indent=2))
+            self.io['savefile_system']['filechanged'] = False
         else:
             self.saveas()
 
     def saveas(self):
         print('saveas...')
 
+        # ask user input and saveas if so
         f = filedialog.asksaveasfile(parent=self.io['root'], 
             mode='w', 
             filetypes=[("PianoScript files", "*.pianoscript")],
@@ -348,6 +364,7 @@ class MainEditor():
             self.io['root'].title('PianoScript - %s' % f)
             with open(f, 'w') as file:
                 file.write(json.dumps(self.io['score'], separators=(',', ':'), indent=2))# indent=2
-            # update file_path
+            
+            # update filepath
             self.io['savefile_system']['filepath'] = f
             self.io['savefile_system']['filechanged'] = False

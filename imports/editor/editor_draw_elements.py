@@ -64,65 +64,74 @@ class DrawElements:
     @staticmethod
     def draw_note_cursor(note, io):
         
-        # calculating dimensions...
-        sbar_width = io['sbar'].winfo_width()
-        editor_width = io['editor_width'] - sbar_width
-        staff_width = editor_width * io['xscale']
-        staff_margin = (editor_width - staff_width) / 2
-        scale = staff_width / 1000
+        if not io['mouse']['button1']:
 
-        p = ToolsEditor.pitch2x(note['pitch'], io)
-        t = ToolsEditor.time2y(note['time'], io)
+            # calculating dimensions...
+            sbar_width = io['sbar'].winfo_width()
+            editor_width = io['editor_width'] - sbar_width
+            staff_width = editor_width * io['xscale']
+            staff_margin = (editor_width - staff_width) / 2
+            scale = staff_width / 1000
 
-        io['editor'].delete('notecursor')
+            p = ToolsEditor.pitch2x(note['pitch'], io)
+            t = ToolsEditor.time2y(note['time'], io)
 
-        if note['pitch'] in BLACK:
-            io['editor'].create_oval(p-(10*scale), t,
-                p+(10*scale), t+(20*scale),
-                tag=('notecursor'),
-                fill=color_dark,
-                outline=color_dark,
-                width=4*scale)
-        else:
-            io['editor'].create_oval(p-(10*scale), t,
-                p+(10*scale), t+(20*scale),
-                tag=('notecursor'),
-                fill=color_light,
-                outline=color_dark,
-                width=4*scale)
+            io['editor'].delete('notecursor')
 
-        # leftdot (hand)
-        if note['hand'] == 'l':
-            print('!!!')
+            # note
             if note['pitch'] in BLACK:
-                io['editor'].create_oval(p-(2 * scale), t+(8*scale),
-                    p+(2 * scale), t+(12 * scale),
-                    tag=('leftdot', 'notecursor'),
-                    outline='',
-                    fill=color_light)
+                io['editor'].create_oval(p-(10*scale), t,
+                    p+(10*scale), t+(20*scale),
+                    tag=('notecursor'),
+                    fill=color_dark,
+                    outline=color_dark,
+                    width=4*scale,
+                    state='disabled')
             else:
-                io['editor'].create_oval(p-(2 * scale), t+(8*scale),
-                    p+(2 * scale), t+(12 * scale),
-                    tag=('leftdot', 'notecursor'),
-                    outline='',
-                    fill=color_dark)
+                io['editor'].create_oval(p-(10*scale), t,
+                    p+(10*scale), t+(20*scale),
+                    tag=('notecursor'),
+                    fill=color_light,
+                    outline=color_dark,
+                    width=4*scale,
+                    state='disabled')
 
-        # stem (hand)
-        if note['hand'] == 'l':
-            io['editor'].create_line(p, t,
-                p - (50*scale), t, 
-                capstyle='round',
-                tag=('stem', 'notecursor'),
-                width=6*scale,
-                fill=color_dark)
-        else:
-            io['editor'].create_line(p, t,
-                p + (50*scale), t, 
-                capstyle='round',
-                tag=('stem', 'notecursor'),
-                width=6*scale,
-                fill=color_dark)
-        io['editor'].tag_raise('notecursor')
+            # leftdot (hand)
+            if note['hand'] == 'l':
+                print('!!!')
+                if note['pitch'] in BLACK:
+                    io['editor'].create_oval(p-(2 * scale), t+(8*scale),
+                        p+(2 * scale), t+(12 * scale),
+                        tag=('leftdot', 'notecursor'),
+                        outline='',
+                        fill=color_light,
+                        state='disabled')
+                else:
+                    io['editor'].create_oval(p-(2 * scale), t+(8*scale),
+                        p+(2 * scale), t+(12 * scale),
+                        tag=('leftdot', 'notecursor'),
+                        outline='',
+                        fill=color_dark,
+                        state='disabled')
+
+            # stem (hand)
+            if note['hand'] == 'l':
+                io['editor'].create_line(p, t,
+                    p - (50*scale), t, 
+                    capstyle='round',
+                    tag=('stem', 'notecursor'),
+                    width=6*scale,
+                    fill=color_dark,
+                    state='disabled')
+            else:
+                io['editor'].create_line(p, t,
+                    p + (50*scale), t, 
+                    capstyle='round',
+                    tag=('stem', 'notecursor'),
+                    width=6*scale,
+                    fill=color_dark,
+                    state='disabled')
+            io['editor'].tag_raise('notecursor')
 
     @staticmethod
     def draw_note(note, io, new=True):
@@ -176,7 +185,7 @@ class DrawElements:
                 x+(10 * scale), y+(20 * scale), 
                 fill=color_dark, 
                 outline=color_dark, 
-                tag=(note['tag'], 'note'), 
+                tag=(note['tag'], 'note', 'blacknote'), 
                 width=4*scale)
         else:
             # white note
@@ -184,7 +193,7 @@ class DrawElements:
                 x+(10 * scale), y+(20 * scale), 
                 fill=color_light, 
                 outline=color_dark, 
-                tag=(note['tag'], 'note'), 
+                tag=(note['tag'], 'note', 'blacknote'), 
                 width=4*scale)
 
         # stem (hand)
@@ -203,6 +212,34 @@ class DrawElements:
                 width=6*scale,
                 fill=color_dark)
 
+        # # continuation dot
+        # n_start = note['time']
+        # n_end = note['time'] + note['duration']
+        # for obj in io['score']['events']['note']:
+        #     o_start = obj['time']
+        #     o_end = obj['time'] + obj['duration']
+        #     if obj != note:
+        #         if o_start > n_start and o_start < n_end:
+        #             # if other note start time is inbetween start and end of current:
+        #             o_x = ToolsEditor.pitch2x(note['pitch'], io)
+        #             o_y = ToolsEditor.time2y(obj['time'], io)
+        #             io['editor'].create_oval(o_x-(5 * scale), o_y+(2.5*scale),
+        #                 o_x+(5*scale), o_y+(7.5*scale),
+        #                 fill=color_dark,
+        #                 tag=(note['tag'], obj['tag'], 'continuationdot'),
+        #                 outline='')
+        #         if o_end > n_start and o_end < n_end:
+        #             # if other note end time is inbetween start and end of current:
+        #             o_x = ToolsEditor.pitch2x(note['pitch'], io)
+        #             o_y = ToolsEditor.time2y(obj['time'], io)
+        #             io['editor'].create_oval(o_x-(10 * scale), o_y+(5*scale),
+        #                 o_x+(10*scale), o_y+(15*scale),
+        #                 fill=color_dark,
+        #                 tag=(note['tag'], obj['tag'], 'continuationdot'),
+        #                 outline='')
+        #     else:
+        #         continue
+
         # add to drawn list
         io['drawn_obj'].append(note['tag'])
 
@@ -213,3 +250,10 @@ class DrawElements:
                     obj = note
         else:
             io['score']['events']['note'].append(note)
+
+        # update drawing order for note
+        io['editor'].tag_lower(note['tag'])
+        io['editor'].tag_raise('stem')
+        io['editor'].tag_raise('continuationdot')
+        io['editor'].tag_raise('note')
+        io['editor'].tag_raise('blacknote')
