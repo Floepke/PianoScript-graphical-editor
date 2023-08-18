@@ -29,7 +29,7 @@ OTHER DEALINGS IN THE SOFTWARE.
     functions. Every function has a doc string to explain what it does
     or were it's used for.
 '''
-import time
+import time, math
 
 def measure_length(numerator, denominator):
     '''
@@ -70,7 +70,7 @@ def barline_times(time_signatures):
     for i,grid in enumerate(time_signatures):
         if i+1 == len(time_signatures): add = 1
         else: add = 0
-        step = measure_length((grid['numerator'],grid['denominator']))
+        step = measure_length(grid['numerator'],grid['denominator'])
         for t in range(grid['amount']+add):
             bl_times.append(count)
             count += step
@@ -138,7 +138,7 @@ def t_sig_start_tick(t_sig_map, n):
             tick = 0
             for i in t_sig_map:
                 out.append(tick)
-                tick += measure_length((i['numerator'], i['denominator'])) * i['amount']
+                tick += measure_length(i['numerator'], i['denominator']) * i['amount']
             return out[n]
 
 
@@ -164,7 +164,7 @@ def note_split_processor(note, Score):
     splitted = []
 
     # creating a list of barline positions.
-    line_breaks = Score['events']['line-break']
+    line_breaks = Score['events']['linebreak']
 
     # detecting barline overlapping note.
     is_split = False
@@ -265,12 +265,6 @@ def evaluate_cubic_bezier(t, control_points):
     y = (1 - t) ** 3 * p0[1] + 3 * t * (1 - t) ** 2 * p1[1] + 3 * t ** 2 * (1 - t) * p2[1] + t ** 3 * p3[1]
     return x, y
 
-
-import math
-
-import tkinter as tk
-import math
-
 def create_rotated_rectangle(canvas, x1, y1, x2, y2, angle=0, **kwargs):
     # Calculate the center of the rectangle
     center_x = (x1 + x2) / 2
@@ -300,35 +294,16 @@ def create_rotated_rectangle(canvas, x1, y1, x2, y2, angle=0, **kwargs):
     canvas.create_polygon(x1_rot, y1_rot, x2_rot, y2_rot, x3_rot, y3_rot, x4_rot, y4_rot, **kwargs)
 
 
-
-# def make_event_backwards_compitable(event):
-    
-#     if event['type'] == 'note':
-#         if not 'id' in event:
-#             event['id'] = 'note'
-#         if not 'time' in event:
-#             event['time'] = 0
-#         if not 'duration' in event:
-#             event['duration'] = 256
-#         if not 'pitch' in event:
-#             event['pitch'] = 40
-#         if not 'hand' in event:
-#             event['hand'] = 'l'
-#         if not 'x-offset' in event:
-#             event['x-offset'] = 0
-#         if not 'y-offset' in event:
-#             event['y-offset'] = 0
-#         if not 'accidental' in event:
-#             event['accidental'] = 0
-#         if not 'staff' in event:
-#             event['staff'] = 0
-#         if not 'type' in event:
-#             event['type'] = 'note'
-
-#     if event['type'] == '':
-#         ...
-
-#     return event
-
-
-
+def fit_printview(io, event=''):
+    '''
+        Sets the width of the printview in a way
+        that the whole page fits on the screen.
+    '''
+    pview_height = io['pview'].winfo_height()
+    page_width = io['score']['properties']['page-width']
+    page_height = io['score']['properties']['page-height']
+    app_width = io['root'].winfo_width()
+    width = app_width - 215 - (page_width / page_height * pview_height) + 3 # correction
+    io['main_paned'].paneconfig(io['toolbarpanel'], width=200)
+    io['main_paned'].paneconfig(io['editorpanel'], width=width)
+    io['root'].update()

@@ -257,3 +257,4 @@ class DrawElements:
         io['editor'].tag_raise('continuationdot')
         io['editor'].tag_raise('note')
         io['editor'].tag_raise('blacknote')
+        io['editor'].tag_raise('leftdot')

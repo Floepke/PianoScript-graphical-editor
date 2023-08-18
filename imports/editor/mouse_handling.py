@@ -103,6 +103,8 @@ class MouseHandling():
                         if note['tag'] == tags[0]:
                             # starting to edit a note...
                             io['edit_obj'] = note
+                            # assign the currently selected hand:
+                            io['edit_obj']['hand'] = io['hand']
                             return
             
             # create a new note

@@ -46,7 +46,7 @@ class Gui:
 		self.scrwidth = self.root.winfo_screenwidth()
 		self.scrheight = self.root.winfo_screenheight()
 		self.root.geometry("%sx%s+0+0" % (int(self.scrwidth), int(self.scrheight)))
-
+		
 		# style
 		self.ttkstyle = ttk.Style()
 		self.ttkstyle.theme_create('pianoscript', settings=STYLE)
@@ -78,7 +78,7 @@ class Gui:
 		self.staffselect_label = Label(self.leftpanel, text='STAFF:', bg=color_gui_light, fg=color_gui_dark, font=("courier", 16, 'bold'), anchor='w')
 		self.staffselect_label.grid(column=0, row=7, sticky='ew')
 		self.staff_selector = StringVar(value=1)
-		self.staffselect_spin = Spinbox(self.leftpanel, from_=1, to=4, bg=color_gui_dark, fg=color_dark, font=('courier', 16, 'normal'), textvariable=self.staff_selector)
+		self.staffselect_spin = Spinbox(self.leftpanel, from_=1, to=4, bg=color_gui_dark, fg=color_dark, font=('courier', 16, 'bold'), textvariable=self.staff_selector)
 		self.staffselect_spin.grid(column=0, row=8, sticky='ew')
 		self.seperator_2 = Label(self.leftpanel, text='------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 
 		    bg=color_gui_light, fg='#c8c8c8', anchor='c', font=("courier"))
@@ -102,6 +102,10 @@ class Gui:
 		self.main_paned.add(self.printpanel)
 		self.pview = Canvas(self.printpanel, bg=color_light, relief='flat')
 		self.pview.place(relwidth=1, relheight=1)
+
+		self.main_paned.paneconfig(self.leftpanel, minsize=200)
+		self.main_paned.paneconfig(self.printpanel, minsize=200)
+		self.main_paned.paneconfig(self.editorpanel, minsize=200)
 
 		# Menu
 		

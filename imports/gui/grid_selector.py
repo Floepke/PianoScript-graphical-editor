@@ -44,7 +44,7 @@ class GridSelector(Frame):
         # the grid base selector:
         self.list_dur = Listbox(self.gridselector_frame, height=8, bg=color_light, 
             selectbackground=color_highlight,selectforeground=color_dark, 
-            fg=color_dark, font=('courier', 16))
+            fg=color_dark, font=('courier', 16, 'bold'))
         self.list_dur.grid(column=0, row=1, sticky='ew')
         lst_labels = ['1', '2', '4', '8', '16', '32', '64', '128']
         for index, element in enumerate(lst_labels):
@@ -57,7 +57,7 @@ class GridSelector(Frame):
         self.divide_label.grid(column=0, row=2, sticky='ew')
         self.divide_variable = StringVar(value=1)
         self.divide_spin = Spinbox(self.gridselector_frame, from_=1, to=99, bg=color_light, 
-            fg=color_dark, font=('courier', 16, 'normal'), 
+            fg=color_dark, font=('courier', 16, 'bold'), 
             textvariable=self.divide_variable)
         self.divide_spin.grid(column=0, row=3, sticky='ew')
         
@@ -67,7 +67,7 @@ class GridSelector(Frame):
         self.times_label.grid(column=0, row=4, sticky='ew')
         self.times_variable = StringVar(value=1)
         self.times_spin = Spinbox(self.gridselector_frame, from_=1, to=99, bg=color_light, 
-            fg=color_dark, font=('courier', 16, 'normal'), textvariable=self.times_variable)
+            fg=color_dark, font=('courier', 16, 'bold'), textvariable=self.times_variable)
         self.times_spin.grid(column=0, row=5, sticky='ew')
         
         # seperator:
@@ -75,6 +75,14 @@ class GridSelector(Frame):
             text='------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 
             bg=color_gui_light, fg='#c8c8c8', anchor='c', font=("courier"))
         self.seperator_1.grid(column=0, row=6, sticky='ew')
+
+        # bind listbox callback
+        self.list_dur.bind("<<ListboxSelect>>", self.reset_on_click)
+
+    def reset_on_click(self, event=''):
+        
+        self.divide_variable.set(1)
+        self.times_variable.set(1)
 
     def get(self):
         '''get the value of the grid in pianoticks'''

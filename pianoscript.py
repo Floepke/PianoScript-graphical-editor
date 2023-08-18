@@ -35,6 +35,9 @@ from imports.colors import color_light, color_gui_light, color_highlight
 from imports.editor.mouse_handling import MouseHandling
 from imports.editor.kbd_handling import Keyboard
 from imports.gui.options_dialog import OptionsDialog
+from imports.engraver.thread_engraver import ThreadEngraver
+from imports.engraver.engraver_pianoscript import engrave_pianoscript_vertical
+from imports.tools import fit_printview
 
 class App:
 
@@ -48,10 +51,16 @@ class App:
 		self.root.update()
 		self.gui.editor.update()
 
-		# the self.data stores all data from the app in one organized dict:
+		# the self.data stores all data from the app in one dict:
 		self.io = {
 			# root window
 			'root':self.root,
+			# panels:
+			'toolbarpanel':self.gui.leftpanel,
+			'editorpanel':self.gui.editorpanel,
+			'printviewpanel':self.gui.printpanel,
+			# Paned widget
+			'main_paned':self.gui.main_paned,
 			# editor canvas
 			'editor':self.gui.editor,
 			# scrollbar
@@ -131,22 +140,29 @@ class App:
 			# True if app is in idle
 			'idle':False,
 			# right-left switch for the note modes
-			'hand':'r'
+			'hand':'r',
+			# page counter that keeps track of the current page view in the printview
+			'pageno':0,
+			# the render type is 'normal' or 'export'
+			'render_type':'normal'
 		}
 
 		# editor
 		self.main_editor = MainEditor(self.io)
 		self.io['editor'].yview('scroll', -10, 'unit')
 
-		
-
 		# keyboard binding
 		self.keyboard = Keyboard(self.io, self.main_editor)
 
 		# engraver
-		...
+		self.engraver = ThreadEngraver(process=engrave_pianoscript_vertical, io=self.io)
+		self.engraver.start()
+		self.io['engraver'] = self.engraver
 
-		# menu (written in this area because commands are not accessable inside the GUI class, can't set it later)
+		# printview auto width fit page on screen
+		fit_printview(self.io)
+
+		# menu (written in this area because commands are not accessable inside the GUI class, can't set it later due to limitations of tkinter)
 		self.font = ('courier', 16, 'bold')
 		self.menubar = Menu(self.root, relief='flat', bg=color_gui_light, fg=color_light, font=self.font)
 		self.root.config(menu=self.menubar)
@@ -165,14 +181,12 @@ class App:
 		self.fileMenu.add_command(label="Grid editor... [g]", underline=None, command=None, font=self.font)
 		self.fileMenu.add_command(label="Score options... [s]", underline=None, command=lambda: OptionsDialog(self.root, self.io), font=self.font)
 		self.fileMenu.add_separator()
-		self.fileMenu.add_command(label="Exit", underline=None, command=None, font=self.font)
+		self.fileMenu.add_command(label="Exit", underline=None, command=self.quit, font=self.font)
 		self.menubar.add_cascade(label="File", underline=None, menu=self.fileMenu, font=self.font)
 		self.menubar.add_command(label='< previous', command=None, background='grey', activebackground=color_highlight)
 		self.menubar.add_command(label='next >', command=None, background='grey', activebackground=color_highlight)
 
-		# binds
 		self.root.bind('<Escape>', self.quit)
-
 
 	def run(self):
 		'''In run() we go into the mainloop of the app'''

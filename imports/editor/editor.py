@@ -140,13 +140,6 @@ class MainEditor():
         # update idle flag
         self.io['idle'] = False
 
-        # # regulate spacebar hit; use previous xy mouse points
-        # if event_type == 'space':
-        #     x, y = self.io['editor'].winfo_pointerxy()
-        #     e.x = xy[0]
-        #     e.y = xy[1]
-        #     event_type = 'motion'
-
         # unbind motion (because otherwise we can get recursiondept error if we move the mouse really quick)
         self.io['editor'].unbind('<Motion>')
 
@@ -180,8 +173,9 @@ class MainEditor():
         if event_type == 'ctlrelease': self.io['keyboard']['ctl'] = False
         
         # update motion (mouse movemenelm_funcevent_type in ['motion', 'scroll']:
-        self.io['mouse']['x'] = self.io['editor'].canvasx(e.x)
-        self.io['mouse']['y'] = self.io['editor'].canvasy(e.y)
+        if not event_type == 'space':    
+            self.io['mouse']['x'] = self.io['editor'].canvasx(e.x)
+            self.io['mouse']['y'] = self.io['editor'].canvasy(e.y)
         self.io['mouse']['ex'] = ToolsEditor.x2pitch(self.io['mouse']['x'], self.io)
         self.io['mouse']['ey'] = ToolsEditor.y2time(self.io['mouse']['y'], self.io)
 
@@ -210,6 +204,9 @@ class MainEditor():
             self.io['editor'].delete('notecursor')
 
         #ToolsEditor.update_drawing_order(self.io)
+
+        # refresh the printview
+        if event_type in ['btn1release', 'btn2release', 'btn3release']: self.io['engraver'].trigger_render()
 
         # rebind motion
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))
@@ -266,7 +263,7 @@ class MainEditor():
         if self.io['savefile_system']['filechanged']:
             ask = askyesnocancel('Wish to save?', 'Do you wish to save the current Score?')
             if ask == True:
-                save()
+                self.save()
             elif ask == False:
                 ...
             elif ask == None:
@@ -344,7 +341,7 @@ class MainEditor():
 
         if self.io['savefile_system']['filepath'] != 'New':
             with open(self.io['savefile_system']['filepath'], 'w') as f:
-                f.write(json.dumps(self.io['score'], separators=(',', ':')))#, indent=2))
+                f.write(json.dumps(self.io['score'], separators=(',', ':'), indent=2))
             self.io['savefile_system']['filechanged'] = False
         else:
             self.saveas()

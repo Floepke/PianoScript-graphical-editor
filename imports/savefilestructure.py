@@ -129,7 +129,7 @@ BluePrint = {
   "events": {
     "grid": [
       {
-        "amount": 88,
+        "amount": 4,
         "numerator": 4,
         "denominator": 4,
         "grid": 4,

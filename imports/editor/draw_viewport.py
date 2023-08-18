@@ -116,6 +116,8 @@ class DrawViewport:
                     io['editor'].tag_raise('continuationdot')
                     io['editor'].tag_raise('note')
                     io['editor'].tag_raise('blacknote')
+                    io['editor'].tag_raise('leftdot')
+
 
             if note['time']+note['duration'] > io['view_end_tick']+1024:
                 return

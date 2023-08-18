@@ -20,7 +20,7 @@
     },
     "app-name":"pianoscript",
     "app-version":1.0,
-    "date":"13-08-2023",
+    "date":"18-08-2023",
     "genre":"",
     "comment":""
   },
@@ -88,7 +88,7 @@
   "events":{
     "grid":[
       {
-        "amount":88,
+        "amount":4,
         "numerator":4,
         "denominator":4,
         "grid":4,
