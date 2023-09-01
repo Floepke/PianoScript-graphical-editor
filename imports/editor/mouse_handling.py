@@ -1,4 +1,4 @@
-#! python3.9.2
+#!python3.11
 # coding: utf-8
 
 '''
@@ -37,6 +37,7 @@ class MouseHandling():
         io and changes the edited element if so...
     '''
 
+    # CURSOR:
     @staticmethod
     def cursor_indicator(event_type, io):
         '''Draws the cursor indicator on the left and right of the staff'''
@@ -76,7 +77,7 @@ class MouseHandling():
 
 
 
-    # note:
+    # NOTE:
     @staticmethod
     def elm_note(event_type, io):
 
@@ -164,7 +165,7 @@ class MouseHandling():
                             io['editor'].delete(note['tag'])
                             io['score']['events']['note'].remove(note)
 
-    # accidental:
+    # ACCIDENTAL:
     @staticmethod
     def elm_accidental(event_type, io):
         
@@ -187,7 +188,7 @@ class MouseHandling():
 
 
 
-    # beam:
+    # BEAM:
     @staticmethod
     def elm_beam(event_type, io):
         
@@ -206,6 +207,90 @@ class MouseHandling():
         if event_type == 'btn3click':
             
             ...
+
+
+    # LINEBREAK:
+    @staticmethod
+    def elm_linebreak(event_type, io):
+        
+        if event_type == 'btn1click':
+            
+            # set filechanged flag
+            io['savefile_system']['filechanged'] = True
+
+            # ignore if click time == 0
+            if io['mouse']['ey'] == 0:
+                return
+            
+            # we use selection variables in io to determine dragging a linebreak if we do so
+            io['selection']['y1'] = io['mouse']['ey']
+
+            # hold_tag is used to detect the linebreak if we click on a linebreak time.
+            for lbreak in io['score']['events']['linebreak']:
+                if lbreak['time'] == io['mouse']['ey']:
+                    io['hold_tag'] = lbreak
+                    break
+
+        if event_type == 'motion':
+            
+            if io['mouse']['button1']:
+                io['selection']['y2'] = io['mouse']['ey']
+
+        if event_type == 'btn1release':
+            
+            # if we edit/release an existing linebreak
+            edit_flag = False
+            if io['hold_tag']:
+                for lbreak in io['score']['events']['linebreak']:
+                    if lbreak == io['hold_tag']:
+                        edit_flag = True
+
+                    if edit_flag:
+                        add = io['selection']['y2'] - io['selection']['y1']
+                        lbreak['time'] += add
+
+            # if we didn't click on an existing linebreak we have to add a new one on the button release position
+            else:
+                new_linebreak = {
+                    "tag":f"linebreak{io['new_tag']}",
+                    "time":io['mouse']['ey'],
+                    "margin-staff1-left":10,
+                    "margin-staff1-right":10,
+                    "margin-staff2-left":10,
+                    "margin-staff2-right":10,
+                    "margin-staff3-left":10,
+                    "margin-staff3-right":10,
+                    "margin-staff4-left":10,
+                    "margin-staff4-right":10
+                  }
+                io['new_tag'] += 1
+                # add linebreak to file
+                io['score']['events']['linebreak'].append(new_linebreak)
+                io['score']['events']['linebreak'] = sorted(io['score']['events']['linebreak'], key=lambda time: time['time'])
+
+            # update editor and engraver
+            io['main_editor'].redraw_editor(io)
+            io['engraver'].trigger_render()
+
+            # empty selection variables
+            io['selection']['y1'] = None
+            io['selection']['y2'] = None
+            io['hold_tag'] = ''
+
+        if event_type == 'btn3click':
+
+            # ignore if click time == 0
+            if io['mouse']['ey'] == 0:
+                return
+            
+            for lbreak in io['score']['events']['linebreak']:
+                if lbreak['time'] == io['mouse']['ey']:
+                    io['score']['events']['linebreak'].remove(lbreak)
+
+            # update editor and engraver
+            io['main_editor'].redraw_editor(io)
+            io['engraver'].trigger_render()
+
 
 
 

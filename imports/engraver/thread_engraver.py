@@ -1,4 +1,4 @@
-#! python3.9.2
+#!python3.11
 # coding: utf-8
 
 '''
@@ -36,6 +36,7 @@ class ThreadEngraver(threading.Thread):
         self.process = process
         self.lock = threading.Lock()
         self.io = io
+        self.render_event.set()
 
     def run(self):
         while True:

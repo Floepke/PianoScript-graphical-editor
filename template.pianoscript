@@ -20,7 +20,7 @@
     },
     "app-name":"pianoscript",
     "app-version":1.0,
-    "date":"18-08-2023",
+    "date":"01-09-2023",
     "genre":"",
     "comment":""
   },
@@ -88,6 +88,7 @@
   "events":{
     "grid":[
       {
+        "tag":"grid",
         "amount":4,
         "numerator":4,
         "denominator":4,
@@ -103,7 +104,7 @@
     "pedal":[],
     "linebreak":[
       {
-        "id":"linebreak",
+        "tag":"linebreak",
         "time":0,
         "margin-staff1-left":10,
         "margin-staff1-right":10,

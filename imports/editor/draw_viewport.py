@@ -1,4 +1,4 @@
-#! python3.9.2
+#!python3.11
 # coding: utf-8
 
 '''
@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 from imports.editor.tools_editor import ToolsEditor
-from imports.colors import color_dark, color_light
+from imports.colors import color_dark, color_light, color_highlight
 from imports.constants import BLACK
 
 class DrawViewport:
@@ -37,7 +37,8 @@ class DrawViewport:
 
     @staticmethod
     def draw(io):
-        
+
+        # NOTE:
         for note in io['score']['events']['note']:
 
             if note['time'] >= io['view_start_tick'] and note['time'] < io['view_end_tick'] or note['time']+note['duration'] >= io['view_start_tick'] and note['time']+note['duration'] < io['view_end_tick']:
@@ -118,9 +119,29 @@ class DrawViewport:
                     io['editor'].tag_raise('blacknote')
                     io['editor'].tag_raise('leftdot')
 
+        # LINEBREAK:
+        for lbreak in io['score']['events']['linebreak']:
 
-            if note['time']+note['duration'] > io['view_end_tick']+1024:
-                return
+            if lbreak['time'] >= io['view_start_tick'] and lbreak['time'] < io['view_end_tick']:
+
+                if not lbreak['tag'] in io['drawn_obj']: 
+                    # draw linebreak
+                    y = ToolsEditor.time2y(lbreak['time'], io)
+                    sbar_width = io['sbar'].winfo_width()
+                    editor_width = io['editor'].winfo_width() - sbar_width
+                    editor_height = io['editor'].winfo_height()
+                    staff_width = editor_width * io['xscale']
+                    staff_margin = (editor_width - staff_width) / 2
+                    scale = staff_width / 1000
+
+                    io['editor'].create_line(sbar_width,y,editor_width+sbar_width,y,
+                        dash=(10,10),
+                        tag=('linebreak'),
+                        width=4*scale,
+                        fill='red')
+
+                    # add to drawn list
+                    io['drawn_obj'].append(lbreak['tag'])
 
         
     

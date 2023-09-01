@@ -1,4 +1,4 @@
-#! python3.9.2
+#!python3.11
 # coding: utf-8
 
 '''
@@ -56,7 +56,8 @@ class MainEditor():
         self.element_caller = {
             "note":MouseHandling.elm_note,
             "accidental":MouseHandling.elm_accidental,
-            "beam":MouseHandling.elm_beam
+            "beam":MouseHandling.elm_beam,
+            "linebreak":MouseHandling.elm_linebreak
         }
 
         # universal editor binds for mac/windows/linux:
@@ -129,7 +130,7 @@ class MainEditor():
 
 
 
-    def update(self, e, event_type, xy=None):
+    def update(self, e, event_type):
         '''
             Keep track of mouse buttons pressed or not
             Update mouse position
@@ -203,10 +204,9 @@ class MainEditor():
         if self.io['mouse']['button1']:
             self.io['editor'].delete('notecursor')
 
-        #ToolsEditor.update_drawing_order(self.io)
-
-        # refresh the printview
-        if event_type in ['btn1release', 'btn2release', 'btn3release']: self.io['engraver'].trigger_render()
+        # refresh the printview on any mouseclick on the editor
+        if event_type in ['btn1release', 'btn2release', 'btn3release']: 
+            self.io['engraver'].trigger_render()
 
         # rebind motion
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))
@@ -225,7 +225,7 @@ class MainEditor():
         
         io['editor'].delete('note', 'midinote', 
             'stem', 'barline', 'gridline', 
-            'barnumbering', 'leftdot')
+            'barnumbering', 'leftdot', 'linebreak')
         io['drawn_obj'] = []
         ToolsEditor.update_last_pianotick(io)
         DrawStaff.draw_staff(io)

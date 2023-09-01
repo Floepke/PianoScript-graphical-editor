@@ -1,4 +1,4 @@
-#! python3.9.2
+#!python3.11
 # coding: utf-8
 '''
 This file is part of the pianoscript project: http://www.pianoscript.org/
@@ -129,6 +129,7 @@ BluePrint = {
   "events": {
     "grid": [
       {
+        "tag":"grid",
         "amount": 4,
         "numerator": 4,
         "denominator": 4,
@@ -144,7 +145,7 @@ BluePrint = {
     "pedal": [],
     "linebreak":[
       {
-        "id":"linebreak",
+        "tag":"linebreak",
         "time":0,
         "margin-staff1-left":10,
         "margin-staff1-right":10,
@@ -153,8 +154,7 @@ BluePrint = {
         "margin-staff3-left":10,
         "margin-staff3-right":10,
         "margin-staff4-left":10,
-        "margin-staff4-right":10,
-        "staff":0
+        "margin-staff4-right":10
       }
     ],
     "countline":[],

@@ -1,4 +1,4 @@
-#! python3.9.2
+#!python3.11
 # coding: utf-8
 
 '''
@@ -90,6 +90,17 @@ class Tree(Frame):
                         "id":"beam",
                         "text":"Beam",
                         "image":PhotoImage(Image.open(fp="icons/beam.png").resize((30,30)))
+                    }
+                ]
+            },
+            {
+                "text":"Bar",
+                "id":"folder.bar",
+                "items":[
+                    {
+                        "id":"linebreak",
+                        "text":"Line break",
+                        "image":PhotoImage(Image.open(fp="icons/linebreak.png").resize((30,30)))
                     }
                 ]
             }

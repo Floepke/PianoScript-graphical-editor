@@ -1,4 +1,4 @@
-#! python3.9.2
+#!python3.11
 # coding: utf-8
 
 '''
@@ -208,5 +208,6 @@ class ToolsEditor():
         '''
         for k in io['score']['events'].keys():
             for obj in io['score']['events'][k]:
+                if obj['tag'] == 'linebreak': continue
                 obj['tag'] = f"{k}{io['new_tag']}"
                 io['new_tag'] += 1

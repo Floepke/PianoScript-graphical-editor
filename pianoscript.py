@@ -1,4 +1,4 @@
-#!python3.9.2
+#!python3.11
 # coding: utf-8
 
 '''
@@ -27,7 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 # third party imports
 from tkinter import Tk, Menu
 
-
 # own imports code :)
 from imports.editor.editor import MainEditor
 from imports.gui.gui import Gui
@@ -37,7 +36,7 @@ from imports.editor.kbd_handling import Keyboard
 from imports.gui.options_dialog import OptionsDialog
 from imports.engraver.thread_engraver import ThreadEngraver
 from imports.engraver.engraver_pianoscript import engrave_pianoscript_vertical
-from imports.tools import fit_printview
+from imports.tools import root_update
 
 class App:
 
@@ -55,6 +54,8 @@ class App:
 		self.io = {
 			# root window
 			'root':self.root,
+			# main_frame
+			'main_frame':self.gui.main_frame,
 			# panels:
 			'toolbarpanel':self.gui.leftpanel,
 			'editorpanel':self.gui.editorpanel,
@@ -97,7 +98,7 @@ class App:
 			},
 			# keep track wether an object on the editor is clicked; this variable is the 
 			# unique id from a clicked object on the editor canvas if an object is clicked+hold
-			'hold_id':'',
+			'hold_tag':'',
 			'keyboard':{ # keep track wheter shift or ctl is pressed
 				'shift':False,
 				'ctl':False,
@@ -150,6 +151,7 @@ class App:
 		# editor
 		self.main_editor = MainEditor(self.io)
 		self.io['editor'].yview('scroll', -10, 'unit')
+		self.io['main_editor'] = self.main_editor
 
 		# keyboard binding
 		self.keyboard = Keyboard(self.io, self.main_editor)
@@ -159,8 +161,10 @@ class App:
 		self.engraver.start()
 		self.io['engraver'] = self.engraver
 
+		self.io['root'].bind('<Configure>', self.io['engraver'].trigger_render())
+
 		# printview auto width fit page on screen
-		fit_printview(self.io)
+		root_update(self.io)
 
 		# menu (written in this area because commands are not accessable inside the GUI class, can't set it later due to limitations of tkinter)
 		self.font = ('courier', 16, 'bold')
@@ -186,6 +190,8 @@ class App:
 		self.menubar.add_command(label='< previous', command=None, background='grey', activebackground=color_highlight)
 		self.menubar.add_command(label='next >', command=None, background='grey', activebackground=color_highlight)
 
+		self.io['main_frame'].bind('<Configure>', lambda e: root_update(self.io, e))
+		self.io['main_paned'].bind('<Configure>', lambda e: root_update(self.io, e))
 		self.root.bind('<Escape>', self.quit)
 
 	def run(self):

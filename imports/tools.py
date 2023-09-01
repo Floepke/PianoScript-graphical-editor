@@ -1,4 +1,4 @@
-#! python3.9.2
+#!python3.11
 # coding: utf-8
 
 '''
@@ -294,11 +294,12 @@ def create_rotated_rectangle(canvas, x1, y1, x2, y2, angle=0, **kwargs):
     canvas.create_polygon(x1_rot, y1_rot, x2_rot, y2_rot, x3_rot, y3_rot, x4_rot, y4_rot, **kwargs)
 
 
-def fit_printview(io, event=''):
+def root_update(io, event=''):
     '''
         Sets the width of the printview in a way
         that the whole page fits on the screen.
     '''
+    io['root'].update()
     pview_height = io['pview'].winfo_height()
     page_width = io['score']['properties']['page-width']
     page_height = io['score']['properties']['page-height']
@@ -306,4 +307,6 @@ def fit_printview(io, event=''):
     width = app_width - 215 - (page_width / page_height * pview_height) + 3 # correction
     io['main_paned'].paneconfig(io['toolbarpanel'], width=200)
     io['main_paned'].paneconfig(io['editorpanel'], width=width)
-    io['root'].update()
+    if width > 50 and event:
+        io['engraver'].trigger_render()
+        io['main_editor'].update(event, 'motion')
