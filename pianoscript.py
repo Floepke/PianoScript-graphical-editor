@@ -4,28 +4,29 @@
 '''
 This file is part of the pianoscript project: http://www.pianoscript.org/
 
-Permission is hereby granted, free of charge, to any person obtaining 
-a copy of this software and associated documentation files 
-(the “Software”), to deal in the Software without restriction, including 
-without limitation the rights to use, copy, modify, merge, publish, 
-distribute, sublicense, and/or sell copies of the Software, and to permit 
-persons to whom the Software is furnished to do so, subject to the 
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files
+(the “Software”), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the
 following conditions:
 
-The above copyright notice and this permission notice shall be included 
+The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, 
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 # third party imports
 from tkinter import Tk, Menu
+from tkinter import Toplevel
 
 # own imports code :)
 from imports.editor.editor import MainEditor
@@ -37,11 +38,12 @@ from imports.gui.options_dialog import OptionsDialog
 from imports.engraver.thread_engraver import ThreadEngraver
 from imports.engraver.engraver_pianoscript import engrave_pianoscript_vertical
 from imports.tools import root_update
+from imports.grid_editor import Gredit
 
 class App:
 
 	def __init__(self):
-		
+
 		# root
 		self.root = Tk()
 
@@ -96,7 +98,7 @@ class App:
 				'button2':False, # ...
 				'button3':False # ...
 			},
-			# keep track wether an object on the editor is clicked; this variable is the 
+			# keep track wether an object on the editor is clicked; this variable is the
 			# unique id from a clicked object on the editor canvas if an object is clicked+hold
 			'hold_tag':'',
 			'keyboard':{ # keep track wheter shift or ctl is pressed
@@ -136,7 +138,7 @@ class App:
 			},
 			# editor settings:
 			'editor_settings':{
-				'note_color':'#aaa'	
+				'note_color':'#aaa'
 			},
 			# True if app is in idle
 			'idle':False,
@@ -182,7 +184,10 @@ class App:
 		self.fileMenu.add_command(label="Export pdf [ctl+e]", command=None, font=self.font)
 		self.fileMenu.add_command(label="Export midi*", command=None, font=self.font)
 		self.fileMenu.add_separator()
-		self.fileMenu.add_command(label="Grid editor... [g]", underline=None, command=None, font=self.font)
+		self.fileMenu.add_command(label="Grid editor... [g]",
+								  underline=None,
+								  command=self._open_grid_editor,
+								  font=self.font)
 		self.fileMenu.add_command(label="Score options... [s]", underline=None, command=lambda: OptionsDialog(self.root, self.io), font=self.font)
 		self.fileMenu.add_separator()
 		self.fileMenu.add_command(label="Exit", underline=None, command=self.quit, font=self.font)
@@ -194,20 +199,36 @@ class App:
 		self.io['main_paned'].bind('<Configure>', lambda e: root_update(self.io, e))
 		self.root.bind('<Escape>', self.quit)
 
+	def _open_grid_editor(self):
+		""" open the grid editor """
+
+		self._grid_top = Toplevel(self.root)
+		self._grid_top.protocol("WM_DELETE_WINDOW", self._grid_top.destroy)
+
+		grids = self.io['score']["events"]["grid"]
+		self._grid_editor = Gredit(self._grid_top,
+								   grids=grids,
+								   on_save=self.on_save_grids)
+
+	def on_save_grids(self, grid_list):
+		""" save the edited grids """
+
+		self.io['score']["events"]["grid"] = grid_list
+
 	def run(self):
 		'''In run() we go into the mainloop of the app'''
 		self.root.mainloop()
 
 	def quit(self, event=''):
-		
+
 		# file-save-check
 		...
 
-		
+
 
 		# quit (generates an error if mouse binds are still active TODO)
 		self.root.destroy()
-		
+
 
 
 
