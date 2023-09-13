@@ -335,6 +335,8 @@ class OptionsDialog:
         # tab 4
         self.read_staff()
 
+        self.parent.protocol("WM_DELETE_WINDOW", self._close)
+
         self.show()
 
     def next_staff(self):
@@ -392,6 +394,7 @@ class OptionsDialog:
 
     def _close(self, event=''):
         self.close = True
+        #self.evaluate(self.score)
         self.popup.destroy()
 
     def evaluate(self, score, event=''):

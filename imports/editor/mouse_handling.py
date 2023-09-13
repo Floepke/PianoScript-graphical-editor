@@ -152,6 +152,7 @@ class MouseHandling():
             
             io['edit_obj'] = None
             io['old_obj'] = None
+            io['ctlz'].add_ctlz(io['score'])
 
         if event_type == 'btn3click':
             

@@ -37,6 +37,7 @@ from imports.gui.options_dialog import OptionsDialog
 from imports.engraver.thread_engraver import ThreadEngraver
 from imports.engraver.engraver_pianoscript import engrave_pianoscript_vertical
 from imports.tools import root_update
+from imports.editor.ctlz import CtlZ
 
 class App:
 
@@ -74,6 +75,9 @@ class App:
 			'grid_selector':self.gui.grid_selector,
 			# the score object where all score data is stored (the savefile)
 			'score':{},
+			# Ctrl-z
+			'ctlz_buffer':[],
+			'ctlz_index':-1,
 			# this class stores all methods for elements
 			'mouse_handling':MouseHandling(),
 			# the last pianotick of the score
@@ -194,6 +198,10 @@ class App:
 		self.io['main_paned'].bind('<Configure>', lambda e: root_update(self.io, e))
 		self.root.bind('<Escape>', self.quit)
 
+		# Ctl-z class
+		self.ctlz = CtlZ(self.io)	
+		self.io['ctlz'] = self.ctlz
+
 	def run(self):
 		'''In run() we go into the mainloop of the app'''
 		self.root.mainloop()
@@ -206,6 +214,7 @@ class App:
 		
 
 		# quit (generates an error if mouse binds are still active TODO)
+		# self.io['engraver'].join()
 		self.root.destroy()
 		
 
