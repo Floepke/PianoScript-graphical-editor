@@ -98,7 +98,6 @@ class DrawElements:
 
             # leftdot (hand)
             if note['hand'] == 'l':
-                print('!!!')
                 if note['pitch'] in BLACK:
                     io['editor'].create_oval(p-(2 * scale), t+(8*scale),
                         p+(2 * scale), t+(12 * scale),
@@ -134,7 +133,7 @@ class DrawElements:
             io['editor'].tag_raise('notecursor')
 
     @staticmethod
-    def draw_note(note, io, new=True):
+    def draw_note(note, io, new=True, selected=False):
         '''
             draws or redraws the given 'note' in the editor.
             get's called for both creation and updating a note.
@@ -152,14 +151,20 @@ class DrawElements:
 
         io['editor'].delete(note['tag'])
 
+        # configure note color
+        if selected: color = color_highlight
+        else: color = color_dark
+        if selected: color_midinote = color_highlight
+        else: color_midinote = io['editor_settings']['note_color']
+
         # midinote:
         io['editor'].create_polygon(x, y,
             x+(10*scale), y+(10*scale),
             x+(10*scale), d,
             x-(10*scale), d,
             x-(10*scale), y+(10*scale),
-            fill=io['editor_settings']['note_color'], 
-            outline=io['editor_settings']['note_color'],
+            fill=color_midinote,
+            outline=color_midinote,
             tag=(note['tag'], 'midinote'))
 
         # leftdot:
@@ -176,15 +181,15 @@ class DrawElements:
                     x+(2 * scale), y+(12 * scale),
                     tag=(note['tag'], 'leftdot'),
                     outline='',
-                    fill=color_dark)
+                    fill=color)
         
         # note:
         if note['pitch'] in BLACK:
             # black note
             io['editor'].create_oval(x-(10 * scale), y,
                 x+(10 * scale), y+(20 * scale), 
-                fill=color_dark, 
-                outline=color_dark, 
+                fill=color, 
+                outline=color, 
                 tag=(note['tag'], 'note', 'blacknote'), 
                 width=4*scale)
         else:
@@ -192,7 +197,7 @@ class DrawElements:
             io['editor'].create_oval(x-(10 * scale), y,
                 x+(10 * scale), y+(20 * scale), 
                 fill=color_light, 
-                outline=color_dark, 
+                outline=color, 
                 tag=(note['tag'], 'note', 'blacknote'), 
                 width=4*scale)
 
@@ -203,42 +208,20 @@ class DrawElements:
                 capstyle='round',
                 tag=(note['tag'], 'stem'),
                 width=6*scale,
-                fill=color_dark)
+                fill=color)
         else:
             io['editor'].create_line(x, y,
                 x + (50*scale), y, 
                 capstyle='round',
                 tag=(note['tag'], 'stem'),
                 width=6*scale,
-                fill=color_dark)
+                fill=color)
 
-        # # continuation dot
-        # n_start = note['time']
-        # n_end = note['time'] + note['duration']
-        # for obj in io['score']['events']['note']:
-        #     o_start = obj['time']
-        #     o_end = obj['time'] + obj['duration']
-        #     if obj != note:
-        #         if o_start > n_start and o_start < n_end:
-        #             # if other note start time is inbetween start and end of current:
-        #             o_x = ToolsEditor.pitch2x(note['pitch'], io)
-        #             o_y = ToolsEditor.time2y(obj['time'], io)
-        #             io['editor'].create_oval(o_x-(5 * scale), o_y+(2.5*scale),
-        #                 o_x+(5*scale), o_y+(7.5*scale),
-        #                 fill=color_dark,
-        #                 tag=(note['tag'], obj['tag'], 'continuationdot'),
-        #                 outline='')
-        #         if o_end > n_start and o_end < n_end:
-        #             # if other note end time is inbetween start and end of current:
-        #             o_x = ToolsEditor.pitch2x(note['pitch'], io)
-        #             o_y = ToolsEditor.time2y(obj['time'], io)
-        #             io['editor'].create_oval(o_x-(10 * scale), o_y+(5*scale),
-        #                 o_x+(10*scale), o_y+(15*scale),
-        #                 fill=color_dark,
-        #                 tag=(note['tag'], obj['tag'], 'continuationdot'),
-        #                 outline='')
-        #     else:
-        #         continue
+        # continuation dot
+        ...
+
+        # stop sign
+        ...
 
         # add to drawn list
         io['drawn_obj'].append(note['tag'])
@@ -258,3 +241,34 @@ class DrawElements:
         io['editor'].tag_raise('note')
         io['editor'].tag_raise('blacknote')
         io['editor'].tag_raise('leftdot')
+
+    @staticmethod
+    def draw_selection_rectangle(io):
+        
+        io['editor'].delete('selectionrectangle')
+        io['editor'].create_rectangle(io['selection']['x1'], io['selection']['y1'],
+            io['selection']['x2'], io['selection']['y2'],
+            fill='',
+            outline=color_highlight,
+            width=4,
+            tag='selectionrectangle')
+
+    @staticmethod
+    def draw_beam(beam, io, new=True, selected=False):
+        ...
+
+    @staticmethod
+    def draw_countline(countline, io, new=True, selected=False):
+        ...
+
+    @staticmethod
+    def draw_slur(slur, io, new=True, selected=False):
+        ...
+
+    @staticmethod
+    def draw_text(text, io, new=True, selected=False):
+        ...
+
+    @staticmethod
+    def draw_pedal(pedal, io, new=True, selected=False):
+        ...

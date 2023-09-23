@@ -208,6 +208,22 @@ class ToolsEditor():
         '''
         for k in io['score']['events'].keys():
             for obj in io['score']['events'][k]:
+                if not 'tag' in obj: continue
                 if obj['tag'] == 'linebreak': continue
                 obj['tag'] = f"{k}{io['new_tag']}"
                 io['new_tag'] += 1
+
+    @staticmethod
+    def gettags_selectionrectangle(io):
+        ftags = io['editor'].find_overlapping(io['selection']['x1'],
+            io['selection']['y1'],
+            io['selection']['x2'],
+            io['selection']['y2'])
+        tags = []
+        for t in ftags:
+            tag = io['editor'].gettags(t)
+            for tt in tag:
+                if tt.startswith('#note'):
+                    tags.append(tt)
+        tags = list(dict.fromkeys(tags))
+        return tags

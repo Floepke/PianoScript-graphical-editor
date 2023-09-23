@@ -31,33 +31,41 @@ class CtlZ:
     def __init__(self, io):
         self.io = io
 
-        self.buffer = [copy.deepcopy(io['score'])]  # A list to store versions of the score
-        self.index = 0    # Index to keep track of the current version
+        self.buffer = [copy.deepcopy(self.io['score'])]
+        self.index = 0
+        self.max_ctlz_num = 100
 
-        self.io['root'].bind('<Control-z>', lambda e: self.undo())
-        self.io['root'].bind('<Control-Z>', lambda e: self.redo())
+        self.io['root'].bind('<z>', lambda e: self.undo())
+        self.io['root'].bind('<Z>', lambda e: self.redo())
+
+    def reset_ctlz(self):
+        # use this if we load a new or existing project
+        self.buffer = [copy.deepcopy(self.io['score'])]
+        self.index = 0
 
     def add_ctlz(self, score):
-        # test print
-        print('!', self.index, len(self.buffer) - 1)
         
         # if we are in the past(undo/redo):
         if not self.index == len(self.buffer) - 1:    
-            self.buffer = self.buffer[:self.index]
-            self.index = len(self.buffer) - 1
+            self.buffer = self.buffer[:self.index + 1]
 
         # Add a new version of the score to the buffer
         self.buffer.append(copy.deepcopy(score))
         self.index = len(self.buffer) - 1
 
-    def undo(self):
+        # undo limit
+        if len(self.buffer) > self.max_ctlz_num:
+            self.buffer.pop(0)
+
+    def undo(self): 
         print('undo...')
+        
 
         # load undo version
         self.index -= 1
         if self.index < 0:
             self.index = 0
-        self.io['score'] = self.buffer[self.index]
+        self.io['score'] = copy.deepcopy(self.buffer[self.index])
 
         # update editor and engraver
         self.io['main_editor'].redraw_editor(self.io)
@@ -70,7 +78,7 @@ class CtlZ:
         self.index += 1
         if self.index > len(self.buffer) - 1:
             self.index = len(self.buffer) - 1
-        self.io['score'] = self.buffer[self.index]
+        self.io['score'] = copy.deepcopy(self.buffer[self.index])
 
         # update editor and engraver
         self.io['main_editor'].redraw_editor(self.io)

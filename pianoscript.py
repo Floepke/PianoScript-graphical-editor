@@ -38,6 +38,8 @@ from imports.engraver.thread_engraver import ThreadEngraver
 from imports.engraver.engraver_pianoscript import engrave_pianoscript_vertical
 from imports.tools import root_update
 from imports.editor.ctlz import CtlZ
+from imports.midi.midi import Midi
+from imports.editor.copycutpaste import CopyCutPaste
 
 class App:
 
@@ -108,14 +110,16 @@ class App:
 				'ctl':False,
 			},
 			'selection':{ # everything about making a selection; keep track
+				'rectangle_on':False,
+				'active':False,
 				'x1':None,
 				'y1':None,
 				'x2':None,
 				'y2':None,
 				# the buffer that holds any selected element
-				'selection_buffer':[],
+				'selection_buffer':{},
 				# the buffer that holds any copied or cutted selection
-				'copycut_buffer':[]
+				'copycut_buffer':{}
 			},
 			# a mm in pixels on the screen
 			'mm': self.root.winfo_fpixels('1m'),
@@ -170,6 +174,15 @@ class App:
 		# printview auto width fit page on screen
 		root_update(self.io)
 
+		# ctl-z class
+		self.io['ctlz'] = CtlZ(self.io)
+
+		# copy cut paste class
+		self.io['copycutpaste'] = CopyCutPaste(self.io)
+
+		# midi class
+		self.io['midi'] = Midi(self.io)
+
 		# menu (written in this area because commands are not accessable inside the GUI class, can't set it later due to limitations of tkinter)
 		self.font = ('courier', 16, 'bold')
 		self.menubar = Menu(self.root, relief='flat', bg=color_gui_light, fg=color_light, font=self.font)
@@ -180,7 +193,7 @@ class App:
 		self.fileMenu.add_command(label='Save [ctl+s]', command=self.main_editor.save, font=self.font)
 		self.fileMenu.add_command(label='Save as... [alt+s]', command=self.main_editor.saveas, font=self.font)
 		self.fileMenu.add_separator()
-		self.fileMenu.add_command(label='Load midi [ctl+m]', command=None, font=self.font)
+		self.fileMenu.add_command(label='Load midi [ctl+m]', command=self.io['midi'].load_midi, font=self.font)
 		self.fileMenu.add_separator()
 		self.fileMenu.add_command(label="Export ps", command=None, font=self.font)
 		self.fileMenu.add_command(label="Export pdf [ctl+e]", command=None, font=self.font)
@@ -191,16 +204,12 @@ class App:
 		self.fileMenu.add_separator()
 		self.fileMenu.add_command(label="Exit", underline=None, command=self.quit, font=self.font)
 		self.menubar.add_cascade(label="File", underline=None, menu=self.fileMenu, font=self.font)
-		self.menubar.add_command(label='< previous', command=None, background='grey', activebackground=color_highlight)
-		self.menubar.add_command(label='next >', command=None, background='grey', activebackground=color_highlight)
+		self.menubar.add_command(label='< previous', command=self.io['engraver'].prevpage, background='grey', activebackground=color_highlight)
+		self.menubar.add_command(label='next >', command=self.io['engraver'].nextpage, background='grey', activebackground=color_highlight)
 
 		self.io['main_frame'].bind('<Configure>', lambda e: root_update(self.io, e))
 		self.io['main_paned'].bind('<Configure>', lambda e: root_update(self.io, e))
 		self.root.bind('<Escape>', self.quit)
-
-		# Ctl-z class
-		self.ctlz = CtlZ(self.io)	
-		self.io['ctlz'] = self.ctlz
 
 	def run(self):
 		'''In run() we go into the mainloop of the app'''

@@ -24,12 +24,6 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-'''
-This file contains all code for the editor:
-    - All different modes and theur behavior
-    - ...
-'''
-
 # imports   
 import platform
 from imports.colors import * # TODO
@@ -68,19 +62,17 @@ class MainEditor():
             self.io['editor'].bind('<ButtonRelease-2>', lambda e: self.update(e, 'btn2release'))
             self.io['editor'].bind('<Button-3>', lambda e: self.update(e, 'btn3click'))
             self.io['editor'].bind('<ButtonRelease-3>', lambda e: self.update(e, 'btn3release'))
-        if platform.system() == 'Darwin':   
+        else:   
             self.io['editor'].bind('<Button-3>', lambda e: self.update(e, 'btn2click'))
             self.io['editor'].bind('<ButtonRelease-3>', lambda e: self.update(e, 'btn2release'))
             self.io['editor'].bind('<Button-2>', lambda e: self.update(e, 'btn3click'))
             self.io['editor'].bind('<ButtonRelease-2>', lambda e: self.update(e, 'btn3release'))
         
         self.io['editor'].bind('<Motion>', lambda e: self.update(e, 'motion'))
-        # to force the editor to update on mouse release when resizing the window for example.
-        self.io['root'].bind('<ButtonRelease-1>', lambda e: self.update(e, 'motion')) 
-        self.io['editor'].bind('<Shift-KeyPress>', lambda e: self.update(e, 'shiftpress'))
-        self.io['editor'].bind('<Shift-KeyRelease>', lambda e: self.update(e, 'shiftrelease'))
-        self.io['editor'].bind('<Control-KeyPress>', lambda e: self.update(e, 'ctlpress'))
-        self.io['editor'].bind('<Control-KeyRelease>', lambda e: self.update(e, 'ctlrelease'))
+        self.io['root'].bind('<KeyPress>', self.on_key_press)
+        self.io['root'].bind('<KeyRelease>', self.on_key_release)
+        self.io['root'].bind('<Control-KeyPress>', lambda e: self.update(e, 'ctlpress'))
+        self.io['root'].bind('<Control-KeyRelease>', lambda e: self.update(e, 'ctlrelease'))
         self.io['editor'].bind('<Leave>', lambda e: self.update(e, 'leave'))
         self.io['editor'].bind('<Enter>', lambda e: self.update(e, 'enter'))
 
@@ -94,18 +86,16 @@ class MainEditor():
         # create a new initial project from template.pianoscript
         self.new()
 
-        # draw the initial barlines and grid
+        # draw the initial project
         self.redraw_editor(self.io)
 
         ToolsEditor.update_drawing_order(self.io)
 
     def scroll_up_callback_linux(self, e):
-        print(e.delta)
         self.io['editor'].yview('scroll', 1, 'units')
         self.update(e, 'scroll')
 
     def scroll_down_callback_linux(self, e):
-        print(e.delta)
         self.io['editor'].yview('scroll', -1, 'units')
         self.update(e, 'scroll')
 
@@ -115,6 +105,14 @@ class MainEditor():
         else:
             self.io['editor'].yview('scroll', -1, 'units')
         self.update(e, 'scroll')
+
+    # fix for the detection of shift-keypress that doesn't work on linux
+    def on_key_press(self, event):
+        if event.keysym == 'Shift_L' or event.keysym == 'Shift_R':
+            self.update(event, 'shiftpress')
+    def on_key_release(self, event):
+        if event.keysym == 'Shift_L' or event.keysym == 'Shift_R':
+            self.update(event, 'shiftrelease')
 
     
 
@@ -184,14 +182,15 @@ class MainEditor():
         self.io['element'] = self.io['tree'].get
         self.io['snap_grid'] = self.io['grid_selector'].get()
         
-        # updating the right element function:
-        self.element_caller[self.io['element']](event_type, self.io)
+        # updating the right elements tree function:
+        if not self.io['keyboard']['shift']:
+            self.element_caller[self.io['element']](event_type, self.io)
 
         # update cursor indicator:
         self.io['mouse_handling'].cursor_indicator(event_type, self.io)
 
         # check if we need to redraw the entire editor:
-        if self.io['old_editor_width'] != self.io['editor_width']: # if editor-width or height has changed:
+        if self.io['old_editor_width'] != self.io['editor_width']: # if editor-width has changed:
             self.io['old_editor_width'] = self.io['editor_width']
             ToolsEditor.update_tick_range(self.io)
             self.redraw_editor(self.io)
@@ -201,8 +200,13 @@ class MainEditor():
             ToolsEditor.update_tick_range(self.io)
             DrawViewport.draw(self.io)
 
+        # delete note cursor if button1 is pressed
         if self.io['mouse']['button1']:
             self.io['editor'].delete('notecursor')
+
+        # evaluate/update the selection if shift key is pressed
+        if self.io['keyboard']['shift'] or self.io['selection']['rectangle_on']:
+            self.io['copycutpaste'].process_selection(event_type)
 
         # refresh the printview on any mouseclick on the editor
         if event_type in ['btn1release', 'btn2release', 'btn3release']: 
@@ -240,6 +244,15 @@ class MainEditor():
 
 
 
+
+
+
+
+
+
+
+
+
     '''
         FILE MANAGEMENT:
             - new; creates new project
@@ -269,11 +282,15 @@ class MainEditor():
         # load template:
         try: # load template from disk
             self.io['score'] = json.load(open('template.pianoscript', 'r'))
-        except: # if template not exists (if the user deleted the file during the run of the program)
+        except: # if template not exists (if the user deleted the file or it's the first run)
             self.io['score'] = BluePrint # fallback to source template
 
         # redraw the editor
         self.redraw_editor(self.io)
+        
+        # trigger render
+        try: self.io['engraver'].trigger_render()
+        except KeyError: print('ignored trigger_render()')
 
         # renumbering tags
         ToolsEditor.renumber_tags(self.io)
@@ -285,8 +302,9 @@ class MainEditor():
         self.io['savefile_system']['filepath'] = 'New'
         self.io['savefile_system']['filechanged'] = False
 
-
-        return self.io['score']
+        # reset ctlz
+        try: self.io['ctlz'].reset_ctlz()
+        except KeyError: print('ignored reset_ctlz()')
 
     def load(self):
         print('load...')
@@ -312,8 +330,8 @@ class MainEditor():
         else: return
 
         # if the file was selected, load the file
-        with open(f, 'r') as f:
-            self.io['score'] = json.load(f)
+        with open(f, 'r') as file:
+            self.io['score'] = json.load(file)
 
         # renumbering tags
         ToolsEditor.renumber_tags(self.io)
@@ -324,12 +342,20 @@ class MainEditor():
         # redraw the editor
         self.redraw_editor(self.io)
 
+        # trigger render
+        try: self.io['engraver'].trigger_render()
+        except KeyError: print('ignored trigger_render()')
+
         # update filepath
-        self.io['savefile_system']['filepath'] = f.name
+        self.io['savefile_system']['filepath'] = f
         self.io['savefile_system']['filechanged'] = False
 
         # update window title
         self.io['root'].title(f"PianoScript - {self.io['savefile_system']['filepath']}")
+
+        # reset ctlz
+        try: self.io['ctlz'].reset_ctlz()
+        except KeyError: print('ignored reset_ctlz()')
 
     def save(self):
         print('save...')
@@ -351,6 +377,7 @@ class MainEditor():
             title='Save as...',
             initialdir='~/Desktop/')
         f = f.name
+        if not f.endswith('.pianoscript'): f = f + '.pianoscript'
         if f:
             self.io['root'].title('PianoScript - %s' % f)
             with open(f, 'w') as file:

@@ -38,7 +38,8 @@ class OptionsDialog:
     def __init__(self, parent, io):
         self.parent = parent
         self.close = False
-        self.score = io['score']
+        self.io = io
+        self.score = self.io['score']
 
         # create the popup window
         self.popup = Toplevel(self.parent)
@@ -394,7 +395,6 @@ class OptionsDialog:
 
     def _close(self, event=''):
         self.close = True
-        #self.evaluate(self.score)
         self.popup.destroy()
 
     def evaluate(self, score, event=''):
@@ -443,6 +443,8 @@ class OptionsDialog:
         self.save_staff(self.score)
 
         self.score = score
+        self.io['ctlz'].add_ctlz(self.io['score'])
+        self.io['engraver'].trigger_render()
         self.popup.destroy()
 
     def show(self):

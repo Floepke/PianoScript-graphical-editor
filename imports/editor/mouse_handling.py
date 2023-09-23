@@ -81,7 +81,7 @@ class MouseHandling():
     @staticmethod
     def elm_note(event_type, io):
 
-        obj_type = 'note'
+        obj_type = '#note'
 
         # right-left choice
         if io['hand'] == 'r':
@@ -126,6 +126,7 @@ class MouseHandling():
 
         if event_type in ['motion', 'space'] and io['cursor_on_editor']:
 
+            # this gets executed if no mousebutton is pressed but we only move the mouse on the editor:
             if not io['mouse']['button1']:
                 # draw the note cursor:
                 cursor_note = {
@@ -136,18 +137,17 @@ class MouseHandling():
                 }
                 DrawElements.draw_note_cursor(cursor_note, io)
             
-            # this get executed if the mousebtn1 is pressed:
+            # this gets executed if the mousebtn1 is pressed:
             elif io['edit_obj']:
                 # edit the notes length or pitch in the specific pianoscript way:
                 if io['mouse']['ey'] >= io['edit_obj']['time']:
-                    if io['mouse']['ey'] >= io['snap_grid']+io['edit_obj']['time']:
+                    if io['mouse']['ey'] >= io['snap_grid'] + io['edit_obj']['time']:
                         io['edit_obj']['duration'] = io['mouse']['ey'] - io['edit_obj']['time']
                 else:
                     io['edit_obj']['pitch'] = io['mouse']['ex']
                     
                 DrawElements.draw_note(io['edit_obj'], io, new=False)
                     
-
         if event_type == 'btn1release':
             
             io['edit_obj'] = None
@@ -165,6 +165,7 @@ class MouseHandling():
                             # delete note
                             io['editor'].delete(note['tag'])
                             io['score']['events']['note'].remove(note)
+                            io['ctlz'].add_ctlz(io['score'])
 
     # ACCIDENTAL:
     @staticmethod
@@ -250,10 +251,13 @@ class MouseHandling():
                         add = io['selection']['y2'] - io['selection']['y1']
                         lbreak['time'] += add
 
+                        if lbreak['time'] >= io['last_pianotick']:
+                            io['score']['events']['linebreak'].remove(lbreak)
+
             # if we didn't click on an existing linebreak we have to add a new one on the button release position
             else:
                 new_linebreak = {
-                    "tag":f"linebreak{io['new_tag']}",
+                    "tag":'linebreak' + str(ToolsEditor.add_tag(io)),
                     "time":io['mouse']['ey'],
                     "margin-staff1-left":10,
                     "margin-staff1-right":10,
@@ -272,6 +276,7 @@ class MouseHandling():
             # update editor and engraver
             io['main_editor'].redraw_editor(io)
             io['engraver'].trigger_render()
+            io['ctlz'].add_ctlz(io['score'])
 
             # empty selection variables
             io['selection']['y1'] = None
@@ -291,6 +296,7 @@ class MouseHandling():
             # update editor and engraver
             io['main_editor'].redraw_editor(io)
             io['engraver'].trigger_render()
+            io['ctlz'].add_ctlz(io['score'])
 
 
 
