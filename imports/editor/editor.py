@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 # imports   
-import platform
+import platform, json
 from imports.colors import * # TODO
 from imports.editor.staff import DrawStaff
 from imports.editor.mouse_handling import MouseHandling
@@ -34,7 +34,6 @@ from imports.savefilestructure import BluePrint
 from imports.tools import baseround, interpolation
 from imports.editor.tools_editor import ToolsEditor
 from tkinter import filedialog
-import json
 from tkinter.messagebox import askyesnocancel
 from tkinter import filedialog
 
@@ -45,13 +44,13 @@ class MainEditor():
 
         self.io = io
 
-
         # caller; calls the corresponding function in mousehandling
         self.element_caller = {
             "note":MouseHandling.elm_note,
             "accidental":MouseHandling.elm_accidental,
             "beam":MouseHandling.elm_beam,
-            "linebreak":MouseHandling.elm_linebreak
+            "linebreak":MouseHandling.elm_linebreak,
+            "ornament":MouseHandling.elm_ornament
         }
 
         # universal editor binds for mac/windows/linux:
@@ -206,7 +205,7 @@ class MainEditor():
 
         # evaluate/update the selection if shift key is pressed
         if self.io['keyboard']['shift'] or self.io['selection']['rectangle_on']:
-            self.io['copycutpaste'].process_selection(event_type)
+            self.io['selectoperations'].process_selection(event_type)
 
         # refresh the printview on any mouseclick on the editor
         if event_type in ['btn1release', 'btn2release', 'btn3release']: 
@@ -228,8 +227,8 @@ class MainEditor():
         '''
         
         io['editor'].delete('note', 'midinote', 
-            'stem', 'barline', 'gridline', 
-            'barnumbering', 'leftdot', 'linebreak')
+            'stem', 'barline', 'gridline', 'connectstem', 
+            'barnumbering', 'leftdot', 'linebreak', 'notestop', 'soundingdot')
         io['drawn_obj'] = []
         ToolsEditor.update_last_pianotick(io)
         DrawStaff.draw_staff(io)

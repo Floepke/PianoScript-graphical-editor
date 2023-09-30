@@ -83,12 +83,6 @@ class MouseHandling():
 
         obj_type = '#note'
 
-        # right-left choice
-        if io['hand'] == 'r':
-            hand = 'r'
-        else:
-            hand = 'l'
-
         if event_type == 'btn1click':
 
             # set filechanged flag
@@ -114,11 +108,9 @@ class MouseHandling():
                 "time":io['mouse']['ey'],
                 "duration":io['snap_grid'],
                 "pitch":io['mouse']['ex'],
-                "hand":hand,
-                "stem_visible":True,
+                "hand":io['hand'],
                 "accidental":0,
-                "staff":0,
-                "notestop":True
+                "staff":0
             }
             DrawElements.draw_note(new_note, io, new=True)
             io['edit_obj'] = new_note
@@ -132,8 +124,8 @@ class MouseHandling():
                 cursor_note = {
                     "time":io['mouse']['ey'],
                     "pitch":io['mouse']['ex'],
-                    "hand":hand,
-                    "id":"cursor",
+                    "hand":io['hand'],
+                    "stemless":False,
                 }
                 DrawElements.draw_note_cursor(cursor_note, io)
             
@@ -163,8 +155,96 @@ class MouseHandling():
                     for note in io['score']['events']['note']:
                         if note['tag'] == tags[0]:
                             # delete note
+                            # try to remove this note also from the selection buffer
+                            try: io['selection']['selection_buffer']['note'].remove(note)
+                            except: ... # if it fails the note isn't in the selection
                             io['editor'].delete(note['tag'])
                             io['score']['events']['note'].remove(note)
+                            io['ctlz'].add_ctlz(io['score'])
+
+    # ORNAMENT:
+    @staticmethod
+    def elm_ornament(event_type, io):
+
+        obj_type = '#ornament'
+
+        if event_type == 'btn1click':
+
+            # set filechanged flag
+            io['savefile_system']['filechanged'] = True
+
+            # detect if we are editing a ornament or
+            # in case we click not on a ornament, we
+            # create a new_ornament.
+            tags = io['editor'].gettags("current")
+            if tags:
+                if obj_type in tags[0]:
+                    for orn in io['score']['events']['ornament']:
+                        if orn['tag'] == tags[0]:
+                            # starting to edit a note...
+                            io['edit_obj'] = orn
+                            # assign the currently selected hand:
+                            io['edit_obj']['hand'] = io['hand']
+                            return
+            
+            # create a new note
+            new_ornament = {
+                "tag":obj_type + str(ToolsEditor.add_tag(io)),
+                "time":io['mouse']['ey'],
+                "duration":io['snap_grid'],
+                "pitch":io['mouse']['ex'],
+                "hand":io['hand'],
+                "accidental":0,
+                "staff":0
+            }
+            DrawElements.draw_ornament(new_ornament, io, new=True)
+            io['edit_obj'] = new_ornament
+            io['old_obj'] = new_ornament
+
+        if event_type in ['motion', 'space'] and io['cursor_on_editor']:
+
+            # this gets executed if no mousebutton is pressed but we only move the mouse on the editor:
+            if not io['mouse']['button1']:
+                # draw the note cursor:
+                cursor_note = {
+                    "time":io['mouse']['ey'],
+                    "pitch":io['mouse']['ex'],
+                    "hand":io['hand'],
+                    "stemless":True
+                }
+                DrawElements.draw_note_cursor(cursor_note, io)
+            
+            # this gets executed if the mousebtn1 is pressed:
+            elif io['edit_obj']:
+                # edit the notes length or pitch in the specific pianoscript way:
+                if io['mouse']['ey'] >= io['edit_obj']['time']:
+                    if io['mouse']['ey'] >= io['snap_grid'] + io['edit_obj']['time']:
+                        io['edit_obj']['duration'] = io['mouse']['ey'] - io['edit_obj']['time']
+                else:
+                    io['edit_obj']['pitch'] = io['mouse']['ex']
+                    
+                DrawElements.draw_ornament(io['edit_obj'], io, new=False)
+                    
+        if event_type == 'btn1release':
+            
+            io['edit_obj'] = None
+            io['old_obj'] = None
+            io['ctlz'].add_ctlz(io['score'])
+
+        if event_type == 'btn3click':
+            
+            # detect if we are clicking on a ornament and delete if so
+            tags = io['editor'].gettags("current")
+            if tags:
+                if obj_type in tags[0]:
+                    for ornament in io['score']['events']['ornament']:
+                        if ornament['tag'] == tags[0]:
+                            # delete ornament
+                            # try to remove this ornament also from the selection buffer
+                            try: io['selection']['selection_buffer']['ornament'].remove(ornament)
+                            except: ... # if it fails the ornament isn't in the selection
+                            io['editor'].delete(ornament['tag'])
+                            io['score']['events']['ornament'].remove(ornament)
                             io['ctlz'].add_ctlz(io['score'])
 
     # ACCIDENTAL:

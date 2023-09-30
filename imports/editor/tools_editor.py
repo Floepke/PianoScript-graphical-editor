@@ -211,6 +211,8 @@ class ToolsEditor():
                 if not 'tag' in obj: continue
                 if obj['tag'] == 'linebreak': continue
                 obj['tag'] = f"{k}{io['new_tag']}"
+                if k in io['selection']['copy_types']:
+                    obj['tag'] = '#'+obj['tag']
                 io['new_tag'] += 1
 
     @staticmethod

@@ -33,7 +33,7 @@ class CtlZ:
 
         self.buffer = [copy.deepcopy(self.io['score'])]
         self.index = 0
-        self.max_ctlz_num = 100
+        self.max_ctlz_num = 16
 
         self.io['root'].bind('<z>', lambda e: self.undo())
         self.io['root'].bind('<Z>', lambda e: self.redo())

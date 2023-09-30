@@ -82,6 +82,11 @@ class Tree(Frame):
                         "image":PhotoImage(Image.open(fp="icons/noteinput_R.png").resize((30,30)))
                     },
                     {
+                        "id":"ornament",
+                        "text":"Ornament",
+                        "image":PhotoImage(Image.open(fp="icons/ornament.png").resize((30,30)))
+                    },
+                    {
                         "id":"accidental",
                         "text":"Accidental",
                         "image":PhotoImage(Image.open(fp="icons/accidental.png").resize((30,30)))
