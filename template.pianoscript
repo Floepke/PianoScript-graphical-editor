@@ -20,7 +20,7 @@
     },
     "app-name":"pianoscript",
     "app-version":1.0,
-    "date":"01-09-2023",
+    "date":"30-09-2023",
     "genre":"",
     "comment":""
   },
@@ -97,6 +97,7 @@
       }
     ],
     "note":[],
+    "ornament":[],
     "text":[],
     "beam":[],
     "bpm":[],
@@ -113,8 +114,7 @@
         "margin-staff3-left":10,
         "margin-staff3-right":10,
         "margin-staff4-left":10,
-        "margin-staff4-right":10,
-        "staff":0
+        "margin-staff4-right":10
       }
     ],
     "countline":[],

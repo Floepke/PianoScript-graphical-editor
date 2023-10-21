@@ -24,7 +24,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-from tkinter import Tk, Canvas, Menu, Scrollbar, messagebox, PanedWindow, PhotoImage
+from tkinter import Canvas, Scrollbar, messagebox, PanedWindow, PhotoImage
 from tkinter import filedialog, Label, Spinbox, StringVar, Listbox, ttk, Frame
 import platform, ctypes
 
@@ -45,7 +45,7 @@ class Gui:
 		if platform.system() == 'Windows': self.root.state('zoomed')
 		self.scrwidth = self.root.winfo_screenwidth()
 		self.scrheight = self.root.winfo_screenheight()
-		self.root.geometry("%sx%s+0+0" % (int(self.scrwidth), int(self.scrheight)))
+		self.root.geometry(f"{int(self.scrwidth*.75)}x{int(self.scrheight*.75)}+{int(self.scrwidth*.125)}+{int(self.scrheight*.125)}")
 		
 		# style
 		self.ttkstyle = ttk.Style()

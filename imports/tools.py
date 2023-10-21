@@ -305,6 +305,7 @@ def root_update(io, event=''):
     page_height = io['score']['properties']['page-height']
     app_width = io['root'].winfo_width()
     width = app_width - 215 - (page_width / page_height * pview_height) + 3 # correction
+    if width < 50: width = 50
     io['main_paned'].paneconfig(io['toolbarpanel'], width=200)
     io['main_paned'].paneconfig(io['editorpanel'], width=width)
     if width > 50 and event:

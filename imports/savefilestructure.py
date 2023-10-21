@@ -138,6 +138,7 @@ BluePrint = {
       }
     ],
     "note":[],
+    "ornament":[],
     "text": [],
     "beam": [],
     "bpm":[],

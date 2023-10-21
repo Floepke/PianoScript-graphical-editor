@@ -24,9 +24,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-import threading
-import time
-import traceback
+import threading, time, traceback, platform
 
 class ThreadEngraver(threading.Thread):
     def __init__(self, process, io):
@@ -37,6 +35,13 @@ class ThreadEngraver(threading.Thread):
         self.lock = threading.Lock()
         self.io = io
         self.render_event.set()
+
+        # binds for next previous page mouse
+        self.io['pview'].bind('<Button-1>', lambda e: self.prevpage())
+        if platform.system() in ['Linux', 'Windows']:
+            self.io['pview'].bind('<Button-3>', lambda e: self.nextpage())
+        else: # Darwin
+            self.io['pview'].bind('<Button-2>', lambda e: self.nextpage())
 
     def run(self):
         while True:
@@ -52,6 +57,14 @@ class ThreadEngraver(threading.Thread):
                     traceback.print_exc()
 
             self.render_event.clear()
+
+    def nextpage(self):
+        self.io['pageno'] += 1
+        self.render_event.set()
+
+    def prevpage(self):
+        self.io['pageno'] -= 1
+        self.render_event.set()
 
     def trigger_render(self):
         if self.active:

@@ -43,4 +43,4 @@ class Keyboard:
 		x = self.io['editor'].canvasx(e.x)
 		y = self.io['editor'].canvasy(e.y)
 
-		self.m_editor.update(e, 'space', (x, y))
+		self.m_editor.update(e, 'space')
