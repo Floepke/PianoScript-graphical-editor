@@ -73,8 +73,8 @@ class Tree(Frame):
         # setup the elements_tree:
         self.elements_tree = [
             {
-                "text":"Note",
                 "id":"folder.note",
+                "text":"Note",
                 "items":[
                     {
                         "id":"note",
@@ -87,20 +87,25 @@ class Tree(Frame):
                         "image":PhotoImage(Image.open(fp="icons/ornament.png").resize((30,30)))
                     },
                     {
-                        "id":"accidental",
-                        "text":"Accidental",
-                        "image":PhotoImage(Image.open(fp="icons/accidental.png").resize((30,30)))
-                    },
-                    {
                         "id":"beam",
                         "text":"Beam",
                         "image":PhotoImage(Image.open(fp="icons/beam.png").resize((30,30)))
+                    },
+                    {
+                        "id":"countline",
+                        "text":"Count-line",
+                        "image":PhotoImage(Image.open(fp="icons/countline.png").resize((30,30)))
+                    },
+                    {
+                        "id":"accidental",
+                        "text":"Accidental",
+                        "image":PhotoImage(Image.open(fp="icons/accidental.png").resize((30,30)))
                     }
                 ]
             },
             {
-                "text":"Bar",
                 "id":"folder.bar",
+                "text":"Bar",
                 "items":[
                     {
                         "id":"linebreak",

@@ -80,8 +80,8 @@ class DrawElements:
 
             # note
             if note['pitch'] in BLACK:
-                io['editor'].create_oval(p-(10*scale), t,
-                    p+(10*scale), t+(20*scale),
+                io['editor'].create_oval(p-(7.5*scale), t,
+                    p+(7.5*scale), t+(20*scale),
                     tag=('notecursor'),
                     fill=color_dark,
                     outline=color_dark,
@@ -188,8 +188,8 @@ class DrawElements:
         # note:
         if note['pitch'] in BLACK:
             # black note
-            io['editor'].create_oval(x-(10 * scale), y,
-                x+(10 * scale), y+(20 * scale), 
+            io['editor'].create_oval(x-(7.5 * scale), y,
+                x+(7.5 * scale), y+(20 * scale), 
                 fill=color, 
                 outline=color, 
                 tag=(note['tag'], 'note', 'blacknote'), 
@@ -380,63 +380,6 @@ class DrawElements:
                 tag=(ornament['tag'], 'ornament', 'blacknote'), 
                 width=4*scale)
 
-        # sounding dot
-        stopflag = True
-        for n in io['score']['events']['ornament']:
-            # there are 4 possible situations where we have to draw a continuation dot:
-            if n['time']+n['duration'] > ornament['time'] and n['time']+n['duration'] < ornament['time']+ornament['duration'] and ornament['hand'] == n['hand']:
-                x = ToolsEditor.pitch2x(ornament['pitch'], io)
-                y = ToolsEditor.time2y(n['time']+n['duration'], io)
-                io['editor'].create_oval(x-(5*scale),y+(2.5*scale),
-                    x+(5*scale),y+(10*scale),
-                    outline=color,
-                    fill=color,
-                    tag=(n['tag'], ornament['tag'], 'soundingdot'))
-            if ornament['time']+ornament['duration'] < n['time']+n['duration'] and ornament['time']+ornament['duration'] > n['time'] and ornament['hand'] == n['hand']:
-                x = ToolsEditor.pitch2x(n['pitch'], io)
-                y = ToolsEditor.time2y(ornament['time']+ornament['duration'], io)
-                io['editor'].create_oval(x-(5*scale),y+(2.5*scale),
-                    x+(5*scale),y+(10*scale),
-                    outline=color,
-                    fill=color,
-                    tag=(n['tag'], ornament['tag'], 'soundingdot'))
-            if ornament['time'] > n['time'] and ornament['time'] < n['time']+n['duration'] and ornament['hand'] == n['hand']:
-                x = ToolsEditor.pitch2x(n['pitch'], io)
-                y = ToolsEditor.time2y(ornament['time'], io)
-                io['editor'].create_oval(x-(5*scale),y+(2.5*scale),
-                    x+(5*scale),y+(10*scale),
-                    outline=color,
-                    fill=color,
-                    tag=(n['tag'], ornament['tag'], 'soundingdot'))
-            if n['time'] > ornament['time'] and n['time'] < ornament['time']+ornament['duration'] and ornament['hand'] == n['hand']:
-                x = ToolsEditor.pitch2x(ornament['pitch'], io)
-                y = ToolsEditor.time2y(n['time'], io)
-                io['editor'].create_oval(x-(5*scale),y+(2.5*scale),
-                    x+(5*scale),y+(10*scale),
-                    outline=color,
-                    fill=color,
-                    tag=(n['tag'], ornament['tag'], 'soundingdot'))
-
-            # stop sign
-            if n['time'] == ornament['time']+ornament['duration']: 
-                stopflag = False
-
-            # delete notestop sign if the new ornament starts at the same time as the end time of another ornament
-            if n['time']+n['duration'] == ornament['time']:
-                for item in io['editor'].find_withtag(n['tag']):
-                    if 'notestop' in io['editor'].gettags(item):
-                        io['editor'].delete(item)
-        
-        if stopflag:
-            x = ToolsEditor.pitch2x(ornament['pitch'], io)
-            y = ToolsEditor.time2y(ornament['time']+ornament['duration'], io)
-            io['editor'].create_line(x-(10*scale), y-(10*scale),
-                x, y,
-                x+(10*scale), y-(10*scale),
-                tag=(ornament['tag'], 'notestop'),
-                width=4*scale,
-                fill=color)
-
         # add to drawn list
         io['drawn_obj'].append(ornament['tag'])
 
@@ -469,6 +412,26 @@ class DrawElements:
             outline=color_highlight,
             width=4,
             tag='selectionrectangle')
+
+    @staticmethod
+    def draw_linebreak(linebreak, io):
+        y = ToolsEditor.time2y(linebreak['time'], io)
+        sbar_width = io['sbar'].winfo_width()
+        editor_width = io['editor'].winfo_width() - sbar_width
+        editor_height = io['editor'].winfo_height()
+        staff_width = editor_width * io['xscale']
+        staff_margin = (editor_width - staff_width) / 2
+        scale = staff_width / 1000
+
+        io['editor'].create_line(sbar_width,y,editor_width+sbar_width,y,
+            dash=(10,10),
+            tag=(linebreak['tag']),
+            width=4*scale,
+            fill=color_highlight)
+        io['editor'].create_polygon
+
+        # add to drawn list
+        io['drawn_obj'].append(lbreak['tag'])
 
     @staticmethod
     def draw_beam(beam, io, new=True, selected=False):

@@ -247,9 +247,31 @@ class MouseHandling():
                             io['score']['events']['ornament'].remove(ornament)
                             io['ctlz'].add_ctlz(io['score'])
 
-    # ACCIDENTAL:
+
+    # COUNTLINE:
     @staticmethod
-    def elm_accidental(event_type, io):
+    def elm_countline(event_type, io):
+        
+        if event_type == 'btn1click':
+            
+            ...
+
+        if event_type == 'motion':
+            
+            ...
+
+        if event_type == 'btn1release':
+            
+            ...
+
+        if event_type == 'btn3click':
+            
+            ...
+
+    
+    # BEAM:
+    @staticmethod
+    def elm_beam(event_type, io):
         
         if event_type == 'btn1click':
             
@@ -268,11 +290,9 @@ class MouseHandling():
             ...
 
 
-
-
-    # BEAM:
+    # ACCIDENTAL:
     @staticmethod
-    def elm_beam(event_type, io):
+    def elm_accidental(event_type, io):
         
         if event_type == 'btn1click':
             

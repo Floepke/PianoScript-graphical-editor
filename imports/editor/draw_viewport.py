@@ -45,6 +45,12 @@ class DrawViewport:
                 if not note['tag'] in io['drawn_obj']:
                     DrawElements.draw_note(note, io, new=False, selected=False)
 
+        # ORNAMENT:
+        for ornament in io['score']['events']['ornament']:
+            if ornament['time'] >= io['view_start_tick'] and ornament['time'] < io['view_end_tick'] or ornament['time']+ornament['duration'] >= io['view_start_tick'] and ornament['time']+ornament['duration'] < io['view_end_tick']:
+                if not ornament['tag'] in io['drawn_obj']:
+                    DrawElements.draw_ornament(ornament, io, new=False, selected=False)
+
         # LINEBREAK:
         for lbreak in io['score']['events']['linebreak']:
 
@@ -64,7 +70,7 @@ class DrawViewport:
                         dash=(10,10),
                         tag=('linebreak'),
                         width=4*scale,
-                        fill='red')
+                        fill=color_highlight)
 
                     # add to drawn list
                     io['drawn_obj'].append(lbreak['tag'])

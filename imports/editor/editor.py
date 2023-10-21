@@ -50,7 +50,8 @@ class MainEditor():
             "accidental":MouseHandling.elm_accidental,
             "beam":MouseHandling.elm_beam,
             "linebreak":MouseHandling.elm_linebreak,
-            "ornament":MouseHandling.elm_ornament
+            "ornament":MouseHandling.elm_ornament,
+            "countline":MouseHandling.elm_countline
         }
 
         # universal editor binds for mac/windows/linux:
@@ -181,7 +182,7 @@ class MainEditor():
         self.io['element'] = self.io['tree'].get
         self.io['snap_grid'] = self.io['grid_selector'].get()
         
-        # updating the right elements tree function:
+        # call the right elements tree function:
         if not self.io['keyboard']['shift']:
             self.element_caller[self.io['element']](event_type, self.io)
 

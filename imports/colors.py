@@ -30,11 +30,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 # rocky coastline:
-color_light = '#ffffff'
-color_dark = '#000010'
-color_gui_light = '#444444'
-color_gui_dark = '#eeeeee'
-color_highlight = '#59cc59'
+# color_light = '#5fc4fa'
+# color_dark = '#001030'
+# color_gui_light = '#444444'
+# color_gui_dark = '#eeeeee'
+# color_highlight = '#59cc59'
 
 # # scouting
 # color_light = '#2a3410'
@@ -57,7 +57,7 @@ color_highlight = '#59cc59'
 # color_gui_dark = '#c8c8c8'
 # color_highlight = '#b59b7c'
 
-# rocky coastline:
+# # rocky coastline:
 color_light = '#ffffff'
 color_dark = '#000010'
 color_gui_light = '#241936'
