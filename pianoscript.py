@@ -43,8 +43,6 @@ from imports.editor.ctlz import CtlZ
 from imports.midi.midi import Midi
 from imports.editor.selectoperations import SelectOperations
 from imports.grid_editor import Gredit
-from imports.grid import Grid
-from imports.grid import GridList
 
 class App:
 
