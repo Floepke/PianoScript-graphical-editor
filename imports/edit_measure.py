@@ -9,16 +9,15 @@ __copyright__ = '© Sihir 2023-2023 all rights reserved'  # noqa
 from tkinter import Frame
 from tkinter import Label
 from tkinter import Button
+from tkinter import Canvas
+from tkinter.font import Font
 
-from typing import Optional
 from typing import Any
+from typing import Callable
 
 from imports.spin_box_container import SpinboxContainer
 from imports.checkbox_container import CheckBoxContainer
 from imports.combobox_container import ComboBoxContainer
-
-from imports.prompt import PromptEnum
-from imports.prompt import Prompt
 
 from imports.grid import Grid
 
@@ -27,19 +26,19 @@ from imports.grid import Grid
 class EditMeasure:
     """ edit the values of a range of measures """
 
-    def __init__(self, master: Frame,
-                 **kwargs):
+    def __init__(self, master: Frame, **kwargs):
         """ initialize the class """
 
         self._master = master
-        self._dirty = False
-        self.update_settings = None
-        self.change_callback = None
-        self.save_file = None
         self.start = None
         self._ident = None
-        self.prm = None
         self.hidden = []
+        self.save_file = None
+        self._initialized = False
+        self.update_settings: Callable = kwargs.get('update_settings', None)
+        self.top = 1
+        self.finish = 2
+        self.step = 1
 
         # --- amount
         select_frame = Frame(master)
@@ -134,7 +133,6 @@ class EditMeasure:
                                            max_value=100,
                                            value=0,
                                            width=3,
-                                           # leading_zero=True,
                                            changed=self._value_changed,
                                            state=state)
 
@@ -170,24 +168,13 @@ class EditMeasure:
 
         self.button_frame = Frame(master)
 
-        self.spin_update = Button(master=self.button_frame,
-                                  text='Update',
-                                  width=6,
-                                  command=self.measure_update)
-
-        self.spin_update.grid(row=0,
-                              column=0,
-                              padx=0,
-                              pady=2,
-                              sticky='news')
-
         self.add_button = Button(master=self.button_frame,
                                  text='Add',
                                  width=6,
                                  command=self._add)
 
         self.add_button.grid(row=0,
-                             column=1,
+                             column=0,
                              padx=0,
                              pady=2,
                              sticky='news')
@@ -198,18 +185,7 @@ class EditMeasure:
                                  command=self._del)
 
         self.del_button.grid(row=0,
-                             column=2,
-                             padx=0,
-                             pady=2,
-                             sticky='news')
-
-        self._save_file = Button(master=self.button_frame,
-                                 text='Save',
-                                 width=6,
-                                 command=self._save)
-
-        self._save_file.grid(row=0,
-                             column=3,
+                             column=1,
                              padx=0,
                              pady=2,
                              sticky='news')
@@ -220,84 +196,84 @@ class EditMeasure:
                                pady=0,
                                sticky='nsw')
 
+        self._canvas_frame = Frame(master)
+        self._canvas = Canvas(master=self._canvas_frame,
+                              background='black',
+                              width=200,
+                              height=270)
 
-    def ready(self):
-        """ ready to accept data """
+        self._canvas.configure(bg='white')
+        self._canvas.bind('<Button-1>', self.left_click)
 
-        if self._dirty:
-            self.prompt('Settings were not saved')
+        self._canvas.grid(row=5,
+                          rowspan=1,
+                          column=0,
+                          padx=(4, 4),
+                          pady=2,
+                          sticky='ns')
 
-        return not self._dirty
+        self._canvas_frame.grid(row=5,
+                                column=0,
+                                padx=0,
+                                pady=0,
+                                sticky='news')
 
-    def prompt(self, message: str = 'Nothing to report'):
-        """ create a simple prompt window """
+    def left_click(self, event):
+        """ left click on canvas """
 
-        if self.prm is None:
-            self.prm = Prompt(root=self._master,
-                              title='Notification',
-                              message=message,
-                              timeout_s=5,
-                              callback=self._callback,
-                              closing=self._prompt_closing)
+        if not self._initialized:
+            return
+
+        self.top = 3
+        bottom = self._canvas.winfo_height()
+        self.step = bottom / self.spin_numer.value
+
+        pos = 1 + int(round((event.y - self.top) / self.step))
+
+        if pos in self.hidden:
+            self.hidden.remove(pos)
         else:
-            self.prm.update(message=message,
-                            timeout_s=5)
+            self.hidden.append(pos)
+            self.hidden.sort()
 
-    def _prompt_closing(self):
-        """ prompt is closing """
-
-        self.prm = None
-
-    def _callback(self, response: PromptEnum):
-        """ clicked 'OK' or 'Cancel' """
-
-        if response == PromptEnum.OK:
-            self._dirty = False
+        self.update()
 
     def _value_changed(self, name: str, value: Any, mode: str):
-        """ the value has changed """
+        """ the value has changed, callback when initialized """
 
-        assert mode  # parameter is not used
-        if self.change_callback:
-            self.change_callback(name, value)
-            self._dirty = True
+        assert name  # parameter is not used
+        assert value is not None  # parameter is not used
+        assert mode is not None  # parameter is not used
+
+        if not self._initialized or self._ident is None:
+            return
+
+        self.update()
 
     def _insert(self):
         """ insert """
 
-        self.measure_update(mode='insert')
+        self.update(mode='insert')
 
     def _add(self):
         """ add a set """
 
-        self.measure_update(mode='append')
+        self.update(mode='append')
 
     def _del(self):
         """ delete current set """
 
-        self.measure_update(mode='delete')
+        self.update(mode='delete')
 
-    def _save(self):
-        """ save the result to file """
-
-        if self.save_file:
-            self.save_file()
-
-    def get_values(self) -> Optional[dict]:
+    def get_values(self) -> dict:
         """ return the current values as dictionary  """
 
-        ident = self._ident
-
-        if ident is None:
-            return None
-
+        grid = self._ident
         num = int(self.spin_numer.value)
         den = int(self.combobox.value)
 
-        # print(f'edit_measure.get_values, hidden = {self.hidden}')
-
         return {
-            'ident': str(ident),
+            'grid': str(grid),
             'start': int(self.spin_start.value),
             'amount': int(self.spin_amount.value),
             'numerator': num,
@@ -307,25 +283,96 @@ class EditMeasure:
             'hidden': self.hidden
         }
 
-    def measure_update(self, mode: str = 'update'):
+    def update(self, mode: str = 'update'):
         """ save the settings back """
 
-        # print(f'edit_measure._update, ident {self._ident} hidden {self.hidden}')
-        if self._ident is None:
+        if self._ident is None or not self._initialized:
             return
 
         if self.update_settings is not None:
+            # print('call update_settings')
             self.update_settings(mode=mode,
                                  dct=self.get_values())
-            self._dirty = False
+
+        self.draw_measure()
+
+    def get_font(self, can: Canvas, available: float) -> tuple:
+        """ get the font size for the available height """
+
+        id_txt = can.create_text(0, 0, text='M')
+        bounds = can.bbox(id_txt)   # returns a tuple like (x1, y1, x2, y2)
+        height = bounds[3] - bounds[1]
+        def_font = can.itemcget(id_txt, 'font')
+        info = Font(family=def_font).actual()
+        size = min(info['size'], 10)
+
+        if size > available:
+            size = int(size * available / height)
+
+        can.delete(id_txt)
+
+        return def_font, str(size), 'normal'
+
+    # pylint: disable=too-many-locals
+    def draw_measure(self):
+        """ draw the measure counting lines """
+        self._canvas.delete('all')
+
+        numerator = self.spin_numer.value
+        right = self._canvas.winfo_width()
+        bottom = self._canvas.winfo_height()
+
+        # draw the lines for the bar
+        for x_pos, mode in [
+            (25, 1), (35, 1),
+            (55, 2), (65, 2), (75, 2),
+            (95, 3), (105, 3),
+            (125, 2), (135, 2), (145, 2),
+            (165, 1), (175, 1)
+        ]:
+            width = 1
+            dash = None
+            match mode:
+                case 2:
+                    width = 2
+                case 3:
+                    dash = (3, 3)
+
+            self._canvas.create_line(x_pos + 10, 0, x_pos + 10, bottom,
+                                     width=width,
+                                     dash=dash,
+                                     fill='black')
+
+        self.top = 3
+        lines = [(self.top, 2, right), (bottom - 3, 2, right)]
+        hidden = self.hidden
+        self.step = bottom / numerator
+
+        pos = self.step
+        for meas_line in range(1, numerator):
+            size = 30 if meas_line + 1 in hidden else right
+            lines.append((pos, 1, size))
+            pos += self.step
+
+        for y_pos, width, size in lines:
+            self._canvas.create_line(20, y_pos, size, y_pos,
+                                     width=width,
+                                     fill='black')
+
+        txt_font = self.get_font(self._canvas, available=self.step - 6)
+
+        for idx in range(0, numerator):
+            y_pos = 8 + idx * self.step
+            x_pos = 10
+            self._canvas.create_text(x_pos, y_pos, text=str(idx + 1), font=txt_font)
 
     def selected(self, grid: Grid):
         """ a row in the table is selected """
 
-        self._ident = grid.ident
+        # no callback while setting the values
+        self._initialized = False
 
-        # print(f'selected: ident {self._ident} hidden: {self.hidden}')
-
+        self._ident = grid.grid
         txt = '' if self._ident is None else str(self._ident)
         self.select_value.config(text=f'grid {txt}')
 
@@ -341,25 +388,20 @@ class EditMeasure:
         self.combobox.state = combo_state
         self.visible.state = new_state
 
-
         if self._ident is None:
             return
 
-        numer = grid.numerator
-        denom = grid.denominator  # noqa
-
-        # no callback while setting the values
-        self.initialized = False
-
         self.spin_start.value = grid.start
         self.spin_amount.value = grid.amount
-        self.spin_numer.value = numer
-        self.combobox.value = denom
+        self.spin_numer.value = grid.numerator
+        self.combobox.value = grid.denominator  # noqa
         self.visible.checked = grid.visible
         self.hidden = grid.hidden
 
+        self.draw_measure()
+
         # ready for changes
-        self.initialized = True
+        self._initialized = True
 
     def set_hidden(self, hidden: []):
         """ set the hidden result from show_measure"""

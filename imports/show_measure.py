@@ -11,15 +11,16 @@ from tkinter.font import Font
 from tkinter import Canvas
 
 from imports.grid import Grid
-from imports.grid_helper import GridHelper
 
 
+# pylint: disable=too-many-instance-attributes
 class ShowMeasure:
     """ show the configuration of the measure"""
 
     def __init__(self, master: Frame, **kwargs):
         """ initialize the view """
 
+        # print('create ShowMeasure')
         row = kwargs.get('row', 0)
         self.ident = None
         self.start = kwargs.get('start', 1)
@@ -29,31 +30,32 @@ class ShowMeasure:
         self.step = None
         self.numerator = None
         self.grid = None
-        self.on_result = None
+        self._on_result = kwargs.get('on_result', None)
+
+        # print('create Canvas')
 
         row = 5
-        canvas = Canvas(master=master,
-                        background='black',
-                        width=200,
-                        height=270)
+        self._canvas = None
+        self._canvas = Canvas(master=master,
+                               background='black',
+                               width=200,
+                               height=270)
 
-        canvas.configure(bg='white')
-        canvas.bind('<Button-1>', self.left_click)
+        self._canvas.configure(bg='white')
+        self._canvas.bind('<Button-1>', self.left_click)
 
-        canvas.grid(row=row,
-                    rowspan=1,
-                    column=0,
-                    padx=(4, 4),
-                    pady=2,
-                    sticky='ns')
-
-        self._canvas = canvas
+        self._canvas.grid(row=row,
+                          rowspan=1,
+                          column=0,
+                          padx=(4, 4),
+                          pady=2,
+                          sticky='ns')
 
     def left_click(self, event):
         """ left click on canvas """
 
         pos = 1 + int(round((event.y - self.top) / self.step))
-        how = 'ignored' if pos >= self.numerator + 1 else ''
+        # how = 'ignored' if pos >= self.numerator + 1 else ''
         # print(f'click on x: {event.x} y: {event.y} line {pos} {how}')
 
         if pos in self.grid.hidden:
@@ -62,7 +64,8 @@ class ShowMeasure:
             self.grid.hidden.append(pos)
             self.grid.hidden.sort()
 
-        # print(self.grid.hidden)
+        if self._on_result:
+            self._on_result(self.grid)
 
         self.selected(self.grid)
 
@@ -83,22 +86,18 @@ class ShowMeasure:
 
         return def_font, str(size), 'normal'
 
+    # pylint: disable=too-many-locals
     def selected(self, grid: Grid):
         """ selected settings """
 
-        self.ident = grid.ident
+        self.ident = grid.grid
         self.grid = grid
         self.numerator = grid.numerator
 
-        # print(f'show_measure.on_result, grid.hidden {grid.hidden}')
-        if self.on_result is not None:
-            self.on_result(grid)
+        self._canvas.delete('all')
 
-        canvas = self._canvas
-        canvas.delete('all')
-
-        right = canvas.winfo_width()
-        bottom = canvas.winfo_height()
+        right = self._canvas.winfo_width()
+        bottom = self._canvas.winfo_height()
 
         # draw the lines for the bar
         for x_pos, mode in [
@@ -116,10 +115,10 @@ class ShowMeasure:
                 case 3:
                     dash = (3, 3)
 
-            canvas.create_line(x_pos + 10, 0, x_pos + 10, bottom,
-                               width=width,
-                               dash=dash,
-                               fill='black')
+            self._canvas.create_line(x_pos + 10, 0, x_pos + 10, bottom,
+                                     width=width,
+                                     dash=dash,
+                                     fill='black')
 
         self.top = 3
         lines = [(self.top, 2, right), (bottom - 3, 2, right)]
@@ -133,16 +132,16 @@ class ShowMeasure:
             pos += self.step
 
         for y_pos, width, size in lines:
-            canvas.create_line(20, y_pos, size, y_pos,
-                               width=width,
-                               fill='black')
+            self._canvas.create_line(20, y_pos, size, y_pos,
+                                     width=width,
+                                     fill='black')
 
-        txt_font = self.get_font(canvas, available=self.step - 6)
+        txt_font = self.get_font(self._canvas, available=self.step - 6)
 
         for idx in range(0, grid.numerator):
             y_pos = 8 + idx * self.step
             x_pos = 10
-            canvas.create_text(x_pos, y_pos, text=str(idx + 1), font=txt_font)
+            self._canvas.create_text(x_pos, y_pos, text=str(idx + 1), font=txt_font)
 
     def update(self, **kwargs):
         """ update the settings """

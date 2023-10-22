@@ -8,7 +8,6 @@ __copyright__ = '© Sihir 2023-2023 all rights reserved'  # noqa
 
 from typing import cast
 from typing import Callable
-from typing import Optional
 from typing import Literal
 from typing import LiteralString
 
@@ -16,7 +15,7 @@ from tkinter import Tk
 from tkinter import Toplevel
 from tkinter import Frame
 from tkinter import Checkbutton
-from tkinter import BooleanVar
+from tkinter import IntVar
 
 
 class CheckBoxContainer:
@@ -28,41 +27,46 @@ class CheckBoxContainer:
 
         """ initialize the ChkContainer """
         self.frame = Frame(master)
-        self.callback: Optional[Callable] = None
-        checked: bool = kwargs.get('checked', False)
+        self.frame.grid(
+            row=0,
+            column=0,
+            padx=1,
+            pady=1,
+            sticky='news')
+
+        checked = int(kwargs.get('checked', 0))
         text = kwargs.get('text', '')
-        tag = kwargs.get('tag', None)
+
         state = kwargs.get('state', 'normal')
 
-        self.chk_var = BooleanVar(
+        self.chk_var = IntVar(
             master=self.frame,
-            name=tag,
             value=checked)
-
-        self.chk_var.trace('w', self.invoke_callback)
 
         self.check = Checkbutton(
             master=self.frame,
             text=text,
             state=state,
+            onvalue=True,
+            offvalue=False,
             variable=self.chk_var)
 
-        self.check.grid(row=0, column=0)
+        self.check.grid(
+            row=0,
+            column=0,
+            padx=0,
+            pady=0,
+            sticky='news')
 
-        self.callback: Callable = kwargs.get('callback', None)
-
-    def invoke_callback(self, name: str, _: str, mode: str):
-        """ when specified, to the callback """
-
-        if self.callback:
-            value = self.chk_var.get()
-            self.callback(name, value, mode)
+        # do this now to prevent an early callback
+        callback: Callable = kwargs.get('callback', None)
+        self.chk_var.trace('w', callback)
 
     @property
     def checked(self) -> bool:
         """ whether the checkbox is checked or not """
 
-        return self.chk_var.get()
+        return bool(self.chk_var.get())
 
     @checked.setter
     def checked(self, value: bool):

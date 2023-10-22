@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c2370255-2ffe-4b52-a1fd-2a002a23eebd" name="Changes" comment="changes for the grid editor" />
+    <list default="true" id="c2370255-2ffe-4b52-a1fd-2a002a23eebd" name="Changes" comment="changes for the grid editor">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,7 +15,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="verticaleditor" />
+        <entry key="$PROJECT_DIR$" value="grid-crash" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -21,23 +23,24 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="2UwVoqSrP1lvMI87wMDTsA6Lfk7" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "b1ed5a62",
-    "last_opened_file_path": "C:/Users/hsalo/source/repos/Philip/PianoScript-graphical-editor/pianoscript.py"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;verticaleditor&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/hsalo/source/repos/Philip/PianoScript-graphical-editor/pianoscript.py&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="Pianoscript" type="PythonConfigurationType" factoryName="Python">
       <module name="PianoScript-graphical-editor" />
@@ -94,6 +97,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="changes for the grid editor" />
-    <option name="LAST_COMMIT_MESSAGE" value="changes for the grid editor" />
+    <MESSAGE value="the version that will crash when the grid editor is reopened after having been closed" />
+    <option name="LAST_COMMIT_MESSAGE" value="the version that will crash when the grid editor is reopened after having been closed" />
   </component>
 </project>

@@ -28,16 +28,16 @@ from imports.grid_helper import GridHelper
 
 # pylint: disable=too-many-ancestors
 # pylint: disable=too-many-instance-attributes
-class Treeview_Container(Frame):
+class TreeviewContainer:
     """ Treeview helper class """
 
     def __init__(self, master, **kwargs):
         """ initialize the frame """
 
+        # print(f'TreeviewContainer {id(self)}')
         self.master = master
-        self.ignore_single_click = False
-        self.single_click: Callable = kwargs.get('single_click')
-        self.double_click: Callable = kwargs.get('double_click')
+        self.single_click: Callable = kwargs.get('single_click', None)
+        self.double_click: Callable = kwargs.get('double_click', None)
         self.context = kwargs.get('context', None)
 
         # pylint: disable=invalid-name
@@ -46,10 +46,6 @@ class Treeview_Container(Frame):
 
         self.image_size = kwargs.get('image_size', (24, 24))
         self.info = {'images': {}}
-
-        Frame.__init__(self, master)
-
-        # width = kwargs.get('width', 100)
 
         dct = kwargs.get('dct', {})
         assert dct
@@ -63,15 +59,13 @@ class Treeview_Container(Frame):
                              columns=self.data_cols,
                              height=height,
                              show=show)
-        style = Style()
-        style.configure("Treeview.Heading", font=('Segoe UI', 9))
-        style.configure("Treeview", font=('Segoe UI', 9))
 
-        self.tree.grid(row=kwargs.get('row', 0),
-                       column=kwargs.get('col', 0),
-                       padx=2,
-                       pady=2,
-                       sticky='news')
+        # select your font and background colors
+        style = Style()
+        style.configure("Treeview.Heading", font=("Segoe UI", 9))
+        style.configure("Treeview", font=("Segoe UI", 9))
+        style.configure("Treeview", fieldbackground="white")
+        style.map('Treeview', background=[('selected', 'lightblue')])
 
         for idx, (_, title, width) in enumerate(columns):
             self.tree.column(f'#{idx}',
@@ -106,11 +100,15 @@ class Treeview_Container(Frame):
     def populate_row(self, grid: Grid):
         """ populate one row on identifier """
 
-        ident = grid.ident
+        ident = grid.grid
         if ident is None:
             return
 
         values = GridHelper.to_row(grid=grid)
+
+        # print(f'TreeviewContainer {id(self)}')
+        # print(f'populate: tree {id(self.tree)}')
+
         self.tree.item(item=str(ident), values=values)
 
     def populate(self, **kwargs):
@@ -121,7 +119,7 @@ class Treeview_Container(Frame):
 
         items = kwargs.get('items', [{}])
         for item in items:
-            ident = item.get('ident', '')
+            ident = item.get('grid', '')
             index = item.get('index', 'end')
             parent = item.get('parent', '')
             text = item.get('text', '')
@@ -159,10 +157,6 @@ class Treeview_Container(Frame):
     def on_single_click(self, event):
         """ single click on tree """
 
-        if self.ignore_single_click:
-            self.ignore_single_click = False
-            return
-
         item = self.tree.selection()
         if item is not None and \
                 len(item) > 0 and \
@@ -192,7 +186,6 @@ class Treeview_Container(Frame):
 
         item = self.tree.selection()
         if item is not None and self.double_click is not None:
-            self.ignore_single_click = True
             ident = self.get_ident(event)
             if ident == '':
                 return
@@ -204,6 +197,7 @@ class Treeview_Container(Frame):
                 col = self.tree.identify_column(event.x)
                 column = int(col.lstrip('#')) - 1
                 values = self.tree.item(ident)["values"]
+
             self.double_click(ident, region, column - 1, values)
 
     def on_right_click(self, event):

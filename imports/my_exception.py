@@ -14,6 +14,7 @@ from functools import wraps
 from typing import Any
 
 
+# pylint: disable=too-many-instance-attributes
 class MyException(BaseException):
     """ extract all useful information from the exception and the inspection """
     def __init__(self, extra: Any = None):
