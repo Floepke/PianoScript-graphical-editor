@@ -38,7 +38,7 @@ class Grid:
         if 'dct' in kwargs:
             kwargs = kwargs.get('dct', {})
 
-        self.ident: int = int(kwargs.get('ident', -1))
+        self.grid: int = int(kwargs.get('grid', -1))
         self.start: int = int(kwargs.get('start', 1))
         self.amount: int = int(kwargs.get('amount', 1))
         self.numerator: int = int(kwargs.get('numerator', 4))
@@ -46,17 +46,12 @@ class Grid:
         self.hidden: [] = kwargs.get('hidden', [])
         self.visible: bool = bool(kwargs.get('visible', True))
 
-    def __eq__(self, other):
-        """ return True when the other has the same ident """
-
-        return self.ident == other.ident
-
     def to_dict(self) -> dict:
         """ convert back to dictionary """
 
         return {
-            'grid': self.ident,
-            'tag': f'grid{self.ident - 1}',
+            'grid': self.grid,
+            'tag': f'grid{self.grid - 1}',
             'start': self.start,
             'amount': self.amount,
             'numerator': self.numerator,
@@ -64,6 +59,10 @@ class Grid:
             'hidden': self.hidden,
             'visible': self.visible
         }
+
+    def __eq__(self, other):
+        return self.grid == other.grid
+
 
 @dataclass
 class GridList:
@@ -76,6 +75,7 @@ class GridList:
         if 'lst' in kwargs:
             # lst is Grid[]
             self.lst = kwargs.get('lst', [])
+
         elif 'dct' in kwargs:
             # dct is a list of Grid dictionary
             for dct in kwargs.get('dct', []):
@@ -95,14 +95,14 @@ class GridList:
 
         start = 1
         for number, grid in enumerate(self.lst, 1):
-            grid.index = number
+            grid.grid = number
             grid.start = start
             start += grid.amount
 
-    def remove(self, number: str):
+    def remove(self, number: int):
         """ remove a grid from the list """
 
-        item = next((grd for grd in self.lst if int(grd.index) == int(number)), None)
+        item = next((grd for grd in self.lst if grd.grid == number), None)
         if item is not None:
             self.lst.remove(item)
             self.renumber()

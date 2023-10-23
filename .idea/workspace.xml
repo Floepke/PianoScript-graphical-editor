@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c2370255-2ffe-4b52-a1fd-2a002a23eebd" name="Changes" comment="changes for the grid editor">
+    <list default="true" id="c2370255-2ffe-4b52-a1fd-2a002a23eebd" name="Changes" comment="incorrect version of grid_helper.py">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -81,7 +82,31 @@
       <option name="project" value="LOCAL" />
       <updated>1693850923952</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="changes for the grid editor (2)">
+      <option name="closed" value="true" />
+      <created>1697989363163</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1697989363163</updated>
+    </task>
+    <task id="LOCAL-00003" summary="two imports are not needed">
+      <option name="closed" value="true" />
+      <created>1697989409827</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1697989409827</updated>
+    </task>
+    <task id="LOCAL-00004" summary="incorrect version of grid_helper.py">
+      <option name="closed" value="true" />
+      <created>1698082800402</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1698082800402</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -98,6 +123,9 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="changes for the grid editor" />
     <MESSAGE value="the version that will crash when the grid editor is reopened after having been closed" />
-    <option name="LAST_COMMIT_MESSAGE" value="the version that will crash when the grid editor is reopened after having been closed" />
+    <MESSAGE value="changes for the grid editor (2)" />
+    <MESSAGE value="two imports are not needed" />
+    <MESSAGE value="incorrect version of grid_helper.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="incorrect version of grid_helper.py" />
   </component>
 </project>
