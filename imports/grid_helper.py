@@ -28,7 +28,7 @@ class GridHelper:
                ]
 
     @staticmethod
-    def from_row(ident: str, values: []) -> Grid:
+    def from_row(grid: str, values: []) -> Grid:
         """ get the grid from a row in the table ="""
 
         start = int(values[0])
@@ -44,7 +44,7 @@ class GridHelper:
                 hidden.append(int(hide))
 
         grid = Grid(start=start,
-                    ident=ident,
+                    grid=int(grid),
                     amount=amount,
                     numerator=int(num),
                     denominator=int(den),
