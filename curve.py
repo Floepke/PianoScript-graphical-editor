@@ -33,3 +33,12 @@ class Curve:
         """ append a point to the array """
 
         self.array.append(pnt)
+
+    @property
+    def pairs(self):
+        """ return """
+
+        result = ()
+        for pnt in self.array:
+            result += (pnt.x, pnt.y)
+        return result

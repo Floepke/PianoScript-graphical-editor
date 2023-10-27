@@ -28,6 +28,13 @@ def main() -> int:
     assert curve[1].x == 100
     assert curve[1].y == 50
 
+    curve = Curve()
+    for i in range(10):
+        curve.append(Point(x_p=i, y_p=10 * i))
+
+    for item in curve.pairs:
+        print(item)
+
     return 0
 
 
